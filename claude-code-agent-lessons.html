@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lessons from Building Claude Code: Seeing like an Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS Variables ─────────────────────────────────────────── */
+    :root {
+      --bg:       #060810;
+      --bg2:      #0D1021;
+      --bg3:      #131728;
+      --gold:     #D4A043;
+      --gold-dim: #8A6520;
+      --cyan:     #2ECBCB;
+      --red:      #E05252;
+      --green:    #4CC98B;
+      --text:     #E8E4D8;
+      --text-dim: #7A7668;
+      --border:   rgba(212,160,67,0.15);
+      --glow:     0 0 40px rgba(212,160,67,0.12);
+    }
+
+    /* ── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 18px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── Progress Bar ──────────────────────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+      z-index: 1000;
+      transition: width 0.1s linear;
+    }
+
+    /* ── Navigation ────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(6,8,16,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ── Hero ──────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 10vw 80px;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 50%, rgba(212,160,67,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(46,203,203,0.04) 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px),
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.015) 80px);
+    }
+    .hero-noise {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .hero-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s ease forwards;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: clamp(3rem, 7vw, 7rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.4s ease forwards;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .hero-subtitle {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+      color: var(--text-dim);
+      margin-top: 28px;
+      max-width: 50ch;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.6s ease forwards;
+    }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      margin-top: 56px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s ease forwards;
+    }
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--bg);
+      font-weight: 500;
+    }
+    .author-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .author-handle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--gold);
+    }
+    .hero-stats {
+      display: flex;
+      gap: 28px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--gold);
+      display: block;
+    }
+    .stat-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: fadeIn 1s 1.2s both;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(180deg, var(--gold), transparent);
+      animation: pulse-line 2s ease-in-out infinite;
+    }
+
+    /* ── Sections ──────────────────────────────────────────────── */
+    section { padding: 100px 10vw; }
+    section + section { padding-top: 0; }
+
+    /* ── Chapter Marker ────────────────────────────────────────── */
+    .chapter {
+      position: relative;
+      padding: 100px 10vw 80px;
+      border-top: 1px solid var(--border);
+    }
+    .chapter-num {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(6rem, 14vw, 12rem);
+      color: rgba(212,160,67,0.06);
+      position: absolute;
+      top: 40px;
+      right: 8vw;
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+    }
+    .chapter-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--cyan);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .chapter h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 4.5vw, 4rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      max-width: 20ch;
+      margin-bottom: 40px;
+    }
+    .chapter h2 em { font-style: italic; color: var(--gold); }
+
+    /* ── Body Text ─────────────────────────────────────────────── */
+    .prose {
+      max-width: 64ch;
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: rgba(232,228,216,0.85);
+    }
+    .prose p + p { margin-top: 1.5em; }
+    .prose strong { color: var(--text); font-weight: 700; }
+
+    /* ── Callout Quote ─────────────────────────────────────────── */
+    .callout {
+      border-left: 3px solid var(--gold);
+      padding: 20px 28px;
+      background: rgba(212,160,67,0.04);
+      border-radius: 0 8px 8px 0;
+      margin: 40px 0;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--text);
+      max-width: 56ch;
+    }
+
+    /* ── Intro: Action Space Diagram ───────────────────────────── */
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 56px;
+    }
+    .intro-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .intro-card:hover {
+      border-color: var(--gold-dim);
+      transform: translateY(-4px);
+    }
+    .intro-card .icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    .intro-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
+    .intro-card p {
+      font-size: 1rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+
+    /* ── Sweet Spot Spectrum ───────────────────────────────────── */
+    .spectrum-wrap {
+      margin: 56px 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+    }
+    .spectrum-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .spectrum {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+    }
+    .spectrum-node {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .spectrum-box {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg3);
+      min-width: 160px;
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+    .spectrum-box.active {
+      border-color: var(--gold);
+      background: rgba(212,160,67,0.08);
+      box-shadow: 0 0 24px rgba(212,160,67,0.2);
+    }
+    .spectrum-box-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .spectrum-box.active .spectrum-box-name { color: var(--gold); }
+    .spectrum-box-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .spectrum-line {
+      height: 1px;
+      flex: 1;
+      background: var(--border);
+      position: relative;
+      margin: 0 -1px;
+    }
+    .spectrum-line::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: -4px;
+      width: 0;
+      height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid var(--gold-dim);
+    }
+    .spectrum-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding: 0 60px;
+    }
+    .spectrum-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ── Attempt Cards ─────────────────────────────────────────── */
+    .attempts {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .attempt-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 24px;
+      align-items: start;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .attempt-card:hover { transform: translateX(6px); }
+    .attempt-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+    .attempt-card.fail::before { background: var(--red); }
+    .attempt-card.fail { border-color: rgba(224,82,82,0.2); }
+    .attempt-card.success::before { background: var(--green); }
+    .attempt-card.success { border-color: rgba(76,201,139,0.2); }
+
+    .attempt-num {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 3rem;
+      line-height: 1;
+      color: var(--text-dim);
+    }
+    .attempt-card.success .attempt-num { color: var(--green); }
+    .attempt-card.fail .attempt-num { color: var(--red); }
+
+    .attempt-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .attempt-badge.fail {
+      background: rgba(224,82,82,0.1);
+      color: var(--red);
+    }
+    .attempt-badge.success {
+      background: rgba(76,201,139,0.1);
+      color: var(--green);
+    }
+
+    .attempt-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .attempt-body {
+      font-size: 1rem;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+    .attempt-insight {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.65;
+    }
+    .attempt-insight.fail {
+      background: rgba(224,82,82,0.06);
+      color: rgba(224,82,82,0.8);
+      border: 1px solid rgba(224,82,82,0.15);
+    }
+    .attempt-insight.success {
+      background: rgba(76,201,139,0.06);
+      color: rgba(76,201,139,0.9);
+      border: 1px solid rgba(76,201,139,0.15);
+    }
+
+    /* ── Evolution Timeline ────────────────────────────────────── */
+    .timeline {
+      margin-top: 56px;
+      position: relative;
+      padding-left: 40px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, var(--gold), transparent);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 48px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -40px;
+      top: 6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      background: var(--bg);
+      transition: background 0.3s;
+    }
+    .timeline-item:hover .timeline-dot { background: var(--gold); }
+    .timeline-era {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .timeline-head {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .timeline-body {
+      font-size: 1rem;
+      color: var(--text-dim);
+      line-height: 1.75;
+      max-width: 56ch;
+    }
+    .timeline-tool {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--cyan);
+    }
+
+    /* ── Tool Grid ─────────────────────────────────────────────── */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .tool-chip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      transition: all 0.3s;
+    }
+    .tool-chip:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      transform: translateY(-2px);
+    }
+    .tool-chip .tool-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    /* ── Progressive Disclosure Visual ────────────────────────── */
+    .disclosure-stack {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .disclosure-level {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      position: relative;
+    }
+    .disclosure-connector {
+      width: 2px;
+      background: linear-gradient(180deg, var(--gold-dim), transparent);
+      margin: 0 32px 0 23px;
+      min-height: 40px;
+    }
+    .disclosure-card {
+      flex: 1;
+      margin-bottom: 4px;
+      padding: 24px 28px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      cursor: default;
+    }
+    .disclosure-card:hover {
+      border-color: var(--gold-dim);
+      box-shadow: var(--glow);
+    }
+    .disclosure-num {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 2rem;
+      color: var(--gold);
+      min-width: 40px;
+    }
+    .disclosure-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .disclosure-desc {
+      font-size: 1rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+    .disclosure-arrow {
+      text-align: center;
+      padding: 6px 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold-dim);
+      letter-spacing: 0.15em;
+      padding-left: 88px;
+    }
+
+    /* ── Finale ────────────────────────────────────────────────── */
+    .finale {
+      padding: 120px 10vw;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .finale-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(212,160,67,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .finale-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .finale h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      color: var(--text);
+    }
+    .finale h2 span { color: var(--gold); }
+    .finale-body {
+      max-width: 52ch;
+      margin: 0 auto 48px;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
+    .finale-mantra {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    .mantra-word {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 10px 24px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      color: var(--text);
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .mantra-word:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(212,160,67,0.05);
+    }
+
+    /* ── Footer ────────────────────────────────────────────────── */
+    footer {
+      padding: 40px 10vw;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-credit {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .footer-source {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+    }
+
+    /* ── Reveal Animations ─────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes pulse-line {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50%       { opacity: 1;   transform: scaleY(1.1); }
+    }
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(212,160,67,0.2); }
+      50%       { box-shadow: 0 0 40px rgba(212,160,67,0.4); }
+    }
+
+    /* ── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 14px 24px; }
+      .nav-links { display: none; }
+      section, .chapter { padding: 72px 6vw; }
+      .intro-grid { grid-template-columns: 1fr; }
+      .attempt-card { grid-template-columns: 60px 1fr; gap: 16px; }
+      .spectrum-wrap { padding: 28px; }
+      .spectrum-box { min-width: 110px; padding: 12px 10px; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Progress bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <span class="nav-logo">Claude Code · Engineering Lessons</span>
+    <ul class="nav-links">
+      <li><a href="#action-space">動作空間</a></li>
+      <li><a href="#elicitation">問答工具</a></li>
+      <li><a href="#tasks">任務系統</a></li>
+      <li><a href="#search">搜尋設計</a></li>
+      <li><a href="#finale">藝術本質</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HERO ───────────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-tag">Engineering Insights · 2026 · @trq212</div>
+    <h1>Lessons from Building <em>Claude Code</em></h1>
+    <p class="hero-subtitle">學習像 Agent 一樣觀察與思考，從建造 Claude Code 的過程中領悟 AI 工具設計的真諦。</p>
+    <div class="hero-meta">
+      <div class="author-info">
+        <div class="author-avatar">TQ</div>
+        <div>
+          <div class="author-name">Thariq</div>
+          <div class="author-handle">@trq212</div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">308萬</span>
+          <span class="stat-label">瀏覽數</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">8,815</span>
+          <span class="stat-label">按讚數</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">1,143</span>
+          <span class="stat-label">轉推數</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      向下捲動
+      <div class="scroll-line"></div>
+    </div>
+  </div>
+
+  <!-- ── CHAPTER 0: INTRO ───────────────────────────────────────── -->
+  <section id="action-space">
+    <div class="chapter-tag reveal">核心概念</div>
+    <h2 class="reveal" style="font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2rem,4.5vw,3.5rem);line-height:1.1;letter-spacing:-0.02em;margin-bottom:32px;">
+      動作空間設計：<em style="font-style:italic;color:var(--gold)">難在工具的取捨</em>
+    </h2>
+    <div class="prose reveal">
+      <p>打造 Agent 時，最困難的部分之一就是構建它的<strong>動作空間（action space）</strong>。Claude 透過 Tool Calling 行動，但工具的設計方式有很多種——從 bash、skills 到程式碼執行都有。</p>
+      <p>那麼，應該給 Agent 一個萬能工具，還是 50 個分工工具？</p>
+    </div>
+
+    <div class="callout reveal">
+      「把自己放進模型的位置：給你一道困難的數學題，你想要什麼工具？紙筆是最低需求，計算機更好，電腦最強大——但前提是你要知道怎麼用它。」
+    </div>
+
+    <div class="intro-grid">
+      <div class="intro-card reveal">
+        <div class="icon">📄</div>
+        <h3>紙筆（最低限度）</h3>
+        <p>自由但雜亂，純靠手動計算，結果難以格式化與重現。</p>
+      </div>
+      <div class="intro-card reveal" style="transition-delay:0.1s">
+        <div class="icon">🖩</div>
+        <h3>計算機（中等工具）</h3>
+        <p>功能更強，但需要知道如何操作進階選項，才能發揮效用。</p>
+      </div>
+      <div class="intro-card reveal" style="transition-delay:0.2s">
+        <div class="icon">💻</div>
+        <h3>電腦（最強能力）</h3>
+        <p>速度最快、功能最強，但必須具備寫程式與執行程式碼的能力。</p>
+      </div>
+      <div class="intro-card reveal" style="transition-delay:0.3s;border-color:var(--gold-dim);">
+        <div class="icon">🔑</div>
+        <h3>關鍵洞見</h3>
+        <p>給 Agent 的工具必須符合其自身能力。要了解其能力，你需要<strong style="color:var(--gold)">像 Agent 一樣觀察</strong>：關注輸出、閱讀結果、不斷實驗。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CHAPTER 1: ASKUSERQUESTION ─────────────────────────────── -->
+  <div class="chapter" id="elicitation">
+    <div class="chapter-num">01</div>
+
+    <div class="chapter-tag reveal">第一課</div>
+    <h2 class="reveal">改良問答能力：<em>AskUserQuestion 工具</em></h2>
+
+    <div class="prose reveal">
+      <p>目標是提升 Claude 問問題的能力（稱為 elicitation，問答引導）。雖然 Claude 可以直接用純文字問問題，但我們發現回答那些問題<strong>耗費不必要的時間</strong>。</p>
+      <p>如何降低摩擦、提升用戶與 Claude 之間的溝通頻寬？我們嘗試了三種方法：</p>
+    </div>
+
+    <!-- Sweet Spot Spectrum -->
+    <div class="spectrum-wrap reveal">
+      <div class="spectrum-title">找到甜蜜點 · Finding the Sweet Spot</div>
+      <div class="spectrum">
+        <div class="spectrum-node">
+          <div class="spectrum-box">
+            <span class="spectrum-box-name">Modified Markdown Output</span>
+            <span class="spectrum-box-sub">model free but messy,<br>hard to format</span>
+          </div>
+        </div>
+        <div class="spectrum-line"></div>
+        <div class="spectrum-node">
+          <div class="spectrum-box active">
+            <span class="spectrum-box-name">✦ AskUserQuestion Tool</span>
+            <span class="spectrum-box-sub">structured + composable,<br>clear UI surface</span>
+          </div>
+        </div>
+        <div class="spectrum-line" style="transform:scaleX(-1)"></div>
+        <div class="spectrum-node">
+          <div class="spectrum-box">
+            <span class="spectrum-box-name">ExitPlanTool Parameter</span>
+            <span class="spectrum-box-sub">plan already formed,<br>questions come too late</span>
+          </div>
+        </div>
+      </div>
+      <div class="spectrum-labels">
+        <span class="spectrum-label">← No Structure</span>
+        <span class="spectrum-label">Too Rigid →</span>
+      </div>
+    </div>
+
+    <!-- Attempt Cards -->
+    <div class="attempts">
+      <div class="attempt-card fail reveal">
+        <div class="attempt-num">01</div>
+        <div>
+          <div class="attempt-badge fail">✗ 失敗</div>
+          <div class="attempt-title">修改 ExitPlanTool 參數</div>
+          <p class="attempt-body">在 ExitPlanTool 加上一個問題陣列參數，讓計畫與問題一起傳回。雖然最容易實作，但這讓 Claude 感到困惑——它同時被要求產出計畫，又要針對計畫提問。</p>
+          <div class="attempt-insight fail">⚠ 問題：若用戶的回答與計畫內容衝突怎麼辦？Claude 需要呼叫 ExitPlanTool 兩次嗎？</div>
+        </div>
+      </div>
+
+      <div class="attempt-card fail reveal">
+        <div class="attempt-num">02</div>
+        <div>
+          <div class="attempt-badge fail">✗ 失敗</div>
+          <div class="attempt-title">修改輸出格式</div>
+          <p class="attempt-body">修改 Claude 的輸出指令，讓它使用略經修改的 Markdown 格式來提問，例如用括號列出選項。前端再解析並呈現為 UI。Claude 雖能輸出，但<strong>不保證格式穩定</strong>——有時會補充額外句子、省略選項，或完全用不同格式。</p>
+          <div class="attempt-insight fail">⚠ 問題：Claude 的輸出是非確定性的，無法保證格式，導致解析困難。</div>
+        </div>
+      </div>
+
+      <div class="attempt-card success reveal">
+        <div class="attempt-num">03</div>
+        <div>
+          <div class="attempt-badge success">✓ 成功</div>
+          <div class="attempt-title">建立 AskUserQuestion 工具</div>
+          <p class="attempt-body">最終方案是建立一個 Claude 可在任意時間點呼叫的工具，並在計畫模式中特別提示它使用此工具。工具觸發時，顯示一個 Modal 呈現問題，並<strong>阻斷 Agent 循環</strong>直到用戶回答。</p>
+          <div class="attempt-insight success">✓ 優勢：強制 Claude 產出結構化輸出；讓用戶可在 Agent SDK 中組合使用；Claude 自然而然偏好呼叫它，輸出效果最好。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout reveal" style="margin-top:48px">
+      「即使是設計最好的工具，如果 Claude 不理解如何呼叫它，也沒有用。」
+    </div>
+  </div>
+
+  <!-- ── CHAPTER 2: TASKS & TODOS ───────────────────────────────── -->
+  <div class="chapter" id="tasks">
+    <div class="chapter-num">02</div>
+
+    <div class="chapter-tag reveal">第二課</div>
+    <h2 class="reveal">隨能力升級工具：<em>從 Todos 到 Tasks</em></h2>
+
+    <div class="prose reveal">
+      <p>當我們剛推出 Claude Code 時，模型需要一個 Todo 清單來保持追蹤進度。Todos 在一開始寫好，隨工作進行勾選完成。</p>
+      <p>但隨著模型能力的提升，<strong>原本為了幫助模型的工具，反而開始限制它</strong>。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-era">初期 · Early Stage</div>
+        <div class="timeline-head">TodoWrite 工具</div>
+        <p class="timeline-body">Claude Code 剛推出時，模型常常忘記自己要做什麼。我們提供了 TodoWrite 工具，讓 Claude 可以撰寫和更新 Todo 清單，並展示給用戶看。</p>
+        <div class="timeline-tool">⚙ TodoWrite Tool · 記錄與追蹤目標</div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-era">調整期 · Adaptation</div>
+        <div class="timeline-head">系統提醒每 5 回合觸發</div>
+        <p class="timeline-body">即使有 Todo 清單，Claude 仍常忘記目標。我們每 5 回合插入系統提醒，強制告知 Claude 目前的任務。</p>
+        <div class="timeline-tool">🔔 System Reminders · 每 5 輪觸發</div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-era">進化期 · Evolution</div>
+        <div class="timeline-head">模型能力提升，提醒成了束縛</div>
+        <p class="timeline-body">隨著模型進步，Claude 不再需要提醒——更糟的是，提醒讓它以為不能修改 Todo 清單。此外，Opus 4.5 在使用子 Agent 上大幅進步，但多個子 Agent 無法共享 Todo 清單。</p>
+        <div class="timeline-tool" style="color:var(--red);border-color:rgba(224,82,82,0.3)">⚡ 舊架構限制：單一 Agent, 無法跨 Agent 協調</div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot" style="background:var(--gold);border-color:var(--gold)"></div>
+        <div class="timeline-era">現在 · Present</div>
+        <div class="timeline-head">Task 工具取代 Todos</div>
+        <p class="timeline-body">我們以 Task 工具替代 TodoWrite。Tasks 不僅是追蹤進度，更是幫助多 Agent 相互溝通——可設定依賴關係、跨子 Agent 分享更新、動態新增或刪除任務。</p>
+        <div class="timeline-tool" style="color:var(--green);border-color:rgba(76,201,139,0.3)">✓ Task Tool · 多 Agent 協作、依賴追蹤</div>
+      </div>
+    </div>
+
+    <div class="callout reveal" style="margin-top:0">
+      「隨著模型能力提升，原本需要的工具可能反而會限制模型。必須持續重新審視舊有假設。」
+    </div>
+  </div>
+
+  <!-- ── CHAPTER 3: SEARCH + PROGRESSIVE DISCLOSURE ────────────── -->
+  <div class="chapter" id="search">
+    <div class="chapter-num">03</div>
+
+    <div class="chapter-tag reveal">第三課</div>
+    <h2 class="reveal">設計搜尋介面：<em>漸進揭露技術</em></h2>
+
+    <div class="prose reveal">
+      <p>搜尋工具對 Claude 來說至關重要——它讓 Claude 能夠主動建構自己的上下文（context）。</p>
+      <p>Claude Code 的演化路徑，展現了工具設計的逐步精煉：</p>
+    </div>
+
+    <div class="disclosure-stack">
+      <div class="disclosure-level reveal">
+        <div class="disclosure-card">
+          <div class="disclosure-num">1</div>
+          <div>
+            <div class="disclosure-name">RAG 向量資料庫</div>
+            <p class="disclosure-desc">早期使用 RAG 提供上下文。雖然快速強大，但需要索引與設定，在不同環境中容易不穩定。最重要的是：<strong style="color:var(--text)">Claude 是被動接收</strong>上下文，而非主動搜尋。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclosure-arrow reveal">↓ 進化</div>
+
+      <div class="disclosure-level reveal">
+        <div class="disclosure-card">
+          <div class="disclosure-num">2</div>
+          <div>
+            <div class="disclosure-name">Grep 工具</div>
+            <p class="disclosure-desc">給 Claude 一個 Grep 工具，讓它可以搜尋程式碼庫，<strong style="color:var(--text)">主動建構自己的上下文</strong>。這是一個重要的轉變：Claude 開始學會「看」了。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclosure-arrow reveal">↓ 進化</div>
+
+      <div class="disclosure-level reveal">
+        <div class="disclosure-card">
+          <div class="disclosure-num">3</div>
+          <div>
+            <div class="disclosure-name">Agent Skills + 漸進揭露</div>
+            <p class="disclosure-desc">引入 Agent Skills，正式確立<strong style="color:var(--gold)">漸進揭露（Progressive Disclosure）</strong>模式：Claude 可以讀取 skill 文件，文件再參照其他文件，遞迴搜尋直到找到所需上下文。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclosure-arrow reveal">↓ 最終形態</div>
+
+      <div class="disclosure-level reveal">
+        <div class="disclosure-card" style="border-color:var(--gold-dim);background:rgba(212,160,67,0.04)">
+          <div class="disclosure-num" style="color:var(--cyan)">4</div>
+          <div>
+            <div class="disclosure-name" style="color:var(--cyan)">Claude Code Guide 子 Agent</div>
+            <p class="disclosure-desc">針對「Claude 如何使用 Claude Code」這個特定需求，建立專屬子 Agent。當用戶問起相關問題時，主 Agent 呼叫此子 Agent，它有完整的文件搜尋指南，精確回傳所需答案——<strong style="color:var(--text)">不多也不少</strong>。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claude Code Tool Overview -->
+    <div style="margin-top:56px">
+      <div class="chapter-tag reveal">Claude Code 目前的工具生態</div>
+      <div class="tool-grid">
+        <div class="tool-chip reveal">
+          <span class="tool-dot"></span>TodoWrite → Task
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.05s">
+          <span class="tool-dot"></span>AskUserQuestion
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.1s">
+          <span class="tool-dot"></span>ExitPlanMode
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.15s">
+          <span class="tool-dot"></span>Grep / Search
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.2s">
+          <span class="tool-dot"></span>Bash / Code Exec
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.25s">
+          <span class="tool-dot"></span>Agent Skills (漸進揭露)
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.3s">
+          <span class="tool-dot" style="background:var(--gold)"></span>Claude Code Guide Agent
+        </div>
+        <div class="tool-chip reveal" style="transition-delay:0.35s">
+          <span class="tool-dot" style="background:var(--gold)"></span>~20 工具總計
+        </div>
+      </div>
+    </div>
+
+    <div class="callout reveal" style="margin-top:48px">
+      「漸進揭露讓我們可以在不新增工具的情況下，為 Agent 添加新功能——新增工具的門檻很高，因為每一個工具都會讓模型多一個需要思考的選項。」
+    </div>
+  </div>
+
+  <!-- ── FINALE ──────────────────────────────────────────────────── -->
+  <div class="finale" id="finale">
+    <div class="finale-bg"></div>
+    <div class="finale-eyebrow reveal">核心哲學 · Core Philosophy</div>
+    <h2 class="reveal">
+      這是一門<span>藝術</span>，<br>不只是科學
+    </h2>
+    <p class="finale-body reveal">
+      如果你期待一套嚴格的工具設計規則，這篇文章無法給你。為模型設計工具，既是藝術，也是科學。它高度依賴你使用的模型、Agent 的目標，以及它所在的環境。
+    </p>
+    <div class="finale-mantra reveal">
+      <div class="mantra-word">勤於實驗</div>
+      <div class="mantra-word">閱讀輸出</div>
+      <div class="mantra-word">嘗試新方法</div>
+      <div class="mantra-word" style="color:var(--gold);border-color:var(--gold-dim)">像 Agent 一樣觀察</div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer>
+    <span class="footer-credit">由 Claude Code · frontend-design 技能重新設計呈現</span>
+    <span class="footer-source">原文：@trq212 · X.com · 2026年2月28日</span>
+  </footer>
+
+  <script>
+    // ── Reading Progress Bar ───────────────────────────────────────
+    const bar = document.getElementById('progress-bar');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.body.scrollHeight - window.innerHeight;
+      bar.style.width = `${(scrollTop / docHeight) * 100}%`;
+    });
+
+    // ── Scroll Reveal ──────────────────────────────────────────────
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => io.observe(el));
+
+    // ── Spectrum hover effect ──────────────────────────────────────
+    document.querySelectorAll('.spectrum-box').forEach(box => {
+      box.addEventListener('mouseenter', () => {
+        box.style.transform = 'translateY(-4px)';
+      });
+      box.addEventListener('mouseleave', () => {
+        box.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
+</body>
+</html>
