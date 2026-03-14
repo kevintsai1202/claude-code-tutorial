@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic 團隊如何使用 Claude Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg-deep: #020510;
+  --bg-mid: #050c1e;
+  --glass: rgba(6, 14, 38, 0.65);
+  --glass-hover: rgba(8, 20, 50, 0.8);
+  --border: rgba(0, 200, 255, 0.13);
+  --border-hover: rgba(0, 200, 255, 0.32);
+  --glow-cyan: rgba(0, 212, 255, 0.15);
+
+  --cyan: #00d4ff;
+  --violet: #7b2fff;
+  --mint: #00ff88;
+  --orange: #ff7b35;
+  --pink: #ff2d92;
+  --gold: #ffcc00;
+  --teal: #00c4a7;
+  --red: #ff4757;
+  --blue: #4b7bff;
+  --lime: #a8ff3e;
+
+  --text: #edf6ff;
+  --text-dim: rgba(200, 225, 252, 0.82);
+  --text-bright: #ffffff;
+
+  --display: 'Orbitron', monospace;
+  --head: 'Rajdhani', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --r: 14px;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+
+body {
+  font-family: var(--mono);
+  background: var(--bg-deep);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ──────────────── CANVAS BG ──────────────── */
+#bg {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ──────────────── NAV ──────────────── */
+nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(2, 5, 16, 0.75);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(0,200,255,0.07);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--cyan);
+  text-transform: uppercase;
+}
+.nav-meta {
+  font-size: 0.6rem; color: var(--text-dim);
+  letter-spacing: 0.12em;
+}
+.nav-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px var(--mint);
+  animation: pulse 2s ease infinite;
+}
+
+/* ──────────────── LAYOUT ──────────────── */
+.container {
+  position: relative; z-index: 1;
+  max-width: 1380px; margin: 0 auto; padding: 0 2rem;
+}
+
+/* ──────────────── HERO ──────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 80px 2rem 4rem;
+  position: relative; z-index: 1;
+}
+.hero-inner { max-width: 860px; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-size: 0.62rem; letter-spacing: 0.32em; color: var(--cyan);
+  text-transform: uppercase; margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp .7s var(--ease) .1s forwards;
+}
+.eyebrow::before, .eyebrow::after {
+  content: ''; width: 30px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan));
+}
+.eyebrow::after { transform: scaleX(-1); }
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 5.5vw, 4.8rem);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -0.02em; margin-bottom: 1.8rem;
+  opacity: 0; animation: fadeUp .7s var(--ease) .25s forwards;
+}
+h1 .g {
+  background: linear-gradient(130deg, #00d4ff 0%, #7b2fff 50%, #ff2d92 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(0,212,255,0.4));
+}
+
+.hero-desc {
+  font-size: 0.88rem; color: var(--text-dim);
+  max-width: 560px; margin: 0 auto 3rem;
+  line-height: 1.85;
+  opacity: 0; animation: fadeUp .7s var(--ease) .4s forwards;
+}
+
+.stats-row {
+  display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp .7s var(--ease) .55s forwards;
+}
+.stat {
+  padding: 1rem 1.6rem;
+  background: rgba(0,212,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.stat:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 24px rgba(0,212,255,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.stat-n {
+  font-family: var(--display);
+  font-size: 1.9rem; font-weight: 900;
+  color: var(--cyan); line-height: 1;
+}
+.stat-l {
+  font-size: 0.58rem; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase;
+  margin-top: 0.35rem;
+}
+
+.scroll-cue {
+  position: absolute; bottom: 2.5rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  opacity: 0; animation: fadeIn 1s ease 1.4s forwards;
+}
+.scroll-cue span {
+  font-size: 0.55rem; letter-spacing: .22em; color: var(--text-dim);
+  text-transform: uppercase;
+}
+.scroll-bar {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+  animation: scrollMove 2.2s ease infinite;
+}
+
+/* ──────────────── SECTION HEADS ──────────────── */
+.sec-head {
+  text-align: center; margin-bottom: 3.5rem;
+}
+.sec-label {
+  font-size: 0.6rem; letter-spacing: 0.35em; color: var(--cyan);
+  text-transform: uppercase; margin-bottom: 0.9rem;
+}
+.sec-title {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+  font-weight: 700; letter-spacing: -0.01em;
+}
+.sec-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--cyan), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ──────────────── DEPARTMENTS SECTION ──────────────── */
+#departments { padding: 6rem 0 8rem; position: relative; z-index: 1; }
+
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ──────────────── DEPT CARD ──────────────── */
+.dcard {
+  border-radius: var(--r);
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+  cursor: default;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.dcard:hover {
+  border-color: var(--border-hover);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.55),
+    0 0 30px rgba(0,0,0,.2),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.card-top-bar { height: 2px; width: 100%; }
+
+.card-body { padding: 1.4rem; }
+
+.card-hd {
+  display: flex; align-items: flex-start; gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.icon-wrap {
+  width: 44px; height: 44px; flex-shrink: 0;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem;
+}
+.dept-num {
+  font-size: 0.5rem; letter-spacing: .1em; color: var(--text-dim);
+  margin-bottom: .15rem; text-transform: uppercase;
+}
+.dept-name {
+  font-family: var(--head);
+  font-size: 1.15rem; font-weight: 700; line-height: 1.2;
+}
+.dept-tag {
+  font-size: 0.68rem; color: var(--text-dim);
+  margin-top: .25rem; line-height: 1.45;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 3px;
+  background: rgba(0,0,0,.35);
+  border-radius: 9px; padding: 3px;
+  margin-bottom: 1rem;
+}
+.tbtn {
+  flex: 1; padding: 5px 4px;
+  border: none; border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: .07em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+.tbtn.on {
+  background: rgba(0,212,255,0.1);
+  color: var(--text);
+}
+
+/* ── PANELS ── */
+.panel { display: none; min-height: 160px; }
+.panel.on { display: block; animation: fadeIn .22s ease; }
+
+/* Use Cases */
+.uc-item {
+  display: flex; gap: .7rem;
+  padding-bottom: .8rem; margin-bottom: .8rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.uc-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.uc-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 7px;
+}
+.uc-title {
+  font-family: var(--head); font-size: .82rem;
+  font-weight: 600; margin-bottom: .2rem;
+}
+.uc-desc { font-size: .7rem; color: var(--text-dim); line-height: 1.62; }
+
+/* Impact */
+.imp-item {
+  display: flex; align-items: flex-start; gap: .65rem;
+  padding: .55rem .7rem; border-radius: 8px;
+  margin-bottom: .45rem;
+  font-size: .7rem; line-height: 1.55;
+}
+.imp-item.hi {
+  background: rgba(0,255,136,0.05);
+  border: 1px solid rgba(0,255,136,0.18);
+}
+.imp-ico { font-size: .85rem; flex-shrink: 0; }
+
+/* Tips */
+.tip-item {
+  padding: .75rem .8rem; border-radius: 8px;
+  background: rgba(255,255,255,0.025);
+  border-left: 2px solid;
+  margin-bottom: .55rem;
+}
+.tip-item:last-child { margin-bottom: 0; }
+.tip-t {
+  font-family: var(--head); font-size: .8rem;
+  font-weight: 600; margin-bottom: .25rem;
+}
+.tip-d { font-size: .68rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ──────────────── INSIGHTS SECTION ──────────────── */
+#insights { padding: 4rem 0 7rem; position: relative; z-index: 1; }
+
+.ins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.2rem;
+}
+.ins-card {
+  padding: 1.5rem;
+  border-radius: var(--r);
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.ins-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.45);
+}
+.ins-ico { font-size: 1.7rem; margin-bottom: .9rem; }
+.ins-t {
+  font-family: var(--head); font-size: .95rem;
+  font-weight: 700; margin-bottom: .5rem;
+}
+.ins-d { font-size: .69rem; color: var(--text-dim); line-height: 1.7; }
+
+/* ──────────────── FOOTER ──────────────── */
+footer {
+  position: relative; z-index: 1;
+  padding: 2rem; text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  font-size: .58rem; color: var(--text-dim);
+  letter-spacing: .12em;
+}
+
+/* ──────────────── GLASS GLOW BORDER EFFECT ──────────────── */
+.dcard::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: var(--r);
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(255,255,255,.06), transparent 60%, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ──────────────── ANIMATIONS ──────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes pulse {
+  0%,100% { opacity: .5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes scrollMove {
+  0%,100% { opacity: .2; transform: scaleY(.6); }
+  50% { opacity: .9; transform: scaleY(1); }
+}
+
+/* ──────────────── REVEAL ──────────────── */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+}
+.reveal.vis { opacity: 1; transform: none; }
+
+/* ──────────────── RESPONSIVE ──────────────── */
+@media (max-width: 760px) {
+  .dept-grid, .ins-grid { grid-template-columns: 1fr; }
+  .stats-row { gap: 1.2rem; }
+  h1 { font-size: clamp(2rem, 8vw, 3rem); }
+}
+
+/* ──────────────── THEME TOGGLE ──────────────── */
+.theme-btn {
+  width: 38px; height: 21px;
+  background: rgba(0,212,255,0.12);
+  border: 1px solid rgba(0,212,255,0.28);
+  border-radius: 11px; cursor: pointer;
+  position: relative; flex-shrink: 0;
+  transition: background .3s, border-color .3s;
+}
+.theme-btn::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--cyan);
+  transition: transform .3s var(--ease), background .3s;
+  box-shadow: 0 0 7px var(--cyan);
+}
+.theme-icon { font-size: .8rem; line-height: 1; }
+
+/* ──────────────── LIGHT MODE ──────────────── */
+html.light {
+  --bg-deep: #edf1fb;
+  --bg-mid: #e2e9f7;
+  --glass: rgba(255,255,255,0.72);
+  --glass-hover: rgba(255,255,255,0.92);
+  --border: rgba(0,100,200,0.13);
+  --border-hover: rgba(0,100,200,0.35);
+  --text: #0c1b33;
+  --text-dim: rgba(20,50,110,0.82);
+  --text-bright: #060e20;
+}
+html.light body { background: var(--bg-deep); }
+html.light nav {
+  background: rgba(225,235,252,0.88);
+  border-bottom-color: rgba(0,100,200,0.08);
+}
+html.light .dcard,
+html.light .ins-card { background: rgba(255,255,255,0.68); }
+html.light .tabs { background: rgba(0,0,0,0.06); }
+html.light .tbtn.on { background: rgba(0,100,200,0.1); }
+html.light .tip-item { background: rgba(0,0,0,0.025); }
+html.light .uc-item { border-bottom-color: rgba(0,0,0,0.06); }
+html.light footer { border-top-color: rgba(0,0,0,0.06); }
+html.light .theme-btn {
+  background: rgba(255,180,0,0.18);
+  border-color: rgba(255,160,0,0.4);
+}
+html.light .theme-btn::after {
+  transform: translateX(17px);
+  background: #f5a623;
+  box-shadow: 0 0 8px #f5a623;
+}
+
+/* ──────────────── MODAL ──────────────── */
+.modal-bd {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+.modal-bd.open { opacity: 1; pointer-events: all; }
+
+.modal-box {
+  position: relative;
+  width: 100%; max-width: 700px;
+  max-height: 88vh; overflow-y: auto;
+  border-radius: 20px;
+  background: var(--glass);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--border-hover);
+  transform: scale(.88) translateY(24px);
+  transition: transform .4s cubic-bezier(.34,1.52,.64,1);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 60px rgba(0,0,0,.2);
+}
+.modal-bd.open .modal-box { transform: scale(1) translateY(0); }
+
+.modal-box::-webkit-scrollbar { width: 4px; }
+.modal-box::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.22); border-radius: 2px; }
+
+.modal-close {
+  position: sticky; top: 1rem; float: right; margin: 1rem 1rem 0 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim); font-size: 1rem;
+  cursor: pointer; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, color .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.modal-close:hover { background: rgba(255,60,60,0.15); color: #ff4757; border-color: rgba(255,60,60,.35); }
+
+.modal-bar { height: 3px; border-radius: 20px 20px 0 0; }
+
+.modal-body { padding: 0 1.8rem 1.8rem; }
+
+.modal-hd {
+  display: flex; align-items: flex-start; gap: 1.2rem;
+  margin-bottom: 1.5rem; padding-top: 1rem;
+}
+.modal-ico {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 14px; font-size: 1.75rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-num { font-size: .65rem; letter-spacing: .12em; color: var(--text-dim); margin-bottom: .2rem; }
+.modal-name { font-family: var(--head); font-size: 1.9rem; font-weight: 700; line-height: 1.2; }
+.modal-tag { font-size: .9rem; color: var(--text-dim); margin-top: .3rem; line-height: 1.5; }
+
+.modal-tabs {
+  display: flex; gap: 4px;
+  background: rgba(0,0,0,.3);
+  border-radius: 10px; padding: 4px;
+  margin-bottom: 1.2rem;
+}
+.mtbtn {
+  flex: 1; padding: 8px 6px;
+  border: none; border-radius: 8px;
+  background: transparent; color: var(--text-dim);
+  font-family: var(--mono); font-size: .78rem;
+  letter-spacing: .07em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.mtbtn.on { color: var(--text); }
+
+/* Expand hint on cards */
+.dcard { cursor: pointer; }
+.expand-hint {
+  font-size: .56rem; color: var(--text-dim);
+  text-align: right; margin-top: .6rem;
+  letter-spacing: .1em; opacity: .6;
+  text-transform: uppercase;
+}
+html.light .modal-tabs { background: rgba(0,0,0,0.07); }
+html.light .modal-box {
+  background: rgba(255,255,255,0.97);
+  box-shadow: 0 30px 80px rgba(0,0,0,.18), 0 0 0 1px var(--border);
+}
+
+/* ── Modal 內容字體放大（僅影響彈出視窗，不影響卡片） ── */
+#modal .uc-item { padding-bottom: 1rem; margin-bottom: 1rem; gap: .9rem; }
+#modal .uc-dot { width: 6px; height: 6px; margin-top: 9px; }
+#modal .uc-title { font-size: 1.05rem; margin-bottom: .3rem; }
+#modal .uc-desc { font-size: .9rem; line-height: 1.72; }
+#modal .imp-item { font-size: .9rem; line-height: 1.65; padding: .7rem .9rem; }
+#modal .imp-ico { font-size: 1.1rem; }
+#modal .tip-item { padding: .9rem 1rem; }
+#modal .tip-t { font-size: 1rem; margin-bottom: .35rem; }
+#modal .tip-d { font-size: .88rem; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div style="display:flex;align-items:center;gap:1.2rem">
+    <a href="index.html" style="font-family:var(--mono);font-size:.6rem;color:var(--text-dim);text-decoration:none;letter-spacing:.1em;opacity:.65;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity='.65'">← HOME</a>
+    <div style="width:1px;height:16px;background:var(--border)"></div>
+    <div class="nav-brand">ANTHROPIC // CLAUDE CODE</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span class="theme-icon" id="theme-ico">🌙</span>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="切換日夜模式"></button>
+      <span class="theme-icon" id="theme-ico2">☀️</span>
+    </div>
+    <div style="width:1px;height:20px;background:var(--border)"></div>
+    <div class="nav-dot"></div>
+    <div class="nav-meta">10 TEAMS · INTERNAL REPORT</div>
+  </div>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-bd" id="modal" onclick="handleModalClick(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-bar" id="modal-bar"></div>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-body">
+      <div class="modal-hd">
+        <div class="modal-ico" id="modal-ico"></div>
+        <div style="flex:1;min-width:0">
+          <div class="modal-num" id="modal-num"></div>
+          <div class="modal-name" id="modal-name"></div>
+          <div class="modal-tag" id="modal-tag"></div>
+        </div>
+      </div>
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="mtbtn on" data-mt="uc" onclick="swMTab(this,'uc')">使用場景</button>
+        <button class="mtbtn" data-mt="imp" onclick="swMTab(this,'imp')">成效</button>
+        <button class="mtbtn" data-mt="tips" onclick="swMTab(this,'tips')">最佳實踐</button>
+      </div>
+      <div id="modal-panels"></div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">ANTHROPIC 內部使用深度報告</div>
+      <h1>Anthropic 團隊<br>如何使用 <span class="g">Claude&nbsp;Code</span></h1>
+      <p class="hero-desc">
+        透過對 Claude Code 核心用戶的深度訪談，記錄了 10 個不同部門<br>
+        如何運用 AI 輔助程式設計，轉型工作流程、跨越技能障礙、大幅提升生產力
+      </p>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-n">10</div>
+          <div class="stat-l">個部門</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" style="color:#00ff88">80%</div>
+          <div class="stat-l">研究時間節省</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" style="color:#ff7b35">10×</div>
+          <div class="stat-l">創意產出增加</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" style="color:#ff2d92">70%</div>
+          <div class="stat-l">Vim 模式由 AI 完成</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-cue">
+      <div class="scroll-bar"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- DEPARTMENTS -->
+  <section id="departments">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="sec-label">// 10 TEAMS · 10 STORIES</div>
+        <h2 class="sec-title">部門別<em>使用案例</em></h2>
+      </div>
+      <div class="dept-grid" id="dg"></div>
+    </div>
+  </section>
+
+  <!-- CROSS-TEAM INSIGHTS -->
+  <section id="insights">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="sec-label">// UNIVERSAL PATTERNS</div>
+        <h2 class="sec-title">跨部門<em>共同洞察</em></h2>
+      </div>
+      <div class="ins-grid" id="ig"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  BASED ON "HOW ANTHROPIC TEAMS USE CLAUDE CODE" · FOR EDUCATIONAL PURPOSE · CLAUDE CODE TUTORIAL
+</footer>
+
+<script>
+/* ===================================================
+   DATA
+=================================================== */
+const D = [
+  {
+    n:'01', name:'Data Infrastructure', cn:'數據基礎設施',
+    color:'#00d4ff', bg:'rgba(0,212,255,0.09)', icon:'⬡',
+    tag:'組織全公司業務數據，自動化數據工程任務',
+    uc:[
+      { t:'Kubernetes 截圖診斷', d:'將儀表板截圖輸入 Claude Code，逐步導航 GCP UI 找出 Pod IP 耗盡警告，提供精確修復指令，無需調用網路或系統專家。' },
+      { t:'財務團隊純文字工作流', d:'非技術財務成員用自然語言描述步驟（查詢儀表板→執行查詢→產出 Excel），Claude Code 自動執行完整工作流，包括主動詢問所需輸入如日期。' },
+      { t:'新進員工代碼導航', d:'新數據科學家用 Claude Code 讀取 Claude.md 文件、識別相關文件、解釋數據管道依賴關係，快速融入複雜代碼庫而無需大量人工指導。' }
+    ],
+    imp:[
+      { t:'無需網路/系統專家即可解決 Kubernetes 叢集問題', hi:false },
+      { t:'新進分析師能快速融入並做出有意義的貢獻', hi:false },
+      { t:'可監控 200 個儀表板識別異常——人工完全無法達成的規模', hi:true },
+      { t:'無編程經驗的財務人員能獨立執行複雜數據工作流', hi:false }
+    ],
+    tips:[
+      { t:'撰寫詳細 Claude.md 文件', d:'在 Claude.md 中記錄工作流程、工具和期望越詳細，Claude Code 在設置新數據管道等例行任務上表現越好，現有模式越清楚，自動化效果越佳。' },
+      { t:'敏感數據用 MCP 伺服器', d:'使用 MCP 伺服器取代 BigQuery CLI，維持對 Claude Code 可存取內容的安全控制，特別是涉及記錄需求或隱私疑慮的敏感數據。' },
+      { t:'舉辦團隊工作流分享會', d:'讓成員展示各自的 Claude Code 工作流程，幫助傳播最佳實踐，讓大家發現彼此獨立摸索出的不同使用方式。' }
+    ]
+  },
+  {
+    n:'02', name:'Product Development', cn:'產品開發',
+    color:'#7b2fff', bg:'rgba(123,47,255,0.09)', icon:'◈',
+    tag:'Claude Code 團隊用自家產品構建新功能（Dogfooding）',
+    uc:[
+      { t:'Auto-Accept 模式快速原型', d:'啟用 auto-accept 模式（Shift+Tab）建立自主循環，Claude 寫代碼、執行測試並持續迭代；讓它完成約 80% 的工作，再由人類接手最終調整。' },
+      { t:'核心功能同步協作', d:'對涉及業務邏輯的關鍵功能，提供詳細 prompt 和具體實作指令；實時監控確保代碼品質、風格規範和架構正確，同時讓 Claude 處理重複性編碼工作。' },
+      { t:'Vim 模式完整實作', d:'讓 Claude 自主實作整個 Vim 鍵位功能（儘管優先級不高），最終實作中 70% 的代碼由 Claude 自主完成，僅需幾次迭代即可收尾。' }
+    ],
+    imp:[
+      { t:'Vim 模式等複雜功能 70% 由 Claude 自主完成', hi:true },
+      { t:'可快速原型化功能，不被實作細節拖慢思路', hi:false },
+      { t:'Claude 自動生成全面測試並處理例行 bug 修復', hi:false },
+      { t:'成員能快速理解 monorepo 中不熟悉的部分，不必等待同事回應', hi:false }
+    ],
+    tips:[
+      { t:'建立自給自足的循環', d:'設置 Claude 通過自動執行構建、測試和 lint 來驗證自己的工作，讓它能更長時間自主運行並捕捉自己的錯誤，在要求 Claude 先生成測試再寫代碼時特別有效。' },
+      { t:'培養任務分類直覺', d:'學習區分可非同步處理的任務（邊緣功能、原型）和需要同步監督的任務（核心業務邏輯、關鍵修復），產品邊緣的抽象任務用 auto-accept 模式，核心功能需更密切監督。' },
+      { t:'形成清晰詳細的 Prompt', d:'組件名稱相似或功能相近時要極為具體，prompt 越詳細，越能信任 Claude 獨立工作而不對代碼庫的錯誤部分造成意外修改。' }
+    ]
+  },
+  {
+    n:'03', name:'Security Engineering', cn:'安全工程',
+    color:'#ff2d92', bg:'rgba(255,45,146,0.08)', icon:'⬖',
+    tag:'保障軟體開發生命週期、供應鏈與開發環境安全',
+    uc:[
+      { t:'複雜基礎設施除錯', d:'在事故中將 stack trace 和文件輸入 Claude Code，追蹤代碼庫中的控制流，將原本需要 10-15 分鐘的手動代碼掃描縮短至約 5 分鐘。' },
+      { t:'Terraform 代碼審查與分析', d:'將 Terraform plan 複製到 Claude Code，詢問「這會做什麼？我會後悔嗎？」建立更緊密的反饋循環，讓安全團隊能快速審查並批准基礎設施變更，減少開發阻塞。' },
+      { t:'文件合成與 Runbook 製作', d:'讓 Claude Code 整合多個文件來源，創建 Markdown runbook、故障排除指南和概覽，作為除錯真實問題的精練上下文，效率遠高於搜索完整知識庫。' }
+    ],
+    imp:[
+      { t:'基礎設施除錯從 10-15 分鐘縮短至約 5 分鐘', hi:true },
+      { t:'Terraform 安全審查速度大幅提升，消除等待安全審批的開發阻塞', hi:false },
+      { t:'成員可在數天而非數週內有意義地貢獻到新項目', hi:false },
+      { t:'合成的故障排除指南和 runbook 創建更高效的除錯流程', hi:false }
+    ],
+    tips:[
+      { t:'大量使用自定義 Slash 命令', d:'安全工程使用了整個 monorepo 中 50% 的自定義 slash 命令實作，這些命令能精準簡化特定工作流並加速重複性任務。' },
+      { t:'讓 Claude 先主動分析', d:'告訴 Claude Code「邊工作邊提交」並讓它自主運行，定期 check in，而非一開始就問針對性問題，最終能得到更全面的解決方案。' },
+      { t:'善用 Claude 做文件工作', d:'除了寫代碼，Claude Code 擅長合成文件並創建結構化輸出。提供寫作範本和格式偏好，可獲得能直接用於 Slack、Google Docs 等工具的即用文件，避免界面切換疲勞。' }
+    ]
+  },
+  {
+    n:'04', name:'Inference', cn:'推理系統',
+    color:'#00ff88', bg:'rgba(0,255,136,0.07)', icon:'◎',
+    tag:'管理 Claude 讀取 prompt 並生成回應的記憶系統',
+    uc:[
+      { t:'代碼庫理解與新人引導', d:'加入複雜代碼庫時，不需手動搜尋 GitHub repos，直接問 Claude 哪些文件調用了特定功能，數秒內得到結果，而非詢問同事或手動搜索。' },
+      { t:'ML 概念快速解釋', d:'無機器學習背景的成員依靠 Claude 解釋模型特定函數和設定。原本需要一小時 Google 搜索加閱讀文件，現在只需 10-20 分鐘，研究時間減少 80%。' },
+      { t:'跨語言代碼翻譯', d:'測試不同程式語言的功能時，解釋想測試的內容，Claude 用所需語言（如 Rust）寫出邏輯，完全無需為測試目的學習新語言。' }
+    ],
+    imp:[
+      { t:'ML 概念研究時間減少 80%（1 小時 → 10-20 分鐘）', hi:true },
+      { t:'數秒內找到相關文件和理解系統架構，而非等同事回應', hi:false },
+      { t:'Claude 自動生成包含邊緣案例的全面單元測試，減輕心智負擔', hi:false },
+      { t:'在 Rust 等不熟悉的語言中實作功能，無需從頭學習', hi:false }
+    ],
+    tips:[
+      { t:'先測試知識庫功能', d:'嘗試問各種問題，看 Claude 能否比 Google 搜索更快地回答。如果更快更準確，就是節省時間的寶貴工具，從這裡開始建立使用習慣。' },
+      { t:'從代碼生成開始', d:'給 Claude 具體指令讓它寫邏輯，然後驗證正確性，在用它處理更複雜任務前先建立對工具能力的信任與熟悉度。' },
+      { t:'善用測試編寫功能', d:'讓 Claude 寫單元測試能從日常開發工作中釋放顯著壓力，維持代碼品質的同時無需花時間手動思考所有測試案例。' }
+    ]
+  },
+  {
+    n:'05', name:'Data Science & Viz', cn:'數據科學與可視化',
+    color:'#ffcc00', bg:'rgba(255,204,0,0.07)', icon:'◇',
+    tag:'構建精密可視化工具，深度理解模型訓練與評估',
+    uc:[
+      { t:'JS/TS 儀表板應用開發', d:'儘管對 JavaScript/TypeScript 了解甚少，團隊用 Claude Code 構建完整 React 應用，包括一個 5,000 行的 TypeScript 應用，可視化 RL 模型性能而無需理解代碼本身。' },
+      { t:'吃角子老虎機式重構', d:'面對太複雜但規模不夠大型的重構任務時，提交當前狀態、讓 Claude 自主工作 30 分鐘，然後接受結果或從頭開始，而不試圖修正 Claude 的錯誤——重新開始通常成功率更高。' },
+      { t:'持久分析工具取代一次性 Notebook', d:'不再構建一次性 Jupyter Notebook，改用 Claude Code 構建可在未來模型評估中重複使用的永久 React 儀表板，從「用完即丟」轉向「長期資產」思維。' }
+    ],
+    imp:[
+      { t:'例行重構任務速度提升 2-4 倍', hi:false },
+      { t:'在幾乎零 JS 經驗下構建 5,000 行 TypeScript 應用', hi:true },
+      { t:'從一次性 Jupyter Notebook 轉向可重用 React 儀表板', hi:false },
+      { t:'對 Claude 性能的第一手體驗推動記憶系統與 UX 改進', hi:false }
+    ],
+    tips:[
+      { t:'把它當作吃角子老虎機', d:'讓 Claude 工作前先保存 git 狀態，讓它運行最多 30 分鐘，然後接受結果或重新開始，而非嘗試修正錯誤。重新開始往往比不斷修正有更高的成功率。' },
+      { t:'需要簡單時果斷打斷', d:'監督時不要猶豫，可以停止 Claude 並說「你為什麼這樣做？試試更簡單的方案。」Claude 傾向過度複雜化，但對簡化請求反應良好。' }
+    ]
+  },
+  {
+    n:'06', name:'API Knowledge', cn:'API 知識',
+    color:'#4b7bff', bg:'rgba(75,123,255,0.08)', icon:'⬙',
+    tag:'構建 PDF 支持、引用、網路搜索等 API 知識功能',
+    uc:[
+      { t:'工作流第一站規劃', d:'任何任務的「第一站」——詢問哪些文件需要審查用於 bug 修復、功能開發或分析，替代傳統的手動導航代碼庫和在開始工作前費時收集上下文的過程。' },
+      { t:'跨代碼庫獨立除錯', d:'現在有信心獨自解決不熟悉代碼庫中的 bug，問 Claude「你認為能修復這個 bug 嗎？這是我看到的行為」往往能立即獲得進展，不再需要等待熟悉該區域的同事。' },
+      { t:'Dogfooding 模型迭代測試', d:'Claude Code 自動使用最新研究模型快照，讓 API 團隊成為體驗模型變更的主要途徑，在開發周期中獲得直接且即時的模型行為反饋。' }
+    ],
+    imp:[
+      { t:'成員能在不熟悉的代碼庫中獨立除錯和調查事故', hi:false },
+      { t:'省去複製代碼片段和拖拉文件到 Claude.ai 的額外操作，減少心智切換負擔', hi:false },
+      { t:'輪調工程師無需大量同事協助即可快速貢獻到新團隊', hi:false },
+      { t:'團隊報告工作更快樂、日常工作摩擦顯著減少', hi:true }
+    ],
+    tips:[
+      { t:'把它當作迭代夥伴', d:'不要期望 Claude 立即解決問題，而是把它當作你不斷迭代的協作者，這比嘗試在第一次就獲得完美解決方案更有效，也更貼近實際的開發節奏。' },
+      { t:'用它在陌生領域建立信心', d:'不要猶豫，放心在專業知識範圍外解決 bug 或調查事故，Claude Code 讓在通常需要大量上下文積累的領域獨立工作成為可能。' },
+      { t:'從最少信息開始', d:'從最基本的信息開始，讓 Claude 引導你完成過程，而不是預先加載大量解釋，逐步深入效果往往比一次性提供所有背景更好。' }
+    ]
+  },
+  {
+    n:'07', name:'Growth Marketing', cn:'成長行銷',
+    color:'#ff7b35', bg:'rgba(255,123,53,0.08)', icon:'◑',
+    tag:'一人非技術團隊構建自動化行銷工作流',
+    uc:[
+      { t:'自動化 Google Ads 創意生成', d:'構建代理工作流，處理含性能指標的 CSV、識別表現不佳的廣告，並用兩個專門子代理（標題代理+描述代理）生成符合字符限制（標題 30 字符、描述 90 字符）的新變體，數分鐘內生成數百個廣告。' },
+      { t:'Figma 插件批量創意製作', d:'開發了 Figma 插件，識別框架並通過替換標題和描述程序化生成多達 100 個廣告變體，將原本需要數小時複製貼上的工作縮短至每批次半秒，實現 10x 創意產出。' },
+      { t:'Meta Ads MCP 伺服器', d:'創建了 MCP 伺服器用於廣告活動分析，實現與廣告平台的深度整合，自動化需要跨系統數據的報告生成，使廣告策略迭代更加敏捷。' }
+    ],
+    imp:[
+      { t:'廣告文案製作從 2 小時縮短至 15 分鐘（8倍提速）', hi:true },
+      { t:'透過自動化生成和 Figma 整合，創意廣告變體產出增加 10 倍', hi:true },
+      { t:'一人非技術團隊能處理傳統需要專門工程資源的任務', hi:false },
+      { t:'從手動執行轉向整體策略制定和代理自動化系統的構建', hi:false }
+    ],
+    tips:[
+      { t:'識別 API 驅動的重複任務', d:'尋找涉及有 API 的工具（廣告平台、設計工具、分析平台）的重複動作工作流，這些是自動化的最佳候選，也是 Claude Code 最能創造價值的地方。' },
+      { t:'把複雜工作流拆成專門子代理', d:'不要在一個 prompt 中處理所有事，為特定任務創建獨立代理（如標題代理 vs. 描述代理），使除錯更容易，處理複雜需求時輸出品質更高。' },
+      { t:'編碼前充分頭腦風暴', d:'先在 Claude.ai 花大量時間思考整個工作流，讓 Claude.ai 創建全面的 prompt 和代碼結構供 Claude Code 參考；逐步工作而非一次性解決，避免被複雜任務壓垮。' }
+    ]
+  },
+  {
+    n:'08', name:'Product Design', cn:'產品設計',
+    color:'#00c4a7', bg:'rgba(0,196,167,0.08)', icon:'◈',
+    tag:'填補設計師與工程師之間的傳統技術鴻溝',
+    uc:[
+      { t:'前端修飾和狀態管理', d:'不再需要大量設計文件和多輪工程師反饋就能直接調整字體、顏色、間距；設計師甚至在做「你通常不會看到設計師做的大型狀態管理變更」，實現精確的設計願景。' },
+      { t:'GitHub Actions 自動化工單', d:'通過 GitHub 整合，只需提交 issue 描述所需變更，Claude 自動提出代碼解決方案而無需打開 Claude Code，為積壓的修飾任務創建無縫工作流。' },
+      { t:'快速互動原型開發', d:'將模型圖像直接貼入 Claude Code（Command+V），生成工程師能立即理解和迭代的全功能原型，替代了需要大量解釋的傳統靜態 Figma 設計交接流程。' }
+    ],
+    imp:[
+      { t:'Figma 和 Claude Code 佔用工作時間的 80%，成為核心設計工具', hi:true },
+      { t:'複雜項目（如 GA 發布消息）從一週協調縮短至兩個 30 分鐘電話', hi:true },
+      { t:'視覺和狀態管理變更無需大量工程師溝通即可直接實作', hi:false },
+      { t:'非技術設計師獲得「我在做開發者工作流」的全新工作能力', hi:false }
+    ],
+    tips:[
+      { t:'請工程師幫助初始設置', d:'讓工程師幫助設置初始代碼庫和存取權限，技術 onboarding 對非開發者有挑戰，但一旦配置好，就會對日常工作流產生革命性的影響。' },
+      { t:'使用自定義記憶文件引導行為', d:'創建具體說明，告訴 Claude 你是有少量編碼經驗的設計師，需要詳細解釋和更小的增量變更，這能顯著提升回應品質並讓工具更易上手。' },
+      { t:'善用圖像貼上做原型', d:'直接貼上截圖到 Claude Code，它擅長讀取設計並生成功能代碼，讓設計迭代從靜態 Figma 圖變成可用原型的速度大幅提升。' }
+    ]
+  },
+  {
+    n:'09', name:'RL Engineering', cn:'強化學習工程',
+    color:'#a8ff3e', bg:'rgba(168,255,62,0.07)', icon:'⬗',
+    tag:'聚焦高效採樣與叢集間模型權重傳輸',
+    uc:[
+      { t:'受監督自主功能開發', d:'讓 Claude Code 寫小到中型功能的大部分代碼（如認證機制），提供監督並在偏離時糾正，保持互動模式——Claude 主導但人工掌舵，能讓開發者專注於更高層次的設計決策。' },
+      { t:'測試生成與代碼審查', d:'自行實作變更後，讓 Claude Code 添加測試或審查代碼，這個自動化測試工作流在例行但重要的品質保證任務上節省大量時間，同時保持高標準。' },
+      { t:'代碼庫理解與調用棧分析', d:'工作流最大的變化之一是用 Claude Code 獲取相關組件和調用棧的快速摘要，替代費時的手動代碼閱讀或大量除錯輸出生成。' }
+    ],
+    imp:[
+      { t:'採用「嘗試和回滾」方法論，頻繁提交 checkpoint 使實驗更安全', hi:false },
+      { t:'Claude Code 自動添加有用注釋，大幅節省文件編寫時間', hi:false },
+      { t:'約三分之一情況下第一次嘗試就成功，節省可觀時間', hi:true },
+      { t:'小到中型 PR 只需相對少量的人工輸入即可完成實作', hi:false }
+    ],
+    tips:[
+      { t:'為特定模式自定義 Claude.md', d:'添加指令防止 Claude 重複犯工具調用錯誤，例如「運行 pytest 不是 run，不要不必要地 cd，直接使用正確路徑」，這顯著提升了一致性和可預測性。' },
+      { t:'使用 Checkpoint 密集工作流', d:'Claude 做出變更時定期提交工作，這樣實驗失敗時可以輕鬆回滾，讓開發方法更具實驗性而不帶來不可逆的風險。' },
+      { t:'先嘗試一次性，再切換協作模式', d:'先給 Claude 一個快速 prompt 讓它嘗試完整實作，如果成功（約三分之一的情況），節省了大量時間；如果不成功，再切換到更協作的引導方式。' }
+    ]
+  },
+  {
+    n:'10', name:'Legal', cn:'法律部門',
+    color:'#ff4757', bg:'rgba(255,71,87,0.08)', icon:'◉',
+    tag:'非技術人員透過快速原型驗證並展示 AI 能力邊界',
+    uc:[
+      { t:'無障礙溝通工具（一小時完成）', d:'為有語言障礙的家人在一小時內構建了預測文字應用，使用原生語音轉文字、建議回應並用語音庫朗讀，解決了現有語言治療師推薦工具的功能缺口。' },
+      { t:'法律工作流自動化', d:'創建了「電話樹」原型系統幫助成員聯繫 Anthropic 適當的律師，展示法律部門如何在沒有傳統開發資源的情況下構建自定義內部工具。' },
+      { t:'G Suite 團隊協調工具', d:'管理者構建了 G Suite 應用，自動化每週團隊更新和追蹤法律審查狀態，讓律師能通過簡單按鈕點擊標記待審查事項，取代費時的電子表格管理方式。' }
+    ],
+    imp:[
+      { t:'一小時內構建個人無障礙應用，展示 AI 對非開發者的真實可及性', hi:true },
+      { t:'法律原型激勵同事看到他們從未想到過的工作可能性', hi:false },
+      { t:'即時識別深度 MCP 整合所帶來的安全和合規影響', hi:false },
+      { t:'倡導在 AI 能力快速擴展的同時主動建立合規管控工具', hi:false }
+    ],
+    tips:[
+      { t:'先在 Claude.ai 充分規劃', d:'先在 Claude.ai 的對話界面中徹底規劃整個想法，然後讓 Claude.ai 把所有內容整理成 Claude Code 的逐步實作 prompt，兩步驟工作流效果遠優於直接跳進實作。' },
+      { t:'逐步且視覺化地工作', d:'讓 Claude Code 放慢速度、一次實作一個步驟，這樣可以跟上進度而不被壓垮；同時自由使用截圖展示想要的界面效果，Claude 在讀圖生成代碼方面表現出色。' },
+      { t:'克服分享「玩具」原型的恐懼', d:'強調克服分享看似「愚蠢」或「玩具」原型的心理障礙，這些小演示能激勵同事看到從未想過的可能性，並推動整個組織的 AI 採用文化。' }
+    ]
+  }
+];
+
+const INSIGHTS = [
+  { i:'📋', t:'Claude.md 文件品質決定一切', d:'多個團隊獨立發現：在 Claude.md 中記錄工作流程、工具和期望越詳細，Claude Code 的表現越好。這是提升 AI 協作效率最簡單有效的槓桿。' },
+  { i:'🔄', t:'迭代夥伴，而非一次性工具', d:'最成功的採用者把 Claude Code 視為持續迭代的協作者，而非期望一次輸入就獲得完美答案的工具。這種心態轉變是關鍵。' },
+  { i:'🗓️', t:'先規劃，再構建', d:'非技術團隊（行銷、法律）在 Claude.ai 中進行廣泛頭腦風暴和規劃後，再移至 Claude Code 實作，取得更好的結果。兩步驟流程比直接跳進更有效。' },
+  { i:'🎯', t:'任務分類直覺', d:'學習區分可非同步處理的任務（邊緣功能、原型、重構）和需要同步監督的任務（核心業務邏輯、安全修復），是提升效率的關鍵認知技能。' },
+  { i:'💾', t:'積極使用 Git Checkpoint', d:'RL 工程和產品開發團隊都強調頻繁提交作為 checkpoint，讓 Claude 能以極低風險進行更多實驗，出問題時輕鬆回滾，實現「試錯即用」的開發節奏。' },
+  { i:'🔌', t:'MCP 伺服器深度整合', d:'成長行銷和數據基礎設施團隊透過 MCP 伺服器深度整合廣告平台、BigQuery 等系統，在擴展能力的同時維持安全控制，這是 Claude Code 能力邊界的重要擴展。' },
+  { i:'🖼️', t:'視覺優先的工作方式', d:'產品設計和法律部門都大量使用截圖和圖像輸入。Claude Code 讀取視覺設計並生成功能代碼的能力，開創了設計師直接實作的全新工作模式。' },
+  { i:'🚀', t:'打破傳統角色邊界', d:'最具突破性的影響是讓非技術人員能做到過去需要工程師的工作——設計師直接實作狀態管理，行銷人員構建 Figma 插件，律師一小時內構建無障礙應用。' }
+];
+
+/* ===================================================
+   CANVAS ANIMATED BACKGROUND
+=================================================== */
+const cv = document.getElementById('bg');
+const cx = cv.getContext('2d');
+let W, H, pts = [], raf;
+
+function resize() {
+  W = cv.width = innerWidth;
+  H = cv.height = innerHeight;
+}
+
+function grid() {
+  const S = 55;
+  cx.strokeStyle = 'rgba(0,212,255,0.035)';
+  cx.lineWidth = .5;
+  for (let x = 0; x < W; x += S) {
+    cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke();
+  }
+  for (let y = 0; y < H; y += S) {
+    cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke();
+  }
+}
+
+class P {
+  constructor() { this.init(); }
+  init() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - .5) * .28;
+    this.vy = (Math.random() - .5) * .28;
+    this.a = Math.random() * .25 + .04;
+    this.r = Math.random() * 1.4 + .4;
+    this.c = Math.random() < .55 ? '0,212,255' : '123,47,255';
+  }
+  tick() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < -8 || this.x > W + 8 || this.y < -8 || this.y > H + 8) this.init();
+    cx.beginPath();
+    cx.arc(this.x, this.y, this.r, 0, 6.28);
+    cx.fillStyle = `rgba(${this.c},${this.a})`;
+    cx.fill();
+  }
+}
+
+function initPts() { pts = Array.from({length:65}, () => new P()); }
+
+function tick() {
+  cx.clearRect(0, 0, W, H);
+  grid();
+  pts.forEach(p => p.tick());
+  raf = requestAnimationFrame(tick);
+}
+
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(raf); resize(); initPts(); tick();
+});
+resize(); initPts(); tick();
+
+/* ===================================================
+   RENDER DEPT CARDS
+=================================================== */
+function renderDepts() {
+  document.getElementById('dg').innerHTML = D.map((d, i) =>
+    `<div class="dcard reveal" data-i="${i}"
+      style="position:relative;--c:${d.color}"
+      onclick="openModal(${i})"
+      onmouseenter="tilt3d(this,event)"
+      onmousemove="tilt3d(this,event)"
+      onmouseleave="untilt(this)">
+      <div class="card-top-bar" style="background:linear-gradient(90deg,${d.color} 0%,transparent 100%)"></div>
+      <div class="card-body">
+        <div class="card-hd">
+          <div class="icon-wrap" style="background:${d.bg};color:${d.color}">${d.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div class="dept-num">DEPT ${d.n}</div>
+            <div class="dept-name" style="color:${d.color}">${d.cn}</div>
+            <div class="dept-tag">${d.tag}</div>
+          </div>
+        </div>
+
+        <div class="tabs" onclick="event.stopPropagation()">
+          <button class="tbtn on" data-tab="uc" onclick="swTab(this,'uc',${i})">使用場景</button>
+          <button class="tbtn" data-tab="imp" onclick="swTab(this,'imp',${i})">成效</button>
+          <button class="tbtn" data-tab="tips" onclick="swTab(this,'tips',${i})">最佳實踐</button>
+        </div>
+
+        <div class="panel on" id="p-uc-${i}" onclick="event.stopPropagation()">
+          ${d.uc.map(u=>`
+            <div class="uc-item">
+              <div class="uc-dot" style="background:${d.color}"></div>
+              <div>
+                <div class="uc-title">${u.t}</div>
+                <div class="uc-desc">${u.d}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+
+        <div class="panel" id="p-imp-${i}" onclick="event.stopPropagation()">
+          ${d.imp.map(m=>`
+            <div class="imp-item${m.hi?' hi':''}">
+              <span class="imp-ico">${m.hi?'⚡':'›'}</span>
+              <span>${m.t}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="panel" id="p-tips-${i}" onclick="event.stopPropagation()">
+          ${d.tips.map(t=>`
+            <div class="tip-item" style="border-color:${d.color}">
+              <div class="tip-t" style="color:${d.color}">${t.t}</div>
+              <div class="tip-d">${t.d}</div>
+            </div>`).join('')}
+        </div>
+        <div class="expand-hint" onclick="event.stopPropagation()">點擊卡片放大 ↗</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+/* ===================================================
+   RENDER INSIGHTS
+=================================================== */
+function renderInsights() {
+  document.getElementById('ig').innerHTML = INSIGHTS.map(ins =>
+    `<div class="ins-card reveal">
+      <div class="ins-ico">${ins.i}</div>
+      <div class="ins-t">${ins.t}</div>
+      <div class="ins-d">${ins.d}</div>
+    </div>`
+  ).join('');
+}
+
+/* ===================================================
+   TAB SWITCH
+=================================================== */
+function swTab(btn, type, idx) {
+  const card = btn.closest('.dcard');
+  card.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  card.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.getElementById(`p-${type}-${idx}`).classList.add('on');
+}
+
+/* ===================================================
+   3D TILT
+=================================================== */
+function tilt3d(el, e) {
+  const r = el.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width - .5;
+  const y = (e.clientY - r.top)  / r.height - .5;
+  el.style.transform = `perspective(900px) rotateY(${x * 9}deg) rotateX(${-y * 7}deg) translateY(-6px)`;
+  const c = getComputedStyle(el).getPropertyValue('--c').trim();
+  el.style.boxShadow = `0 22px 50px rgba(0,0,0,.6), 0 0 35px ${c}28, inset 0 1px 0 rgba(255,255,255,.08)`;
+}
+function untilt(el) {
+  el.style.transform = '';
+  el.style.boxShadow = '';
+}
+
+/* ===================================================
+   SCROLL REVEAL
+=================================================== */
+function initReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const delay = Array.from(e.target.parentElement?.children || []).indexOf(e.target);
+        e.target.style.transitionDelay = `${Math.min(delay * 0.06, 0.4)}s`;
+        e.target.classList.add('vis');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+/* ===================================================
+   THEME TOGGLE
+=================================================== */
+let isLight = localStorage.getItem('theme') === 'light';
+function applyTheme() {
+  document.documentElement.classList.toggle('light', isLight);
+}
+function toggleTheme() {
+  isLight = !isLight;
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  applyTheme();
+  // Redraw canvas with updated opacity for light mode
+}
+applyTheme();
+
+/* ===================================================
+   MODAL
+=================================================== */
+let activeIdx = null;
+
+function buildPanels(d) {
+  return `
+    <div class="panel on" id="mp-uc">
+      ${d.uc.map(u=>`<div class="uc-item">
+        <div class="uc-dot" style="background:${d.color}"></div>
+        <div><div class="uc-title">${u.t}</div><div class="uc-desc">${u.d}</div></div>
+      </div>`).join('')}
+    </div>
+    <div class="panel" id="mp-imp">
+      ${d.imp.map(m=>`<div class="imp-item${m.hi?' hi':''}">
+        <span class="imp-ico">${m.hi?'⚡':'›'}</span><span>${m.t}</span>
+      </div>`).join('')}
+    </div>
+    <div class="panel" id="mp-tips">
+      ${d.tips.map(t=>`<div class="tip-item" style="border-color:${d.color}">
+        <div class="tip-t" style="color:${d.color}">${t.t}</div>
+        <div class="tip-d">${t.d}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function openModal(idx) {
+  const d = D[idx];
+  // Read which tab is currently active on the card
+  const card = document.querySelector(`.dcard[data-i="${idx}"]`);
+  const activeTab = card?.querySelector('.tbtn.on')?.dataset?.tab || 'uc';
+
+  // Populate modal
+  document.getElementById('modal-bar').style.background = `linear-gradient(90deg,${d.color},transparent)`;
+  const ico = document.getElementById('modal-ico');
+  ico.style.background = d.bg; ico.style.color = d.color; ico.textContent = d.icon;
+  document.getElementById('modal-num').textContent  = `DEPT ${d.n}`;
+  document.getElementById('modal-name').style.color = d.color;
+  document.getElementById('modal-name').textContent = d.cn;
+  document.getElementById('modal-tag').textContent  = d.tag;
+  document.getElementById('modal-panels').innerHTML = buildPanels(d);
+  document.getElementById('modal-box').dataset.color = d.color;
+
+  // Sync to active tab
+  const mtBtns = document.querySelectorAll('.mtbtn');
+  mtBtns.forEach(b => { b.classList.remove('on'); b.style.background = ''; });
+  const target = document.querySelector(`.mtbtn[data-mt="${activeTab}"]`);
+  if (target) { target.classList.add('on'); target.style.background = `${d.color}1e`; }
+  document.querySelectorAll('#modal-panels .panel').forEach(p => p.classList.remove('on'));
+  const panel = document.getElementById(`mp-${activeTab}`);
+  if (panel) panel.classList.add('on');
+
+  // Open
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  activeIdx = idx;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+  activeIdx = null;
+}
+
+function handleModalClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+function swMTab(btn, type) {
+  const color = document.getElementById('modal-box').dataset.color;
+  document.querySelectorAll('.mtbtn').forEach(b => { b.classList.remove('on'); b.style.background = ''; });
+  btn.classList.add('on'); btn.style.background = `${color}1e`;
+  document.querySelectorAll('#modal-panels .panel').forEach(p => p.classList.remove('on'));
+  document.getElementById(`mp-${type}`).classList.add('on');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && activeIdx !== null) closeModal();
+});
+
+/* ===================================================
+   INIT
+=================================================== */
+renderDepts();
+renderInsights();
+requestAnimationFrame(initReveal);
+</script>
+</body>
+</html>

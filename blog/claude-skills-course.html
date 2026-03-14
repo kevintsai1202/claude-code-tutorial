@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Skills Full Course · blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg-deep: #020510;
+  --bg-mid: #050c1e;
+  --bg2: #091126;
+  --glass: rgba(6, 14, 38, 0.65);
+  --glass-2: rgba(4, 10, 28, 0.82);
+  --border: rgba(0, 200, 255, 0.13);
+  --border-h: rgba(0, 200, 255, 0.32);
+  --cyan: #00d4ff;
+  --violet: #7b2fff;
+  --mint: #00ff88;
+  --gold: #ffcc00;
+  --orange: #ff7b35;
+  --pink: #ff2d92;
+  --text: #edf6ff;
+  --text-dim: rgba(200, 225, 252, 0.82);
+  --display: 'Orbitron', monospace;
+  --head: 'Rajdhani', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --r: 14px;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+html.light {
+  --bg-deep: #f0f4fc;
+  --bg-mid: #e4ecf8;
+  --bg2: #dce6f5;
+  --glass: rgba(230, 238, 255, 0.78);
+  --glass-2: rgba(221, 232, 250, 0.88);
+  --border: rgba(0, 120, 220, 0.18);
+  --border-h: rgba(0, 120, 220, 0.42);
+  --cyan: #006fb8;
+  --violet: #5a1abf;
+  --mint: #007a42;
+  --gold: #9a7800;
+  --orange: #c45a10;
+  --pink: #c0006a;
+  --text: #0c1b33;
+  --text-dim: rgba(20, 50, 110, 0.82);
+}
+
+body {
+  font-family: var(--mono);
+  background: var(--bg-deep);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.75;
+  transition: background .35s var(--ease), color .35s var(--ease);
+}
+
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.82;
+}
+
+html.light #bg { opacity: 0.38; }
+
+#prog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 200;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--violet), var(--gold));
+}
+
+nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(2, 5, 16, 0.75);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(0, 200, 255, 0.07);
+}
+
+html.light nav {
+  background: rgba(224, 234, 252, 0.82);
+  border-bottom: 1px solid rgba(0, 120, 220, 0.1);
+}
+
+.nav-l, .nav-r {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-home,
+.nav-links a {
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nav-home:hover,
+.nav-links a:hover { color: var(--cyan); }
+
+.nav-brand {
+  font-family: var(--display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+}
+
+.nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px var(--mint);
+  animation: pulse 2s ease infinite;
+}
+
+.nav-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+}
+
+.theme-btn {
+  width: 38px;
+  height: 21px;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  border-radius: 11px;
+  cursor: pointer;
+  position: relative;
+}
+
+.theme-btn::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 7px var(--cyan);
+  transition: transform .3s var(--ease), background .3s;
+}
+
+html.light .theme-btn {
+  background: rgba(255, 180, 0, 0.18);
+  border-color: rgba(255, 160, 0, 0.4);
+}
+
+html.light .theme-btn::after {
+  transform: translateX(17px);
+  background: #f5a623;
+  box-shadow: 0 0 8px #f5a623;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 88px 0 4rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .62rem;
+  letter-spacing: .32em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow::before,
+.eyebrow::after {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan));
+}
+
+.eyebrow::after { transform: scaleX(-1); }
+
+.hero-copy h1 {
+  font-family: var(--display);
+  font-size: clamp(2.1rem, 5vw, 4.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.1rem;
+}
+
+.hero-copy h1 .g {
+  background: linear-gradient(130deg, #00d4ff 0%, #7b2fff 50%, #ff7b35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 28px rgba(0, 212, 255, 0.35));
+}
+
+.hero-sub {
+  font-family: var(--head);
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  max-width: 58ch;
+}
+
+.hero-desc {
+  margin-top: 1.15rem;
+  color: var(--text-dim);
+  font-size: .88rem;
+  max-width: 62ch;
+}
+
+.hero-tags,
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  margin-top: 1.5rem;
+}
+
+.chip,
+.stat-pill {
+  border: 1px solid var(--border);
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 999px;
+  padding: .7rem 1rem;
+  backdrop-filter: blur(14px);
+}
+
+.chip {
+  font-size: .58rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.stat-pill {
+  min-width: 124px;
+}
+
+.stat-pill strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.stat-pill span {
+  display: block;
+  margin-top: .25rem;
+  font-size: .56rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.hero-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .32);
+}
+
+.hero-card img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.hero-card-body {
+  padding: 1.2rem 1.2rem 1.35rem;
+}
+
+.hero-card-kicker {
+  font-size: .56rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.hero-card-body p {
+  margin-top: .8rem;
+  color: var(--text-dim);
+  font-size: .8rem;
+}
+
+.quick-nav-wrap {
+  padding: 0 0 4rem;
+}
+
+.quick-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .9rem;
+}
+
+.quick-link {
+  text-decoration: none;
+  color: inherit;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem;
+  min-height: 126px;
+  transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease);
+}
+
+.quick-link:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-h);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .22);
+}
+
+.quick-link small {
+  display: block;
+  font-size: .54rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.quick-link strong {
+  display: block;
+  margin-top: .7rem;
+  font-family: var(--head);
+  font-size: 1rem;
+}
+
+.quick-link span {
+  display: block;
+  margin-top: .45rem;
+  color: var(--text-dim);
+  font-size: .72rem;
+}
+
+.chapter {
+  padding: 0 0 4rem;
+}
+
+.chapter-head {
+  margin-bottom: 1.6rem;
+}
+
+.chapter-label {
+  font-size: .58rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: .75rem;
+}
+
+.chapter h2 {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3vw, 2.3rem);
+  line-height: 1.14;
+  margin-bottom: .75rem;
+}
+
+.chapter-intro {
+  max-width: 72ch;
+  color: var(--text-dim);
+  font-size: .88rem;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 1.4rem;
+  margin-top: 1.5rem;
+}
+
+.panel {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.2rem;
+  backdrop-filter: blur(16px);
+}
+
+.panel h3 {
+  font-family: var(--head);
+  font-size: 1.2rem;
+  margin-bottom: .75rem;
+}
+
+.panel p,
+.panel li {
+  color: var(--text-dim);
+  font-size: .82rem;
+}
+
+.panel ul,
+.panel ol {
+  padding-left: 1.2rem;
+  display: grid;
+  gap: .55rem;
+}
+
+.metric-stack {
+  display: grid;
+  gap: .9rem;
+}
+
+.metric {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(0, 212, 255, 0.04);
+}
+
+.metric strong {
+  display: block;
+  font-family: var(--display);
+  font-size: .95rem;
+  color: var(--gold);
+}
+
+.metric span {
+  display: block;
+  margin-top: .4rem;
+  color: var(--text-dim);
+  font-size: .72rem;
+}
+
+.media-frame {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--glass-2);
+}
+
+.media-frame img {
+  width: 100%;
+  display: block;
+}
+
+.callout {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-left: 3px solid var(--cyan);
+  background: rgba(0, 212, 255, 0.06);
+  border-radius: 0 12px 12px 0;
+  color: var(--text-dim);
+  font-size: .8rem;
+}
+
+.prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.prompt-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.prompt-card header {
+  padding: .85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .6rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.prompt-card pre {
+  padding: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: .72rem;
+  color: var(--text-dim);
+}
+
+.timeline {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 1rem;
+  align-items: start;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem;
+}
+
+.timeline-item strong {
+  font-family: var(--display);
+  font-size: .72rem;
+  letter-spacing: .16em;
+  color: var(--cyan);
+}
+
+.timeline-item h4 {
+  font-family: var(--head);
+  font-size: 1.05rem;
+  margin-bottom: .35rem;
+}
+
+.timeline-item p {
+  color: var(--text-dim);
+  font-size: .8rem;
+}
+
+.source-block {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.source-item {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem;
+}
+
+.source-item strong {
+  display: block;
+  font-size: .62rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: .45rem;
+}
+
+.source-item a {
+  color: var(--gold);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: .68rem;
+  padding: 1.4rem 2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .65s var(--ease), transform .65s var(--ease);
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes pulse {
+  50% { opacity: .35; }
+}
+
+@media (max-width: 1080px) {
+  .hero-grid,
+  .module-grid,
+  .prompt-grid,
+  .quick-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .container { padding: 0 1rem; }
+  .timeline-item { grid-template-columns: 1fr; }
+  footer { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="prog"></div>
+
+<nav>
+  <div class="nav-l">
+    <a href="index.html" class="nav-home">← Home</a>
+    <div class="nav-sep"></div>
+    <div class="nav-brand">Claude Code Blog</div>
+  </div>
+  <div class="nav-r">
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#module-1">Module 1</a></li>
+      <li><a href="#module-2">Module 2</a></li>
+      <li><a href="#module-3">Module 3</a></li>
+      <li><a href="#module-4">Module 4</a></li>
+    </ul>
+    <div class="nav-dot" aria-hidden="true"></div>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="切換日夜模式"></button>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy reveal">
+      <div class="eyebrow">Full Course / Skill Systems</div>
+      <h1>Build Your First<br><span class="g">Claude Skill</span></h1>
+      <p class="hero-sub">把 Projects、Skills、MCP 的角色講清楚，並用 4 個模組拆出一條從入門、架構、測試到部署的完整路徑。</p>
+      <p class="hero-desc">
+        這頁是把 X 長文 `2031755971265974632` 轉成 blog 長文版的結果。內容保留原文的核心主張，但重新編排成比較適合站內閱讀的教學節奏，重點放在「什麼時候該做 Skill、Skill 應該怎麼寫、何時需要腳本、如何長期維護」。
+      </p>
+      <div class="hero-tags">
+        <div class="chip">Skills</div>
+        <div class="chip">Architecture</div>
+        <div class="chip">Testing</div>
+        <div class="chip">Deployment</div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <strong>4 Modules</strong>
+          <span>Foundations to production</span>
+        </div>
+        <div class="stat-pill">
+          <strong>~24 min</strong>
+          <span>Long-form read</span>
+        </div>
+        <div class="stat-pill">
+          <strong>10 min</strong>
+          <span>First skill setup goal</span>
+        </div>
+      </div>
+    </div>
+    <aside class="hero-card reveal">
+      <img src="assets/claude-skills-course/cover.jpg" alt="Claude Skills full course cover">
+      <div class="hero-card-body">
+        <div class="hero-card-kicker">Source Thread → Article</div>
+        <p>
+          原始文章主軸很明確：如果你一再重複同一套 Claude 指令，那就該把這些流程沉澱成 Skill。真正的收益不只是省 token，而是讓 Claude 進入穩定、可測、可維護的工作模式。
+        </p>
+        <p style="margin-top:1rem; font-size:.72rem;">
+          本文整理自原文出處：
+          <a href="https://x.com/hooeem/status/2031755971265974632" style="color:var(--gold); text-decoration:none; word-break:break-all;">
+            https://x.com/hooeem/status/2031755971265974632
+          </a>
+        </p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div class="container quick-nav-wrap reveal" id="overview">
+  <div class="quick-nav">
+    <a class="quick-link" href="#module-1">
+      <small>01</small>
+      <strong>Foundations</strong>
+      <span>先搞懂 Skills、Projects、MCP 的分工，以及 Skill 的最小結構。</span>
+    </a>
+    <a class="quick-link" href="#module-2">
+      <small>02</small>
+      <strong>Architecture</strong>
+      <span>遇到純指令不夠的情境，如何引入腳本、references、多 Skill 協作。</span>
+    </a>
+    <a class="quick-link" href="#module-3">
+      <small>03</small>
+      <strong>Testing</strong>
+      <span>把 Skill 當產品測，而不是寫完試兩次就算。</span>
+    </a>
+    <a class="quick-link" href="#module-4">
+      <small>04</small>
+      <strong>Deployment</strong>
+      <span>讓 Skill 穩定跨會話、跨時間繼續工作，而不是每次重來。</span>
+    </a>
+    <a class="quick-link" href="#sources">
+      <small>05</small>
+      <strong>Sources</strong>
+      <span>保留原始 X 貼文與整理後的內容來源，方便之後回查。</span>
+    </a>
+  </div>
+</div>
+
+<section class="chapter">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Key Takeaways</div>
+      <h2>這篇課程最重要的，不是教你寫檔案，而是教你把 Claude 變成可操作的系統。</h2>
+      <p class="chapter-intro">
+        Skill 的價值不在於「多一個設定檔」，而在於把重複、脆弱、靠記憶的操作，轉成固定流程。當你開始把提示、輸出格式、例外處理、測試方式都寫成結構，Claude 的工作品質才會真正穩定。
+      </p>
+    </div>
+    <div class="timeline reveal">
+      <div class="timeline-item">
+        <strong>TRIGGER</strong>
+        <div>
+          <h4>同一段起手式說超過三次，就該做 Skill</h4>
+          <p>這是全文最務實的判斷門檻。不是所有事都需要做 Skill，但一旦你開始持續重複，就代表流程可以被固化。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <strong>STRUCTURE</strong>
+        <div>
+          <h4>Skill 不是一份 prompt，而是一套可被觸發、可被維護的工作規則</h4>
+          <p>命名、YAML frontmatter、references、腳本、錯誤邊界，這些都不是附屬品，而是 Skill 真正能不能穩定工作的原因。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <strong>OPERATE</strong>
+        <div>
+          <h4>好的 Skill 一定要測，並且要能跨會話接續</h4>
+          <p>沒有測試，你只是在憑感覺。沒有 handover，你只是在每次重新開始。文章後半段其實是在補這兩件最常被忽略的事。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="module-1">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Module 1</div>
+      <h2>Foundations: 先把 <span style="color:var(--cyan)">Skills / Projects / MCP</span> 的邊界分清楚</h2>
+      <p class="chapter-intro">
+        原文一開始最有效的地方，是先把三種能力拆清楚。Projects 是知識庫，Skills 是流程手冊，MCP 是資料連接層。這個分類一旦模糊，後面所有實作都會歪掉。
+      </p>
+    </div>
+    <div class="module-grid">
+      <div class="panel reveal">
+        <h3>這一模組要回答的三個問題</h3>
+        <ul>
+          <li>什麼情況下該把流程做成 Skill，而不是只靠 prompt？</li>
+          <li>一個 Skill 最小要有哪些檔案與命名規則？</li>
+          <li>Claude Code 與 Claude Desktop 的 Skill 作用範圍差在哪？</li>
+        </ul>
+        <div class="callout">
+          原文把 Skill 形容成「新員工入職手冊」，這個比喻很準。你不是在請 Claude 臨場發揮，而是在定義它遇到某種任務時應該如何處理。
+        </div>
+      </div>
+      <div class="panel reveal">
+        <h3>最小結構</h3>
+        <ol>
+          <li>資料夾名稱用 kebab-case，例如 <code>csv-cleaner</code>。</li>
+          <li>核心檔案固定叫 <code>SKILL.md</code>，而且大小寫不能錯。</li>
+          <li>大型輔助文件放進 <code>references/</code>，不要把長文硬塞進主檔。</li>
+        </ol>
+        <div class="metric-stack" style="margin-top:1rem;">
+          <div class="metric">
+            <strong>Projects</strong>
+            <span>靜態知識與背景資料</span>
+          </div>
+          <div class="metric">
+            <strong>Skills</strong>
+            <span>任務流程、觸發條件與輸出規範</span>
+          </div>
+          <div class="metric">
+            <strong>MCP</strong>
+            <span>把 Claude 接上日曆、資料庫、收件匣等即時來源</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="module-grid" style="margin-top:1rem;">
+      <div class="media-frame reveal">
+        <img src="assets/claude-skills-course/image-1.jpg" alt="Skill structure illustration">
+      </div>
+      <div class="panel reveal">
+        <h3>使用時機的簡化判斷</h3>
+        <p>
+          如果你在不同對話裡反覆輸入同一組規則，例如品牌語氣、輸出格式、欄位規範、錯誤邊界，這就是做 Skill 的訊號。Skill 的第一個價值不是「更炫」，而是把記憶負擔從人腦轉成系統規則。
+        </p>
+        <div class="callout">
+          對這個 blog 讀者來說，最容易上手的 Skill 類型通常是：內容格式化、資料清理、寫作風格統一、工作流 checklist、自動化 QA。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="module-2">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Module 2</div>
+      <h2>Architecture: 當純文字指令不夠時，什麼該交給 <span style="color:var(--violet)">Scripts</span>，什麼該留在 Skill</h2>
+      <p class="chapter-intro">
+        第二模組開始進入真正的架構問題。不是所有事都該寫在 <code>SKILL.md</code> 裡。遇到資料解析、統計、檔案轉換、批次處理時，腳本比語言模型更可靠。
+      </p>
+    </div>
+    <div class="module-grid">
+      <div class="panel reveal">
+        <h3>何時用 Scripts</h3>
+        <ul>
+          <li>需要可重複計算的邏輯，例如 XML / CSV / JSON 解析。</li>
+          <li>需要嚴格輸入輸出與錯誤碼的流程。</li>
+          <li>需要批次化處理大量檔案或媒體資產。</li>
+        </ul>
+        <div class="callout">
+          原文的觀點很務實：語言模型負責推理、表達、決策；可驗證的計算與格式轉換則應交給腳本。
+        </div>
+      </div>
+      <div class="panel reveal">
+        <h3>何時用 References / 多 Skill 協作</h3>
+        <ul>
+          <li>背景知識太長，放在 <code>references/</code>，並用條件式讀取。</li>
+          <li>如果多個 Skill 都可能被類似語句觸發，要先做 collision audit。</li>
+          <li>每個 Skill 的責任要明確，不然會互搶工作。</li>
+        </ul>
+        <p style="margin-top:.9rem;">
+          這一段最值得帶走的觀念是：不要把所有東西都塞進同一個 Skill。你需要的是可組合、可維護的模組邊界。
+        </p>
+      </div>
+    </div>
+    <div class="module-grid" style="margin-top:1rem;">
+      <div class="panel reveal">
+        <h3>代表性 Prompt：讓 Claude 幫你寫 YAML 觸發規則</h3>
+        <div class="prompt-grid" style="grid-template-columns:1fr;">
+          <div class="prompt-card">
+            <header>YAML Trigger Generator</header>
+            <pre>Generate YAML frontmatter for a Claude Skill.
+Requirements:
+- kebab-case name
+- aggressive trigger description
+- clear negative boundaries
+- under 300 words
+- include a confidence report for activation accuracy</pre>
+          </div>
+        </div>
+      </div>
+      <div class="media-frame reveal">
+        <img src="assets/claude-skills-course/image-2.jpg" alt="Skill YAML and architecture example">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="module-3">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Module 3</div>
+      <h2>Testing + Iteration: Skill 不是寫完就上，必須有 <span style="color:var(--mint)">failure modes</span> 與測試回圈</h2>
+      <p class="chapter-intro">
+        這一段很像把 prompt engineering 拉回工程紀律。原文列出幾種常見失敗模式，例如 Skill 根本沒觸發、觸發錯誤、輸出飄走、遇到 edge case 崩掉，然後要求你用 Evals / Benchmarks / A/B 比較去驗證。
+      </p>
+    </div>
+    <div class="module-grid">
+      <div class="panel reveal">
+        <h3>五種常見失敗模式</h3>
+        <ol>
+          <li>Silent Skill：該觸發時沒觸發。</li>
+          <li>Hijacker：不該啟動時誤啟動。</li>
+          <li>Drifter：有啟動，但輸出慢慢偏掉。</li>
+          <li>Fragile Skill：一遇到非理想輸入就壞。</li>
+          <li>Overachiever：擅自補太多你沒要求的內容。</li>
+        </ol>
+      </div>
+      <div class="panel reveal">
+        <h3>測試方法的工程化重點</h3>
+        <ul>
+          <li>Evals：把預期行為寫成測試案例，直接得到 Pass / Fail。</li>
+          <li>Benchmarks：追蹤通過率、token 成本、速度。</li>
+          <li>A/B Comparator：比較版本差異，不憑直覺決策。</li>
+        </ul>
+        <div class="callout">
+          這篇文章真正把 Skill 從「靈感式 prompt」推進到「可維運資產」的關鍵，就是這個模組。
+        </div>
+      </div>
+    </div>
+    <div class="module-grid" style="margin-top:1rem;">
+      <div class="media-frame reveal">
+        <img src="assets/claude-skills-course/image-3.jpg" alt="Skill testing and evaluation example">
+      </div>
+      <div class="panel reveal">
+        <h3>代表性 Prompt：Skill QA Auditor</h3>
+        <div class="prompt-grid" style="grid-template-columns:1fr;">
+          <div class="prompt-card">
+            <header>QA Auditor</header>
+            <pre>Audit a complete SKILL.md before deployment.
+Check:
+- frontmatter quality
+- instruction clarity
+- example quality
+- edge case coverage
+- reference file design
+Return an overall deployment readiness score.</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="module-4">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Module 4</div>
+      <h2>Production Deployment: 真正成熟的 Skill，必須能在跨會話情境下 <span style="color:var(--gold)">接手昨天的上下文</span></h2>
+      <p class="chapter-intro">
+        原文最後一模組談的是很多教程不會提的事：就算 Skill 做好了，只要上下文斷掉，長期任務還是會失憶。所以作者提出一個極實用的 handover 規則，把 session summary 寫進 <code>context-log.md</code>。
+      </p>
+    </div>
+    <div class="module-grid">
+      <div class="panel reveal">
+        <h3>跨會話 handover 模式</h3>
+        <p>
+          在每次對話開始時，先讀 <code>context-log.md</code>；在每次對話結束時，再把今天完成什麼、剩下什麼、下一步該做什麼寫回去。這其實就是把 AI 當成會輪班的系統，而不是一次性聊天工具。
+        </p>
+        <div class="callout">
+          這個模式很適合長期專案：寫書、開發 app、經營內容產品、持續研究某個主題。
+        </div>
+      </div>
+      <div class="panel reveal">
+        <h3>最後的落點</h3>
+        <ul>
+          <li>不要每天重複輸入昨天已經說過的規則。</li>
+          <li>先做一個最常重複的小 Skill，量化它省下多少時間。</li>
+          <li>再逐步把更多工作沉澱成可測、可維護的流程資產。</li>
+        </ul>
+        <p style="margin-top:.9rem;">
+          這也是這篇長文最值得串進 blog 的原因：它不是只在介紹新名詞，而是在教你用工程化方式管理 Claude 的工作品質。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="sources">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-label">Source Notes</div>
+      <h2>來源與整理方式</h2>
+      <p class="chapter-intro">
+        這頁內容來自 X 貼文 <code>2031755971265974632</code> 的文章版，已先抽取成 Markdown 與圖片，再依 <code>blog</code> 現有視覺系統重編成長文頁。
+      </p>
+    </div>
+    <div class="source-block reveal">
+      <div class="source-item">
+        <strong>本文整理自原文出處</strong>
+        <a href="https://x.com/hooeem/status/2031755971265974632">https://x.com/hooeem/status/2031755971265974632</a>
+      </div>
+      <div class="source-item">
+        <strong>X Article</strong>
+        <a href="https://x.com/i/article/2031700361832992768">https://x.com/i/article/2031700361832992768</a>
+      </div>
+      <div class="source-item">
+        <strong>整理說明</strong>
+        <a href="https://x.com/hooeem/status/2031755971265974632">本頁為原文內容重編後的 blog 版整理頁</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>claude-code-tutorial · claude skills course</div>
+  <div>source tweet 2031755971265974632 · updated 2026-03-14</div>
+</footer>
+
+<script>
+const htmlEl = document.documentElement;
+const progressEl = document.getElementById('prog');
+
+/* 函式：套用目前主題狀態 */
+function applyTheme() {
+  const isLight = localStorage.getItem('theme') === 'light';
+  htmlEl.classList.toggle('light', isLight);
+}
+
+/* 函式：切換主題並寫回本機儲存 */
+function toggleTheme() {
+  const next = localStorage.getItem('theme') === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', next);
+  applyTheme();
+}
+
+/* 函式：更新頁面閱讀進度條 */
+function updateProgress() {
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  const ratio = total > 0 ? (window.scrollY / total) * 100 : 0;
+  progressEl.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
+}
+
+/* 函式：觀察進入視窗的區塊並播放 reveal 動畫 */
+function setupReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+      }
+    });
+  }, { threshold: 0.16 });
+
+  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+}
+
+/* 函式：繪製背景粒子與網格線，維持 blog 一致的科技感 */
+function setupCanvas() {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  let width = 0;
+  let height = 0;
+  let particles = [];
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    particles = Array.from({ length: Math.max(20, Math.floor(width / 60)) }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 1.8 + .4,
+      vx: (Math.random() - .5) * .18,
+      vy: (Math.random() - .5) * .18
+    }));
+  }
+
+  function draw() {
+    const styles = getComputedStyle(htmlEl);
+    const cyan = styles.getPropertyValue('--cyan').trim();
+    const violet = styles.getPropertyValue('--violet').trim();
+    const isLight = htmlEl.classList.contains('light');
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = isLight ? 'rgba(0,120,220,0.05)' : 'rgba(0,212,255,0.06)';
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x < width; x += 48) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y < height; y += 48) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    particles.forEach((p, index) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > width) p.vx *= -1;
+      if (p.y < 0 || p.y > height) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.fillStyle = index % 2 === 0 ? cyan : violet;
+      ctx.globalAlpha = isLight ? 0.25 : 0.42;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  draw();
+  window.addEventListener('resize', resize);
+}
+
+applyTheme();
+setupReveal();
+setupCanvas();
+updateProgress();
+window.addEventListener('scroll', updateProgress, { passive: true });
+</script>
+</body>
+</html>

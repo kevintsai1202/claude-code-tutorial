@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lessons from Building Claude Code: Seeing like an Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+/* ─── DARK MODE (default) ─────────────────────────────── */
+:root {
+  --bg-deep: #020510;
+  --bg-mid:  #050c1e;
+  --bg2:     #070e22;
+  --glass:   rgba(6,14,38,0.65);
+  --glass2:  rgba(4,10,28,0.75);
+  --border:  rgba(0,200,255,0.13);
+  --border-h:rgba(0,200,255,0.32);
+  --glow-c:  rgba(0,212,255,0.15);
+
+  --cyan:    #00d4ff;
+  --violet:  #7b2fff;
+  --mint:    #00ff88;
+  --orange:  #ff7b35;
+  --pink:    #ff2d92;
+  --gold:    #ffcc00;
+  --red:     #ff4757;
+  --green:   #00e676;
+
+  --text:    #edf6ff;
+  --text-dim:rgba(200,225,252,0.82);
+  --text-b:  #ffffff;
+
+  --display: 'Orbitron', monospace;
+  --head:    'Rajdhani', sans-serif;
+  --mono:    'IBM Plex Mono', monospace;
+  --r:       14px;
+  --ease:    cubic-bezier(.4,0,.2,1);
+
+  /* chapter accent colors */
+  --c0: #00d4ff;   /* cyan  – Chapter 0 */
+  --c1: #7b2fff;   /* violet – Chapter 1 */
+  --c2: #00ff88;   /* mint   – Chapter 2 */
+  --c3: #ff7b35;   /* orange – Chapter 3 */
+  --cf: #ffcc00;   /* gold   – Finale    */
+}
+
+/* ─── LIGHT MODE ──────────────────────────────────────── */
+html.light {
+  --bg-deep: #f0f4fc;
+  --bg-mid:  #e4ecf8;
+  --bg2:     #dce6f5;
+  --glass:   rgba(230,238,255,0.72);
+  --glass2:  rgba(220,232,255,0.82);
+  --border:  rgba(0,120,220,0.18);
+  --border-h:rgba(0,120,220,0.42);
+  --glow-c:  rgba(0,120,220,0.1);
+
+  --cyan:    #006fb8;
+  --violet:  #5a1abf;
+  --mint:    #007a42;
+  --orange:  #c45a10;
+  --pink:    #c0006a;
+  --gold:    #9a7800;
+  --red:     #c01a2a;
+  --green:   #007a42;
+
+  --text:    #0c1b33;
+  --text-dim:rgba(20,50,110,0.82);
+  --text-b:  #000c22;
+}
+
+body {
+  font-family: var(--mono);
+  background: var(--bg-deep);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+  transition: background .35s var(--ease), color .35s var(--ease);
+}
+
+/* ─── CANVAS BG ───────────────────────────────────────── */
+#bg {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+}
+html.light #bg { opacity: 0.35; }
+
+/* ─── SCROLL PROGRESS ─────────────────────────────────── */
+#prog {
+  position: fixed; top: 0; left: 0; z-index: 200;
+  height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--violet), var(--gold));
+  transition: width .08s linear;
+}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 100;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(2,5,16,0.75);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(0,200,255,0.07);
+  transition: background .35s var(--ease);
+}
+html.light nav {
+  background: rgba(224,234,252,0.82);
+  border-bottom: 1px solid rgba(0,120,220,0.1);
+}
+.nav-l {
+  display: flex; align-items: center; gap: 1.2rem;
+}
+.nav-home {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text-dim); text-decoration: none;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  opacity: .7; transition: opacity .2s;
+}
+.nav-home:hover { opacity: 1; }
+.nav-sep {
+  width: 1px; height: 16px;
+  background: var(--border);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--cyan);
+  text-transform: uppercase;
+}
+.nav-r {
+  display: flex; align-items: center; gap: 1rem;
+}
+.nav-links {
+  display: flex; gap: 1.5rem; list-style: none;
+}
+.nav-links a {
+  font-family: var(--mono); font-size: 0.58rem;
+  color: var(--text-dim); text-decoration: none;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--cyan); }
+/* theme toggle slider */
+.theme-btn {
+  width: 38px; height: 21px;
+  background: rgba(0,212,255,0.12);
+  border: 1px solid rgba(0,212,255,0.28);
+  border-radius: 11px; cursor: pointer;
+  position: relative; flex-shrink: 0;
+  transition: background .3s, border-color .3s;
+}
+.theme-btn::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: var(--cyan);
+  transition: transform .3s var(--ease), background .3s;
+  box-shadow: 0 0 7px var(--cyan);
+}
+.theme-icon { font-size: .8rem; line-height: 1; }
+html.light .theme-btn {
+  background: rgba(255,180,0,0.18);
+  border-color: rgba(255,160,0,0.4);
+}
+html.light .theme-btn::after {
+  transform: translateX(17px);
+  background: #f5a623;
+  box-shadow: 0 0 8px #f5a623;
+}
+.nav-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--mint); box-shadow: 0 0 8px var(--mint);
+  animation: pulse 2s ease infinite;
+}
+.nav-sep { width:1px; height:20px; background:var(--border); }
+
+/* ─── LAYOUT ──────────────────────────────────────────── */
+.container {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+}
+
+/* ─── HERO ────────────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 80px 2rem 4rem;
+  position: relative; z-index: 1;
+}
+.hero-inner { max-width: 820px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-size: 0.62rem; letter-spacing: 0.32em; color: var(--cyan);
+  text-transform: uppercase; margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp .7s var(--ease) .1s forwards;
+}
+.eyebrow::before, .eyebrow::after {
+  content: ''; width: 30px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan));
+}
+.eyebrow::after { transform: scaleX(-1); }
+h1.hero-h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -0.02em; margin-bottom: 1.6rem;
+  opacity: 0; animation: fadeUp .7s var(--ease) .25s forwards;
+}
+h1.hero-h1 .g {
+  background: linear-gradient(130deg, #00d4ff 0%, #7b2fff 55%, #ff7b35 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 28px rgba(0,212,255,0.4));
+}
+.hero-desc {
+  font-size: 0.88rem; color: var(--text-dim);
+  max-width: 520px; margin: 0 auto 2.8rem;
+  line-height: 1.85;
+  opacity: 0; animation: fadeUp .7s var(--ease) .4s forwards;
+}
+.hero-meta {
+  display: flex; align-items: center; justify-content: center;
+  gap: 2rem; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp .7s var(--ease) .55s forwards;
+}
+.author-chip {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem 1.1rem;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  backdrop-filter: blur(16px);
+}
+.author-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 0.55rem;
+  color: var(--bg-deep); font-weight: 700;
+}
+.author-nm {
+  font-family: var(--head); font-size: .9rem; font-weight: 700;
+}
+.author-hd {
+  font-size: .62rem; color: var(--cyan); margin-top: .1rem;
+}
+.stats-row {
+  display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+}
+.stat {
+  padding: .7rem 1.2rem;
+  background: rgba(0,212,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
+  text-align: center;
+}
+.stat:hover {
+  border-color: var(--border-h);
+  box-shadow: 0 0 24px var(--glow-c), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.stat-n {
+  font-family: var(--display);
+  font-size: 1.4rem; font-weight: 900;
+  color: var(--cyan); line-height: 1;
+}
+.stat-l {
+  font-size: 0.55rem; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase;
+  margin-top: .3rem;
+}
+.scroll-cue {
+  position: absolute; bottom: 2.5rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  opacity: 0; animation: fadeIn 1s ease 1.4s forwards;
+}
+.scroll-cue span {
+  font-size: 0.52rem; letter-spacing: .22em; color: var(--text-dim);
+  text-transform: uppercase;
+}
+.scroll-bar {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+  animation: scrollMove 2.2s ease infinite;
+}
+
+/* ─── CHAPTER STRUCTURE ───────────────────────────────── */
+.chapter-section {
+  padding: 6rem 0 5rem;
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border);
+}
+.ch-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: 0.58rem; letter-spacing: 0.3em;
+  text-transform: uppercase; margin-bottom: 1.2rem;
+}
+.ch-num-bg {
+  font-family: var(--display);
+  font-size: clamp(5rem, 14vw, 10rem);
+  font-weight: 900; line-height: 1;
+  position: absolute; right: 2rem; top: 2rem;
+  opacity: 0.04; pointer-events: none; user-select: none;
+  letter-spacing: -0.04em;
+}
+.ch-title {
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -0.02em; margin-bottom: 1.4rem;
+}
+.ch-title .acc {
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ch-prose {
+  max-width: 62ch;
+  font-size: 0.9rem; line-height: 1.85;
+  color: var(--text-dim); margin-bottom: 2rem;
+}
+.ch-prose p + p { margin-top: 1.2em; }
+.ch-prose strong { color: var(--text); font-weight: 600; }
+
+/* callout quote */
+.callout {
+  max-width: 64ch;
+  padding: 1.2rem 1.6rem;
+  border-left: 3px solid;
+  border-radius: 0 10px 10px 0;
+  font-size: .88rem; font-style: italic; line-height: 1.78;
+  margin: 2rem 0;
+  backdrop-filter: blur(12px);
+}
+
+/* ─── GLASS CARD BASE ─────────────────────────────────── */
+.gcard {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  transition: transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+.gcard:hover {
+  border-color: var(--border-h);
+  box-shadow: 0 16px 40px rgba(0,0,0,.45), 0 0 20px var(--glow-c),
+              inset 0 1px 0 rgba(255,255,255,0.06);
+  transform: translateY(-3px);
+}
+
+/* ─── INTRO GRID (Ch 0) ───────────────────────────────── */
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.2rem; margin-top: 3rem;
+}
+.intro-card {
+  padding: 1.8rem;
+}
+.intro-card .ic-icon {
+  font-size: 1.8rem; margin-bottom: 1rem;
+  display: block;
+}
+.intro-card h3 {
+  font-family: var(--head);
+  font-size: 1rem; font-weight: 700;
+  margin-bottom: .5rem; letter-spacing: .04em;
+}
+.intro-card p {
+  font-size: .82rem; color: var(--text-dim); line-height: 1.7;
+}
+.intro-card.highlight {
+  border-color: rgba(0,212,255,0.35);
+  background: rgba(0,212,255,0.04);
+}
+
+/* ─── SPECTRUM (Ch 1) ─────────────────────────────────── */
+.spectrum-wrap {
+  margin: 2.5rem 0;
+}
+.sp-label {
+  font-size: 0.58rem; letter-spacing: .3em;
+  text-transform: uppercase; text-align: center;
+  color: var(--text-dim); margin-bottom: 1.8rem;
+}
+.spectrum {
+  display: flex; align-items: center; gap: 0;
+}
+.sp-node { flex: 1; text-align: center; position: relative; }
+.sp-box {
+  display: inline-flex; flex-direction: column;
+  align-items: center; padding: 1rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--glass2);
+  backdrop-filter: blur(12px);
+  min-width: 140px;
+  transition: all .3s var(--ease);
+  cursor: default;
+}
+.sp-box:hover { transform: translateY(-4px); }
+.sp-box.active {
+  border-color: var(--violet);
+  background: rgba(123,47,255,0.1);
+  box-shadow: 0 0 24px rgba(123,47,255,0.25);
+}
+.sp-name {
+  font-family: var(--mono); font-size: .72rem; font-weight: 500;
+  color: var(--text); margin-bottom: .3rem; text-align: center;
+}
+.sp-box.active .sp-name { color: var(--violet); }
+.sp-sub {
+  font-family: var(--mono); font-size: .6rem;
+  color: var(--text-dim); text-align: center; line-height: 1.5;
+}
+.sp-line {
+  height: 1px; flex: 1;
+  background: var(--border);
+  position: relative; margin: 0 -1px;
+}
+.sp-line::after {
+  content: '';
+  position: absolute; right: -4px; top: -3px;
+  width: 0; height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--violet);
+}
+.sp-edge-labels {
+  display: flex; justify-content: space-between;
+  margin-top: .9rem; padding: 0 60px;
+}
+.sp-edge {
+  font-size: .58rem; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+
+/* ─── ATTEMPT CARDS (Ch 1) ────────────────────────────── */
+.attempts { display: flex; flex-direction: column; gap: 1.2rem; margin-top: 2.5rem; }
+.att-card {
+  padding: 1.8rem 2rem;
+  display: grid; grid-template-columns: 64px 1fr;
+  gap: 1.4rem; align-items: start;
+  position: relative; overflow: hidden;
+  transition: transform .3s var(--ease), border-color .3s var(--ease);
+}
+.att-card:hover { transform: translateX(6px); }
+.att-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.att-card.fail::before { background: var(--red); }
+.att-card.fail { border-color: rgba(255,71,87,0.2); }
+.att-card.success::before { background: var(--green); }
+.att-card.success { border-color: rgba(0,230,118,0.2); }
+.att-num {
+  font-family: var(--display);
+  font-size: 2.2rem; font-weight: 900; line-height: 1;
+  color: var(--text-dim);
+}
+.att-card.fail   .att-num { color: var(--red); }
+.att-card.success .att-num { color: var(--green); }
+.att-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: var(--mono); font-size: .62rem;
+  letter-spacing: .15em; text-transform: uppercase;
+  padding: .25rem .7rem; border-radius: 4px;
+  margin-bottom: .6rem;
+}
+.att-badge.fail   { background: rgba(255,71,87,.1);   color: var(--red);   }
+.att-badge.success{ background: rgba(0,230,118,.1); color: var(--green); }
+.att-title {
+  font-family: var(--head);
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text); margin-bottom: .5rem;
+}
+.att-body {
+  font-size: .82rem; color: var(--text-dim); line-height: 1.78;
+}
+.att-insight {
+  margin-top: .85rem; padding: .6rem .9rem;
+  border-radius: 6px;
+  font-family: var(--mono); font-size: .72rem; line-height: 1.65;
+}
+.att-insight.fail    { background: rgba(255,71,87,.06);   color: rgba(255,71,87,.9);   border: 1px solid rgba(255,71,87,.15); }
+.att-insight.success { background: rgba(0,230,118,.06); color: rgba(0,230,118,.95); border: 1px solid rgba(0,230,118,.15); }
+
+/* ─── TIMELINE (Ch 2) ─────────────────────────────────── */
+.timeline {
+  margin-top: 2.8rem; position: relative; padding-left: 2.2rem;
+}
+.timeline::before {
+  content: ''; position: absolute;
+  left: 7px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--mint), transparent);
+}
+.tl-item {
+  position: relative; padding-bottom: 2.5rem;
+}
+.tl-dot {
+  position: absolute; left: -2.2rem; top: 5px;
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid var(--mint);
+  background: var(--bg-deep);
+  transition: background .3s;
+}
+.tl-item:hover .tl-dot { background: var(--mint); }
+.tl-era {
+  font-family: var(--mono); font-size: .6rem;
+  color: var(--mint); letter-spacing: .2em;
+  text-transform: uppercase; margin-bottom: .4rem;
+}
+.tl-head {
+  font-family: var(--head); font-size: 1.05rem; font-weight: 700;
+  color: var(--text); margin-bottom: .4rem;
+}
+.tl-body {
+  font-size: .82rem; color: var(--text-dim);
+  line-height: 1.78; max-width: 56ch;
+}
+.tl-chip {
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin-top: .7rem; padding: .4rem 1rem;
+  background: var(--glass2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono); font-size: .7rem;
+  color: var(--mint);
+  backdrop-filter: blur(8px);
+}
+
+/* ─── DISCLOSURE STACK (Ch 3) ─────────────────────────── */
+.disc-stack { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0; }
+.disc-level { display: flex; align-items: stretch; gap: 0; }
+.disc-card {
+  flex: 1; margin-bottom: 4px;
+  padding: 1.4rem 1.6rem;
+  display: flex; align-items: center; gap: 1.2rem;
+  transition: border-color .3s, box-shadow .3s;
+  cursor: default;
+}
+.disc-card:hover {
+  border-color: rgba(255,123,53,0.4);
+  box-shadow: 0 0 20px rgba(255,123,53,0.1);
+}
+.disc-num {
+  font-family: var(--display);
+  font-weight: 900; font-size: 1.6rem;
+  color: var(--orange); min-width: 36px;
+}
+.disc-name {
+  font-family: var(--head); font-size: .95rem; font-weight: 700;
+  color: var(--text); margin-bottom: .25rem;
+}
+.disc-desc {
+  font-size: .82rem; color: var(--text-dim); line-height: 1.72;
+}
+.disc-arrow {
+  text-align: center; padding: .35rem 0;
+  font-family: var(--mono); font-size: .62rem;
+  color: rgba(255,123,53,.6); letter-spacing: .15em;
+  padding-left: 4rem;
+}
+
+/* ─── TOOL CHIPS ──────────────────────────────────────── */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: .85rem; margin-top: 2rem;
+}
+.tool-chip {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .85rem 1.1rem;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  font-family: var(--mono); font-size: .75rem;
+  color: var(--text);
+  transition: all .3s var(--ease);
+}
+.tool-chip:hover {
+  border-color: rgba(255,123,53,0.4);
+  color: var(--orange);
+  transform: translateY(-2px);
+}
+.tc-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--orange); flex-shrink: 0;
+}
+
+/* ─── FINALE ──────────────────────────────────────────── */
+#finale {
+  padding: 7rem 0 6rem;
+  position: relative; z-index: 1;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+}
+.finale-glow {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,204,0,0.06) 0%, transparent 65%);
+  pointer-events: none;
+}
+.finale-eyebrow {
+  font-family: var(--mono); font-size: .58rem;
+  color: var(--gold); letter-spacing: .3em;
+  text-transform: uppercase; margin-bottom: 2rem;
+  position: relative; z-index: 1;
+}
+.finale-h2 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -0.02em; margin-bottom: 1.5rem;
+  position: relative; z-index: 1;
+}
+.finale-h2 .g {
+  background: linear-gradient(90deg, var(--gold), var(--orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.finale-body {
+  max-width: 52ch; margin: 0 auto 3rem;
+  font-size: .9rem; font-style: italic;
+  color: var(--text-dim); line-height: 1.85;
+  position: relative; z-index: 1;
+}
+.mantra-grid {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; gap: .85rem;
+  position: relative; z-index: 1;
+}
+.mantra-pill {
+  font-family: var(--head); font-size: .95rem; font-weight: 700;
+  padding: .6rem 1.6rem;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  color: var(--text);
+  transition: all .3s var(--ease);
+  cursor: default;
+}
+.mantra-pill:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255,204,0,0.05);
+  box-shadow: 0 0 18px rgba(255,204,0,0.15);
+}
+.mantra-pill.accent {
+  border-color: rgba(255,204,0,0.4);
+  color: var(--gold);
+}
+
+/* ─── FOOTER ──────────────────────────────────────────── */
+footer {
+  padding: 2.5rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 1;
+}
+.ft-credit { font-family: var(--mono); font-size: .65rem; color: var(--text-dim); }
+.ft-src    { font-family: var(--mono); font-size: .65rem; color: var(--gold); }
+
+/* ─── REVEAL ──────────────────────────────────────────── */
+.rev {
+  opacity: 0; transform: translateY(26px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+}
+.rev.vis { opacity: 1; transform: translateY(0); }
+
+/* ─── KEYFRAMES ───────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scrollMove {
+  0%   { opacity: 0; transform: scaleY(.5) translateY(-10px); }
+  50%  { opacity: 1; }
+  100% { opacity: 0; transform: scaleY(.5) translateY(10px); }
+}
+@keyframes pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  nav { padding: 0 1.2rem; }
+  .nav-links { display: none; }
+  .container { padding: 0 1.2rem; }
+  .chapter-section { padding: 4rem 0 3rem; }
+  .ch-title { font-size: clamp(1.4rem, 6vw, 2.2rem); }
+  .att-card { grid-template-columns: 50px 1fr; gap: 1rem; }
+  .spectrum { flex-direction: column; gap: 1rem; }
+  .sp-line  { display: none; }
+  .stats-row { gap: .7rem; }
+  footer { flex-direction: column; gap: .8rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── CANVAS BACKGROUND ───────────────────────────────────────── -->
+<canvas id="bg"></canvas>
+
+<!-- ── SCROLL PROGRESS ─────────────────────────────────────────── -->
+<div id="prog"></div>
+
+<!-- ── NAV ─────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-l">
+    <a href="index.html" class="nav-home">← Home</a>
+    <div class="nav-sep"></div>
+    <span class="nav-brand">Agent Engineering Lessons</span>
+  </div>
+  <div class="nav-r">
+    <ul class="nav-links">
+      <li><a href="#action-space">動作空間</a></li>
+      <li><a href="#elicitation">問答工具</a></li>
+      <li><a href="#tasks">任務系統</a></li>
+      <li><a href="#search">搜尋設計</a></li>
+      <li><a href="#finale">藝術本質</a></li>
+    </ul>
+    <div class="nav-sep"></div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span class="theme-icon">🌙</span>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="切換日夜模式"></button>
+      <span class="theme-icon">☀️</span>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Engineering Insights · 2026 · @trq212</div>
+    <h1 class="hero-h1">Lessons from Building<br><span class="g">Claude Code</span></h1>
+    <p class="hero-desc">學習像 Agent 一樣觀察與思考，從建造 Claude Code 的過程中領悟 AI 工具設計的真諦。</p>
+    <div class="hero-meta">
+      <div class="author-chip">
+        <div class="author-av">TQ</div>
+        <div>
+          <div class="author-nm">Thariq</div>
+          <div class="author-hd">@trq212</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-n">308萬</div>
+          <div class="stat-l">瀏覽數</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">8,815</div>
+          <div class="stat-l">按讚數</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">1,143</div>
+          <div class="stat-l">轉推數</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue">
+    <span>向下捲動</span>
+    <div class="scroll-bar"></div>
+  </div>
+</section>
+
+<!-- ── CHAPTER 0: ACTION SPACE ─────────────────────────────────── -->
+<section class="chapter-section" id="action-space">
+  <div class="container" style="position:relative">
+    <div class="ch-num-bg" style="color:var(--c0)">00</div>
+
+    <div class="ch-eyebrow rev" style="color:var(--c0)">
+      <span style="width:20px;height:1px;background:var(--c0);display:inline-block"></span>
+      核心概念 · Action Space
+      <span style="width:20px;height:1px;background:var(--c0);display:inline-block"></span>
+    </div>
+    <h2 class="ch-title rev">
+      動作空間設計：<br>
+      <span class="acc" style="background:linear-gradient(90deg,var(--c0),var(--violet))">難在工具的取捨</span>
+    </h2>
+
+    <div class="ch-prose rev">
+      <p>打造 Agent 時，最困難的部分之一就是構建它的<strong>動作空間（action space）</strong>。Claude 透過 Tool Calling 行動，但工具的設計方式有很多種——從 bash、skills 到程式碼執行都有。</p>
+      <p>那麼，應該給 Agent 一個萬能工具，還是 50 個分工工具？</p>
+    </div>
+
+    <div class="callout rev" style="border-color:var(--c0);background:rgba(0,212,255,0.04)">
+      「把自己放進模型的位置：給你一道困難的數學題，你想要什麼工具？紙筆是最低需求，計算機更好，電腦最強大——但前提是你要知道怎麼用它。」
+    </div>
+
+    <div class="intro-grid">
+      <div class="gcard intro-card rev">
+        <span class="ic-icon">📄</span>
+        <h3 style="color:var(--text-dim)">紙筆（最低限度）</h3>
+        <p>自由但雜亂，純靠手動計算，結果難以格式化與重現。</p>
+      </div>
+      <div class="gcard intro-card rev" style="transition-delay:.08s">
+        <span class="ic-icon">🖩</span>
+        <h3 style="color:var(--text-dim)">計算機（中等工具）</h3>
+        <p>功能更強，但需要知道如何操作進階選項，才能發揮效用。</p>
+      </div>
+      <div class="gcard intro-card rev" style="transition-delay:.16s">
+        <span class="ic-icon">💻</span>
+        <h3 style="color:var(--text-dim)">電腦（最強能力）</h3>
+        <p>速度最快、功能最強，但必須具備寫程式與執行程式碼的能力。</p>
+      </div>
+      <div class="gcard intro-card highlight rev" style="transition-delay:.24s">
+        <span class="ic-icon">🔑</span>
+        <h3 style="color:var(--c0)">關鍵洞見</h3>
+        <p>給 Agent 的工具必須符合其自身能力。要了解其能力，你需要<strong style="color:var(--c0)">像 Agent 一樣觀察</strong>：關注輸出、閱讀結果、不斷實驗。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CHAPTER 1: ASKUSERQUESTION ──────────────────────────────── -->
+<section class="chapter-section" id="elicitation">
+  <div class="container" style="position:relative">
+    <div class="ch-num-bg" style="color:var(--c1)">01</div>
+
+    <div class="ch-eyebrow rev" style="color:var(--c1)">
+      <span style="width:20px;height:1px;background:var(--c1);display:inline-block"></span>
+      第一課 · Elicitation
+      <span style="width:20px;height:1px;background:var(--c1);display:inline-block"></span>
+    </div>
+    <h2 class="ch-title rev">
+      改良問答能力：<br>
+      <span class="acc" style="background:linear-gradient(90deg,var(--c1),var(--pink))">AskUserQuestion 工具</span>
+    </h2>
+
+    <div class="ch-prose rev">
+      <p>目標是提升 Claude 問問題的能力（稱為 elicitation，問答引導）。雖然 Claude 可以直接用純文字問問題，但我們發現回答那些問題<strong>耗費不必要的時間</strong>。</p>
+      <p>如何降低摩擦、提升用戶與 Claude 之間的溝通頻寬？我們嘗試了三種方法：</p>
+    </div>
+
+    <!-- Spectrum -->
+    <div class="gcard spectrum-wrap rev" style="padding:2rem 2.2rem">
+      <div class="sp-label">找到甜蜜點 · Finding the Sweet Spot</div>
+      <div class="spectrum">
+        <div class="sp-node">
+          <div class="sp-box">
+            <span class="sp-name">Modified Markdown Output</span>
+            <span class="sp-sub">model free but messy,<br>hard to format</span>
+          </div>
+        </div>
+        <div class="sp-line"></div>
+        <div class="sp-node">
+          <div class="sp-box active">
+            <span class="sp-name">✦ AskUserQuestion Tool</span>
+            <span class="sp-sub">structured + composable,<br>clear UI surface</span>
+          </div>
+        </div>
+        <div class="sp-line" style="transform:scaleX(-1)"></div>
+        <div class="sp-node">
+          <div class="sp-box">
+            <span class="sp-name">ExitPlanTool Parameter</span>
+            <span class="sp-sub">plan already formed,<br>questions come too late</span>
+          </div>
+        </div>
+      </div>
+      <div class="sp-edge-labels">
+        <span class="sp-edge">← No Structure</span>
+        <span class="sp-edge">Too Rigid →</span>
+      </div>
+    </div>
+
+    <!-- Attempt Cards -->
+    <div class="attempts">
+      <div class="gcard att-card fail rev">
+        <div class="att-num">01</div>
+        <div>
+          <div class="att-badge fail">✗ 失敗</div>
+          <div class="att-title">修改 ExitPlanTool 參數</div>
+          <p class="att-body">在 ExitPlanTool 加上一個問題陣列參數，讓計畫與問題一起傳回。雖然最容易實作，但這讓 Claude 感到困惑——它同時被要求產出計畫，又要針對計畫提問。</p>
+          <div class="att-insight fail">⚠ 問題：若用戶的回答與計畫內容衝突怎麼辦？Claude 需要呼叫 ExitPlanTool 兩次嗎？</div>
+        </div>
+      </div>
+
+      <div class="gcard att-card fail rev">
+        <div class="att-num">02</div>
+        <div>
+          <div class="att-badge fail">✗ 失敗</div>
+          <div class="att-title">修改輸出格式</div>
+          <p class="att-body">修改 Claude 的輸出指令，讓它使用略經修改的 Markdown 格式來提問，例如用括號列出選項。前端再解析並呈現為 UI。Claude 雖能輸出，但<strong>不保證格式穩定</strong>——有時會補充額外句子、省略選項，或完全用不同格式。</p>
+          <div class="att-insight fail">⚠ 問題：Claude 的輸出是非確定性的，無法保證格式，導致解析困難。</div>
+        </div>
+      </div>
+
+      <div class="gcard att-card success rev">
+        <div class="att-num">03</div>
+        <div>
+          <div class="att-badge success">✓ 成功</div>
+          <div class="att-title">建立 AskUserQuestion 工具</div>
+          <p class="att-body">最終方案是建立一個 Claude 可在任意時間點呼叫的工具，並在計畫模式中特別提示它使用此工具。工具觸發時，顯示一個 Modal 呈現問題，並<strong>阻斷 Agent 循環</strong>直到用戶回答。</p>
+          <div class="att-insight success">✓ 優勢：強制 Claude 產出結構化輸出；讓用戶可在 Agent SDK 中組合使用；Claude 自然而然偏好呼叫它，輸出效果最好。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout rev" style="margin-top:2rem;border-color:var(--c1);background:rgba(123,47,255,0.04)">
+      「即使是設計最好的工具，如果 Claude 不理解如何呼叫它，也沒有用。」
+    </div>
+  </div>
+</section>
+
+<!-- ── CHAPTER 2: TASKS & TODOS ─────────────────────────────────── -->
+<section class="chapter-section" id="tasks">
+  <div class="container" style="position:relative">
+    <div class="ch-num-bg" style="color:var(--c2)">02</div>
+
+    <div class="ch-eyebrow rev" style="color:var(--c2)">
+      <span style="width:20px;height:1px;background:var(--c2);display:inline-block"></span>
+      第二課 · Todos → Tasks
+      <span style="width:20px;height:1px;background:var(--c2);display:inline-block"></span>
+    </div>
+    <h2 class="ch-title rev">
+      隨能力升級工具：<br>
+      <span class="acc" style="background:linear-gradient(90deg,var(--c2),var(--cyan))">從 Todos 到 Tasks</span>
+    </h2>
+
+    <div class="ch-prose rev">
+      <p>當我們剛推出 Claude Code 時，模型需要一個 Todo 清單來保持追蹤進度。Todos 在一開始寫好，隨工作進行勾選完成。</p>
+      <p>但隨著模型能力的提升，<strong>原本為了幫助模型的工具，反而開始限制它</strong>。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item rev">
+        <div class="tl-dot"></div>
+        <div class="tl-era">初期 · Early Stage</div>
+        <div class="tl-head">TodoWrite 工具</div>
+        <p class="tl-body">Claude Code 剛推出時，模型常常忘記自己要做什麼。我們提供了 TodoWrite 工具，讓 Claude 可以撰寫和更新 Todo 清單，並展示給用戶看。</p>
+        <div class="tl-chip" style="color:var(--c2);border-color:rgba(0,255,136,0.25)">⚙ TodoWrite Tool · 記錄與追蹤目標</div>
+      </div>
+
+      <div class="tl-item rev">
+        <div class="tl-dot"></div>
+        <div class="tl-era">調整期 · Adaptation</div>
+        <div class="tl-head">系統提醒每 5 回合觸發</div>
+        <p class="tl-body">即使有 Todo 清單，Claude 仍常忘記目標。我們每 5 回合插入系統提醒，強制告知 Claude 目前的任務。</p>
+        <div class="tl-chip" style="color:var(--c2);border-color:rgba(0,255,136,0.25)">🔔 System Reminders · 每 5 輪觸發</div>
+      </div>
+
+      <div class="tl-item rev">
+        <div class="tl-dot"></div>
+        <div class="tl-era">進化期 · Evolution</div>
+        <div class="tl-head">模型能力提升，提醒成了束縛</div>
+        <p class="tl-body">隨著模型進步，Claude 不再需要提醒——更糟的是，提醒讓它以為不能修改 Todo 清單。此外，Opus 4.5 在使用子 Agent 上大幅進步，但多個子 Agent 無法共享 Todo 清單。</p>
+        <div class="tl-chip" style="color:var(--red);border-color:rgba(255,71,87,0.3)">⚡ 舊架構限制：單一 Agent，無法跨 Agent 協調</div>
+      </div>
+
+      <div class="tl-item rev">
+        <div class="tl-dot" style="background:var(--c2);border-color:var(--c2)"></div>
+        <div class="tl-era">現在 · Present</div>
+        <div class="tl-head">Task 工具取代 Todos</div>
+        <p class="tl-body">我們以 Task 工具替代 TodoWrite。Tasks 不僅是追蹤進度，更是幫助多 Agent 相互溝通——可設定依賴關係、跨子 Agent 分享更新、動態新增或刪除任務。</p>
+        <div class="tl-chip" style="color:var(--green);border-color:rgba(0,230,118,0.3)">✓ Task Tool · 多 Agent 協作、依賴追蹤</div>
+      </div>
+    </div>
+
+    <div class="callout rev" style="border-color:var(--c2);background:rgba(0,255,136,0.04)">
+      「隨著模型能力提升，原本需要的工具可能反而會限制模型。必須持續重新審視舊有假設。」
+    </div>
+  </div>
+</section>
+
+<!-- ── CHAPTER 3: SEARCH + PROGRESSIVE DISCLOSURE ──────────────── -->
+<section class="chapter-section" id="search">
+  <div class="container" style="position:relative">
+    <div class="ch-num-bg" style="color:var(--c3)">03</div>
+
+    <div class="ch-eyebrow rev" style="color:var(--c3)">
+      <span style="width:20px;height:1px;background:var(--c3);display:inline-block"></span>
+      第三課 · Progressive Disclosure
+      <span style="width:20px;height:1px;background:var(--c3);display:inline-block"></span>
+    </div>
+    <h2 class="ch-title rev">
+      設計搜尋介面：<br>
+      <span class="acc" style="background:linear-gradient(90deg,var(--c3),var(--gold))">漸進揭露技術</span>
+    </h2>
+
+    <div class="ch-prose rev">
+      <p>搜尋工具對 Claude 來說至關重要——它讓 Claude 能夠主動建構自己的上下文（context）。</p>
+      <p>Claude Code 的演化路徑，展現了工具設計的逐步精煉：</p>
+    </div>
+
+    <div class="disc-stack">
+      <div class="disc-level rev">
+        <div class="gcard disc-card">
+          <div class="disc-num">1</div>
+          <div>
+            <div class="disc-name">RAG 向量資料庫</div>
+            <p class="disc-desc">早期使用 RAG 提供上下文。雖然快速強大，但需要索引與設定，在不同環境中容易不穩定。最重要的是：<strong style="color:var(--text)">Claude 是被動接收</strong>上下文，而非主動搜尋。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disc-arrow rev">↓ 進化</div>
+
+      <div class="disc-level rev">
+        <div class="gcard disc-card">
+          <div class="disc-num">2</div>
+          <div>
+            <div class="disc-name">Grep 工具</div>
+            <p class="disc-desc">給 Claude 一個 Grep 工具，讓它可以搜尋程式碼庫，<strong style="color:var(--text)">主動建構自己的上下文</strong>。這是一個重要的轉變：Claude 開始學會「看」了。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disc-arrow rev">↓ 進化</div>
+
+      <div class="disc-level rev">
+        <div class="gcard disc-card">
+          <div class="disc-num">3</div>
+          <div>
+            <div class="disc-name">Agent Skills + 漸進揭露</div>
+            <p class="disc-desc">引入 Agent Skills，正式確立<strong style="color:var(--c3)">漸進揭露（Progressive Disclosure）</strong>模式：Claude 可以讀取 skill 文件，文件再參照其他文件，遞迴搜尋直到找到所需上下文。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="disc-arrow rev">↓ 最終形態</div>
+
+      <div class="disc-level rev">
+        <div class="gcard disc-card" style="border-color:rgba(255,123,53,0.35);background:rgba(255,123,53,0.03)">
+          <div class="disc-num" style="color:var(--cyan)">4</div>
+          <div>
+            <div class="disc-name" style="color:var(--cyan)">Claude Code Guide 子 Agent</div>
+            <p class="disc-desc">針對「Claude 如何使用 Claude Code」這個特定需求，建立專屬子 Agent。當用戶問起相關問題時，主 Agent 呼叫此子 Agent，它有完整的文件搜尋指南，精確回傳所需答案——<strong style="color:var(--text)">不多也不少</strong>。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool ecosystem -->
+    <div style="margin-top:3rem">
+      <div class="ch-eyebrow rev" style="color:var(--c3);margin-bottom:1rem">
+        <span style="width:16px;height:1px;background:var(--c3);display:inline-block"></span>
+        Claude Code 目前的工具生態
+      </div>
+      <div class="tool-grid">
+        <div class="tool-chip rev">
+          <span class="tc-dot"></span>TodoWrite → Task
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.04s">
+          <span class="tc-dot"></span>AskUserQuestion
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.08s">
+          <span class="tc-dot"></span>ExitPlanMode
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.12s">
+          <span class="tc-dot"></span>Grep / Search
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.16s">
+          <span class="tc-dot"></span>Bash / Code Exec
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.2s">
+          <span class="tc-dot"></span>Agent Skills (漸進揭露)
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.24s">
+          <span class="tc-dot" style="background:var(--gold)"></span>Claude Code Guide Agent
+        </div>
+        <div class="tool-chip rev" style="transition-delay:.28s">
+          <span class="tc-dot" style="background:var(--gold)"></span>~20 工具總計
+        </div>
+      </div>
+    </div>
+
+    <div class="callout rev" style="margin-top:2.5rem;border-color:var(--c3);background:rgba(255,123,53,0.04)">
+      「漸進揭露讓我們可以在不新增工具的情況下，為 Agent 添加新功能——新增工具的門檻很高，因為每一個工具都會讓模型多一個需要思考的選項。」
+    </div>
+  </div>
+</section>
+
+<!-- ── FINALE ───────────────────────────────────────────────────── -->
+<section id="finale">
+  <div class="container">
+    <div class="finale-glow"></div>
+    <div class="finale-eyebrow rev">核心哲學 · Core Philosophy</div>
+    <h2 class="finale-h2 rev">
+      這是一門<span class="g">藝術</span>，<br>不只是科學
+    </h2>
+    <p class="finale-body rev">
+      如果你期待一套嚴格的工具設計規則，這篇文章無法給你。為模型設計工具，既是藝術，也是科學。它高度依賴你使用的模型、Agent 的目標，以及它所在的環境。
+    </p>
+    <div class="mantra-grid rev">
+      <div class="mantra-pill">勤於實驗</div>
+      <div class="mantra-pill">閱讀輸出</div>
+      <div class="mantra-pill">嘗試新方法</div>
+      <div class="mantra-pill accent">像 Agent 一樣觀察</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ───────────────────────────────────────────────────── -->
+<footer>
+  <span class="ft-credit">由 Claude Code · frontend-design 技能重新設計呈現</span>
+  <span class="ft-src">原文：@trq212 · X.com · 2026年2月28日</span>
+</footer>
+
+<script>
+/* ── Theme (localStorage) ────────────────────────────────── */
+let isLight = localStorage.getItem('theme') === 'light';
+function applyTheme() {
+  document.documentElement.classList.toggle('light', isLight);
+}
+function toggleTheme() {
+  isLight = !isLight;
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  applyTheme();
+}
+applyTheme();
+
+/* ── Canvas Background ───────────────────────────────────── */
+(function() {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], hexes = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* hex grid */
+  function buildHexes() {
+    hexes = [];
+    const sz = 38, rows = Math.ceil(H / (sz * 1.732)) + 2;
+    const cols = Math.ceil(W / (sz * 2)) + 2;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        hexes.push({
+          x: c * sz * 2 + (r % 2) * sz + sz,
+          y: r * sz * 1.732 - sz,
+          s: sz - 4
+        });
+      }
+    }
+  }
+  buildHexes();
+  window.addEventListener('resize', buildHexes);
+
+  function drawHex(x, y, s) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i * 60 - 30) * Math.PI / 180;
+      i === 0 ? ctx.moveTo(x + s * Math.cos(a), y + s * Math.sin(a))
+              : ctx.lineTo(x + s * Math.cos(a), y + s * Math.sin(a));
+    }
+    ctx.closePath();
+  }
+
+  /* particles: cyan + gold for this page */
+  const COLORS = ['#00d4ff', '#ffcc00', '#7b2fff', '#ff7b35'];
+  for (let i = 0; i < 55; i++) {
+    particles.push({
+      x: Math.random() * 2000, y: Math.random() * 1200,
+      r: Math.random() * 1.8 + .4,
+      vx: (Math.random() - .5) * .22,
+      vy: (Math.random() - .5) * .22,
+      c: COLORS[Math.floor(Math.random() * COLORS.length)],
+      a: Math.random()
+    });
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, W, H);
+
+    const hexAlpha = isLight ? .025 : .04;
+    ctx.strokeStyle = `rgba(0,200,255,${hexAlpha})`;
+    ctx.lineWidth = .6;
+    hexes.forEach(h => { drawHex(h.x, h.y, h.s); ctx.stroke(); });
+
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.save();
+      ctx.globalAlpha = p.a * (isLight ? .25 : .55);
+      ctx.fillStyle = p.c;
+      ctx.shadowColor = p.c;
+      ctx.shadowBlur = isLight ? 4 : 10;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+  animate();
+
+})();
+
+/* ── Scroll Progress ─────────────────────────────────────── */
+const prog = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - innerHeight);
+  prog.style.width = (pct * 100) + '%';
+}, { passive: true });
+
+/* ── Scroll Reveal ───────────────────────────────────────── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      const delay = parseFloat(e.target.style.transitionDelay || 0);
+      setTimeout(() => e.target.classList.add('vis'), delay * 1000);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.rev').forEach(el => io.observe(el));
+
+/* ── Spectrum hover ──────────────────────────────────────── */
+document.querySelectorAll('.sp-box').forEach(box => {
+  box.addEventListener('mouseenter', () => { box.style.transform = 'translateY(-4px)'; });
+  box.addEventListener('mouseleave', () => { box.style.transform = 'translateY(0)'; });
+});
+</script>
+</body>
+</html>
