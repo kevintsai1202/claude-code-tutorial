@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lessons from Building Claude Code: How We Use Skills</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg: #050814; --bg2: #0a1125; --bg3: #121a33; --glass: rgba(8, 15, 36, 0.74); --glass-strong: rgba(4, 10, 24, 0.86);
+  --border: rgba(123, 47, 255, 0.18); --border-strong: rgba(123, 47, 255, 0.3); --text: #eff5ff; --text-dim: rgba(220, 228, 247, 0.78);
+  --cyan: #00d4ff; --violet: #8a54ff; --mint: #00e9b5; --gold: #ffc857; --pink: #ff5aa5; --orange: #ff8a3d;
+  --display: 'Orbitron', monospace; --head: 'Rajdhani', sans-serif; --mono: 'IBM Plex Mono', monospace; --radius: 18px; --shadow: 0 20px 46px rgba(0,0,0,0.42);
+}
+html.light {
+  --bg: #eef4ff; --bg2: #e3ebfb; --bg3: #d9e3f8; --glass: rgba(246, 249, 255, 0.84); --glass-strong: rgba(236, 241, 255, 0.92);
+  --border: rgba(106, 54, 204, 0.16); --border-strong: rgba(106, 54, 204, 0.28); --text: #101b31; --text-dim: rgba(43, 60, 96, 0.78);
+  --cyan: #006ba8; --violet: #6a36cc; --mint: #007e65; --gold: #9c6a00; --pink: #b00067; --orange: #bf5b00; --shadow: 0 18px 40px rgba(86, 108, 156, 0.18);
+}
+body {
+  font-family: var(--mono); color: var(--text); line-height: 1.7; overflow-x: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(138, 84, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 75% 14%, rgba(0, 212, 255, 0.12), transparent 26%),
+    linear-gradient(180deg, var(--bg), #04060f 72%);
+}
+html.light body {
+  background:
+    radial-gradient(circle at top left, rgba(106, 54, 204, 0.12), transparent 24%),
+    radial-gradient(circle at 75% 14%, rgba(0, 107, 168, 0.1), transparent 26%),
+    linear-gradient(180deg, var(--bg), #f4f8ff 72%);
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(144, 166, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(144, 166, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+#progress { position: fixed; top: 0; left: 0; z-index: 200; width: 0; height: 3px; background: linear-gradient(90deg, var(--violet), var(--cyan), var(--gold)); }
+nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 120; height: 62px; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  background: rgba(3, 7, 18, 0.74); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(123, 47, 255, 0.08);
+}
+html.light nav { background: rgba(243, 247, 255, 0.82); border-bottom-color: rgba(106, 54, 204, 0.08); }
+.nav-left, .nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-home, .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.nav-home:hover, .nav-link:hover, .nav-link.active { color: var(--violet); }
+.nav-brand { font-family: var(--display); font-size: 0.62rem; letter-spacing: 0.18em; color: var(--violet); text-transform: uppercase; }
+.nav-sep { width: 1px; height: 16px; background: var(--border); }
+.theme-btn { width: 38px; height: 21px; position: relative; border: 1px solid rgba(123, 47, 255, 0.28); border-radius: 999px; background: rgba(123, 47, 255, 0.12); cursor: pointer; }
+.theme-btn::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 10px var(--violet); transition: transform .3s ease; }
+html.light .theme-btn { border-color: rgba(255, 165, 0, 0.4); background: rgba(255, 180, 0, 0.16); }
+html.light .theme-btn::after { transform: translateX(17px); }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 10px var(--mint); }
+.page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+.hero { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr); gap: 2rem; align-items: center; padding: 90px 0 4rem; }
+.eyebrow { display: inline-flex; align-items: center; gap: 0.7rem; margin-bottom: 1.4rem; color: var(--violet); font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase; }
+.eyebrow::before, .eyebrow::after { content: ''; width: 24px; height: 1px; background: currentColor; }
+.hero-title { font-family: var(--display); font-size: clamp(2.1rem, 5vw, 4.6rem); line-height: 1.05; letter-spacing: -0.04em; }
+.hero-title .grad { background: linear-gradient(120deg, var(--violet), var(--cyan), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-subtitle { max-width: 60ch; margin-top: 1.3rem; color: var(--text-dim); font-size: 0.9rem; }
+.badge-row, .chip-row { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+.badge-row { margin-top: 1.6rem; }
+.badge, .chip {
+  padding: 0.32rem 0.7rem; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text-dim);
+  font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.hero-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; margin-top: 1.8rem; }
+.card, .meta-card, .faq-item, .mini-card, .timeline-card {
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(18px);
+}
+.meta-card { padding: 1rem; }
+.meta-value { font-family: var(--display); font-size: 1.1rem; color: var(--violet); }
+.meta-label { margin-top: 0.35rem; color: var(--text-dim); font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.hero-panel { padding: 1.25rem; border-radius: 22px; background: var(--glass-strong); border: 1px solid var(--border-strong); box-shadow: var(--shadow); }
+.code-box { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: #050913; }
+html.light .code-box { background: #edf2ff; }
+.code-head { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06); }
+.code-dots { display: flex; gap: 0.35rem; }
+.code-dots span { width: 9px; height: 9px; border-radius: 50%; }
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #ffbd2e; }
+.code-dots span:nth-child(3) { background: #28c840; }
+.code-head strong { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
+.code-body { padding: 1rem; color: #d8d4ff; font-size: 0.74rem; }
+html.light .code-body { color: #3f2d8a; }
+.code-body pre { white-space: pre-wrap; }
+.source-note { margin-top: 1rem; color: var(--text-dim); font-size: 0.68rem; }
+.source-note a { color: var(--violet); }
+.section { padding: 4.5rem 0 0; }
+.section-head { margin-bottom: 1.8rem; }
+.section-label { color: var(--cyan); font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.section-title { margin-top: 0.6rem; font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.05; }
+.section-desc { margin-top: 0.7rem; max-width: 62ch; color: var(--text-dim); font-size: 0.9rem; }
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+.span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; } .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; }
+.card { padding: 1.35rem; }
+.card h3, .mini-card h3, .timeline-card h3, .faq-item summary { font-family: var(--head); font-size: 1.2rem; }
+.card p, .mini-card p, .timeline-card p { margin-top: 0.65rem; color: var(--text-dim); font-size: 0.82rem; }
+.list { margin-top: 0.85rem; list-style: none; display: grid; gap: 0.7rem; }
+.list li { padding-left: 1.2rem; position: relative; color: var(--text-dim); font-size: 0.8rem; }
+.list li::before { content: ''; position: absolute; left: 0; top: 0.52rem; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.principle { padding-left: 1rem; border-left: 3px solid; }
+.timeline { display: grid; gap: 1rem; }
+.timeline-card { position: relative; padding: 1.35rem 1.35rem 1.35rem 4.6rem; }
+.timeline-num {
+  position: absolute; left: 1.15rem; top: 1.1rem; width: 2.5rem; height: 2.5rem; border-radius: 14px; display: grid; place-items: center;
+  font-family: var(--display); font-size: 0.78rem; background: rgba(138, 84, 255, 0.12); color: var(--violet); border: 1px solid rgba(138, 84, 255, 0.22);
+}
+.mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.mini-card { padding: 1.2rem; }
+.faq-list { display: grid; gap: 1rem; }
+.faq-item { padding: 0.2rem 1rem; }
+.faq-item summary { list-style: none; cursor: pointer; padding: 1rem 0; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item p { padding: 0 0 1rem; color: var(--text-dim); font-size: 0.82rem; }
+.cta {
+  margin-top: 4.5rem; padding: 2rem; border-radius: 28px; text-align: center; background: linear-gradient(135deg, rgba(138,84,255,0.12), rgba(0,212,255,0.08)), var(--glass-strong);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow);
+}
+.cta h2 { font-family: var(--display); font-size: clamp(1.7rem, 3vw, 2.8rem); }
+.cta p { margin: 0.9rem auto 0; max-width: 58ch; color: var(--text-dim); font-size: 0.85rem; }
+.cta-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.9rem; margin-top: 1.3rem; }
+.cta-link {
+  padding: 0.75rem 1.1rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--border-strong); color: var(--text); background: rgba(255,255,255,0.04);
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+footer { padding: 2rem 0 0; color: var(--text-dim); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 100px; }
+  .hero-meta, .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+}
+@media (max-width: 720px) {
+  nav { padding: 0 1rem; }
+  .nav-right .nav-link, .nav-sep:nth-of-type(2), .nav-dot { display: none; }
+  .page { padding: 0 1rem 3rem; }
+  .hero-meta, .mini-grid { grid-template-columns: 1fr; }
+  .timeline-card { padding-left: 1.25rem; padding-top: 4rem; }
+  .timeline-num { left: 1rem; top: 1rem; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<nav>
+  <div class="nav-left">
+    <a class="nav-home" href="index.html">← Back</a>
+    <div class="nav-sep"></div>
+    <div class="nav-brand">CC // Skills Lessons</div>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#principles">Principles</a>
+    <a class="nav-link" href="#anatomy">Anatomy</a>
+    <a class="nav-link" href="#patterns">Patterns</a>
+    <a class="nav-link" href="#pitfalls">Pitfalls</a>
+    <div class="nav-sep"></div>
+    <span>🌙</span>
+    <button class="theme-btn" id="theme-btn" aria-label="切換主題"></button>
+    <span>☀️</span>
+    <div class="nav-sep"></div>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="eyebrow reveal">How We Use Skills · Claude Code</div>
+      <h1 class="hero-title reveal">Lessons from Building <span class="grad">Claude Code</span><br>How We Use Skills</h1>
+      <p class="hero-subtitle reveal">
+        這篇頁面根據 Thariq 分享的 X Article metadata 重組。核心問題不是「Skills 能不能做事」，而是 <strong>在高度彈性的前提下，怎麼建立可預期、可分發、可維護</strong> 的 skill 設計方法。
+      </p>
+      <div class="badge-row reveal">
+        <span class="badge">Skills</span>
+        <span class="badge">Extension Points</span>
+        <span class="badge">Prompt Architecture</span>
+        <span class="badge">Workflow Design</span>
+      </div>
+      <div class="hero-meta reveal">
+        <div class="meta-card"><div class="meta-value">2026-03-17</div><div class="meta-label">Source Publish</div></div>
+        <div class="meta-card"><div class="meta-value">5 Rules</div><div class="meta-label">Design Principles</div></div>
+        <div class="meta-card"><div class="meta-value">3 Modes</div><div class="meta-label">Skill Usage</div></div>
+        <div class="meta-card"><div class="meta-value">4 Failures</div><div class="meta-label">Common Pitfalls</div></div>
+      </div>
+    </div>
+    <aside class="hero-panel reveal">
+      <div class="code-box">
+        <div class="code-head">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <strong>skills-playbook.md</strong>
+        </div>
+        <div class="code-body"><pre>1. Skills 是 extension point，不是萬能大 prompt
+2. 規則越清楚，技能越容易重複使用
+3. 內容太多時要做 progressive disclosure
+4. Skill 之間要有邊界，避免互搶觸發
+5. 分發與維護要像產品，不像一次性提示詞</pre></div>
+      </div>
+      <div class="source-note">
+        來源：
+        <a href="https://x.com/trq212/status/2033949937936085378?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">X 貼文</a>
+        ·
+        <a href="http://x.com/i/article/2033772621536591872" target="_blank" rel="noreferrer">X Article ID 2033772621536591872</a>
+      </div>
+      <div class="source-note">
+        可驗證 metadata：標題為 <strong>Lessons from Building Claude Code: How We Use Skills</strong>；preview 指向 Skills 是 Claude Code 最常用的 extension point 之一，但最佳實踐並不直觀。
+      </div>
+    </aside>
+  </section>
+
+  <section class="section" id="principles">
+    <div class="section-head reveal">
+      <div class="section-label">Principles</div>
+      <h2 class="section-title">Skill 之所以重要，不是因為它很神，而是因為它是穩定的擴充點</h2>
+      <p class="section-desc">
+        從 preview 可讀到兩個關鍵：Skills 很常用，且彈性很高。這代表它的價值在於「可持續擴充」，但風險也在於「很容易做成每個人都不一樣、每次都不一樣」。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-4 reveal principle" style="border-left-color:var(--violet)">
+        <h3>把 Skill 視為產品介面</h3>
+        <p>Skill 不是一次性 prompt 存檔，而是一個對 agent 開放的穩定介面。它需要明確說明觸發條件、輸入前提、步驟、例外處理與輸出標準。</p>
+      </article>
+      <article class="card span-4 reveal principle" style="border-left-color:var(--cyan)">
+        <h3>讓模型少猜一點</h3>
+        <p>當 instructions、references、scripts、fail states 都清楚時，模型會更像 operator；模糊則會讓它回到 improvisation 模式。</p>
+      </article>
+      <article class="card span-4 reveal principle" style="border-left-color:var(--gold)">
+        <h3>技能要能分發與複用</h3>
+        <p>一個好的 skill 不只在作者機器上有效，也應該能被團隊共享、版本化、調整與驗證。這才叫 extension point。</p>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>5 個設計原則</h3>
+        <ul class="list">
+          <li>定義清楚觸發邊界，避免什麼都想接。</li>
+          <li>把大資訊拆成 references，不要塞滿主檔。</li>
+          <li>能用結構化輸入就不要靠自由發揮。</li>
+          <li>先解決單一任務，再考慮跨技能協作。</li>
+          <li>讓使用方式與維護方式都足夠簡單。</li>
+        </ul>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>什麼情況最適合做成 Skill</h3>
+        <ul class="list">
+          <li>這個任務會重複出現，而且你總是在補同樣的提醒。</li>
+          <li>你希望在新 session 中維持一致的輸出方式。</li>
+          <li>這個工作需要固定流程，而不是每次重新想一次做法。</li>
+          <li>你打算讓其他人也能用同樣的做法執行。</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="anatomy">
+    <div class="section-head reveal">
+      <div class="section-label">Anatomy</div>
+      <h2 class="section-title">一個實用 Skill 的結構，不應只有一個很長的 SKILL.md</h2>
+      <p class="section-desc">
+        彈性高不代表把所有東西都塞進單一檔案。真正可維護的 skill，會把觸發邏輯、任務流程、輔助資料與執行工具分層處理。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-5 reveal">
+        <h3>推薦結構</h3>
+        <div class="code-box" style="margin-top:0.8rem">
+          <div class="code-body"><pre>your-skill/
+├─ SKILL.md
+├─ references/
+│  ├─ quick-start.md
+│  └─ domain-rules.md
+└─ scripts/
+   └─ helper-tool.ps1</pre></div>
+        </div>
+        <p>`SKILL.md` 放決策流程與觸發邊界；`references/` 放會膨脹 token 的領域規則；`scripts/` 放純指令不適合處理的計算或轉換工作。</p>
+      </article>
+      <article class="card span-7 reveal">
+        <h3>3 種常見使用模式</h3>
+        <div class="chip-row" style="margin-top:0.8rem">
+          <span class="chip">Single Task Skill</span>
+          <span class="chip">Reference-Heavy Skill</span>
+          <span class="chip">Tool-Assisted Skill</span>
+        </div>
+        <ul class="list">
+          <li><strong>Single Task Skill：</strong> 一條明確流程，例如整理 CSV、產生 briefing、產出固定格式摘要。</li>
+          <li><strong>Reference-Heavy Skill：</strong> 規則多、背景深，需要以 references 做 progressive disclosure。</li>
+          <li><strong>Tool-Assisted Skill：</strong> 技能內需要呼叫腳本、CLI 或外部工具，讓 agent 不只會寫文字，也能執行任務。</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="patterns">
+    <div class="section-head reveal">
+      <div class="section-label">Patterns</div>
+      <h2 class="section-title">如何讓 Skills 在真實工作中穩定運作</h2>
+      <p class="section-desc">
+        真正的差別不在於「有沒有 skill」，而在於 skill 是不是被設計成能在不同請求、不同 session、不同使用者手上都維持一致結果。
+      </p>
+    </div>
+    <div class="timeline">
+      <article class="timeline-card reveal">
+        <div class="timeline-num">01</div>
+        <h3>先設計觸發條件，再寫內容</h3>
+        <p>很多 skill 的失敗不是內容太差，而是根本不會在正確時機被啟動。先定義正向觸發詞、負向邊界與適用上下文，之後再補工作流。</p>
+      </article>
+      <article class="timeline-card reveal">
+        <div class="timeline-num">02</div>
+        <h3>資訊要漸進揭露，不要每次整包讀取</h3>
+        <p>如果所有規則都在主檔，skill 只會越來越肥。把高頻摘要放前面，低頻細節放 references，需要時再讀，才能讓技能保持靈活又不失控。</p>
+      </article>
+      <article class="timeline-card reveal">
+        <div class="timeline-num">03</div>
+        <h3>輸入輸出要結構化</h3>
+        <p>告訴模型「收到什麼、回傳什麼、什麼算完成」。這能大幅降低風格飄移，也讓後續測試與分發更容易。</p>
+      </article>
+      <article class="timeline-card reveal">
+        <div class="timeline-num">04</div>
+        <h3>把技能當成可演化資產</h3>
+        <p>Skill 不應寫完就丟著。它需要版本化、測試、回饋迭代，必要時拆分成多個較窄的 skill，而不是讓單一 skill 無限膨脹。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="pitfalls">
+    <div class="section-head reveal">
+      <div class="section-label">Pitfalls</div>
+      <h2 class="section-title">4 個最常見的 Skills 誤用方式</h2>
+      <p class="section-desc">
+        當人們說「Skills 不穩」時，很多時候其實是 skill 設計不穩。下面四種情況最容易讓 extension point 變成混亂源。
+      </p>
+    </div>
+    <div class="mini-grid">
+      <article class="mini-card reveal">
+        <h3>太寬</h3>
+        <p>一個 skill 什麼都能做，最後等於什麼都做不好，還會跟其他技能互相搶觸發。</p>
+      </article>
+      <article class="mini-card reveal">
+        <h3>太胖</h3>
+        <p>所有規則都塞進主檔，token 成本高，也很難知道模型現在到底依據哪一段規則在做事。</p>
+      </article>
+      <article class="mini-card reveal">
+        <h3>太模糊</h3>
+        <p>只描述目標，不描述步驟、邊界與完成定義，最後每次都像重新即興。</p>
+      </article>
+    </div>
+    <div class="grid" style="margin-top:1rem">
+      <article class="card span-8 reveal">
+        <h3>修正思路</h3>
+        <ul class="list">
+          <li>拆成多個窄 skill，各自負責單一責任。</li>
+          <li>把大篇幅背景規則移到 references，主檔只保留調度邏輯。</li>
+          <li>補上 negative boundaries，避免誤觸發。</li>
+          <li>補上 output contract，讓 skill 能被測試與驗證。</li>
+        </ul>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>一句話總結</h3>
+        <p>Skills 最怕的不是能力不夠，而是沒有被當成介面來設計。當它只是另一種 prompt 存檔方式，就很難長期維護。</p>
+      </article>
+    </div>
+
+    <div class="faq-list" style="margin-top:1rem">
+      <details class="faq-item reveal">
+        <summary>Skill 和單純儲存 prompt 的差別是什麼？</summary>
+        <p>差別在於 skill 是可以被系統化調用的工作介面。它除了文字內容，還包含觸發邊界、外部資料讀取方式、甚至輔助腳本與 reference 檔案。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>什麼時候應該拆 skill，而不是繼續擴充？</summary>
+        <p>當一個 skill 開始接收多種互不相干的任務、需要大量例外規則，或常常誤觸發時，就該拆。拆分通常比補更多 if/else 更有效。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>如果我要給團隊使用，第一步該做什麼？</summary>
+        <p>先把輸入格式、完成定義與 references 整理好，再建立最小測試集。團隊共享 skill 的關鍵不是寫得多華麗，而是每個人用起來都得到一致結果。</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cta reveal">
+    <h2>把 Skill 當成 extension point，而不是備忘錄</h2>
+    <p>這篇文章背後最有價值的觀點，是把 skills 從「方便重用的 prompt」提升成「Claude Code 的擴充介面」。只要介面定義清楚，skill 才能被測試、分發、疊代與組合。</p>
+    <div class="cta-links">
+      <a class="cta-link" href="index.html">回首頁看全部文章</a>
+      <a class="cta-link" href="https://x.com/trq212/status/2033949937936085378?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">查看原始貼文</a>
+    </div>
+  </section>
+
+  <footer>
+    <div>Rebuilt for this project architecture · Static HTML article</div>
+    <div style="margin-top:0.4rem">Source metadata: Thariq · 2026-03-17 · X Article preview title and summary clues</div>
+  </footer>
+</main>
+
+<script>
+/* 切換網站主題，並將偏好保存到 localStorage。 */
+function setupThemeToggle() {
+  const themeButton = document.getElementById('theme-btn');
+  let isLight = localStorage.getItem('theme') === 'light';
+  function applyTheme() {
+    document.documentElement.classList.toggle('light', isLight);
+  }
+  themeButton.addEventListener('click', function () {
+    isLight = !isLight;
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    applyTheme();
+  });
+  applyTheme();
+}
+
+/* 根據捲動進度更新頂部進度條寬度。 */
+function setupScrollProgress() {
+  const progressBar = document.getElementById('progress');
+  function updateProgress() {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+    progressBar.style.width = percent + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}
+
+/* 進入可視範圍時顯示區塊，降低首屏資訊壓力。 */
+function setupRevealAnimation() {
+  const items = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  items.forEach(function (item) {
+    observer.observe(item);
+  });
+}
+
+/* 根據目前可視章節同步更新導覽列高亮狀態。 */
+function setupActiveSectionLinks() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  function updateActiveLink() {
+    let currentId = '';
+    sections.forEach(function (section) {
+      const top = section.getBoundingClientRect().top;
+      if (top <= 140) {
+        currentId = section.id;
+      }
+    });
+    links.forEach(function (link) {
+      const targetId = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', targetId === currentId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  updateActiveLink();
+}
+
+setupThemeToggle();
+setupScrollProgress();
+setupRevealAnimation();
+setupActiveSectionLinks();
+</script>
+</body>
+</html>

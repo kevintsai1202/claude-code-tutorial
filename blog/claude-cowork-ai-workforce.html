@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Cowork 全套工作流：帶你組建第一支 AI 員工軍團</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg:#050915; --bg2:#091126; --bg3:#121b34; --glass:rgba(8,17,38,.74); --glass-strong:rgba(4,10,24,.86);
+  --border:rgba(0,231,183,.18); --border-strong:rgba(0,231,183,.3); --text:#edf6ff; --text-dim:rgba(214,228,247,.78);
+  --cyan:#00d4ff; --teal:#00e7b7; --gold:#ffc857; --orange:#ff8a3d; --pink:#ff5aa5; --display:'Orbitron', monospace; --head:'Rajdhani', sans-serif; --mono:'IBM Plex Mono', monospace; --radius:18px; --shadow:0 20px 46px rgba(0,0,0,.42);
+}
+html.light {
+  --bg:#eef5ff; --bg2:#e2edfb; --bg3:#d8e4f7; --glass:rgba(246,249,255,.84); --glass-strong:rgba(235,242,255,.92);
+  --border:rgba(0,126,101,.16); --border-strong:rgba(0,126,101,.28); --text:#101b31; --text-dim:rgba(43,60,96,.78);
+  --cyan:#006ba8; --teal:#007e65; --gold:#9c6a00; --orange:#bf5b00; --pink:#b00067; --shadow:0 18px 40px rgba(86,108,156,.18);
+}
+body {
+  font-family: var(--mono); color: var(--text); line-height: 1.7; overflow-x: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(0,231,183,.16), transparent 24%),
+    radial-gradient(circle at 78% 15%, rgba(255,138,61,.12), transparent 24%),
+    linear-gradient(180deg, var(--bg), #03060f 72%);
+}
+html.light body {
+  background:
+    radial-gradient(circle at top left, rgba(0,126,101,.12), transparent 24%),
+    radial-gradient(circle at 78% 15%, rgba(191,91,0,.1), transparent 24%),
+    linear-gradient(180deg, var(--bg), #f4f8ff 72%);
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: linear-gradient(rgba(144,166,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(144,166,255,.035) 1px, transparent 1px);
+  background-size:44px 44px;
+}
+#progress { position:fixed; top:0; left:0; z-index:200; width:0; height:3px; background:linear-gradient(90deg, var(--teal), var(--cyan), var(--gold)); }
+nav {
+  position:fixed; inset:0 0 auto 0; z-index:120; height:62px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between;
+  background:rgba(3,7,18,.74); backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,231,183,.08);
+}
+html.light nav { background:rgba(243,247,255,.82); border-bottom-color:rgba(0,126,101,.08); }
+.nav-left, .nav-right { display:flex; align-items:center; gap:1rem; }
+.nav-home, .nav-link { color:var(--text-dim); text-decoration:none; font-size:.58rem; letter-spacing:.16em; text-transform:uppercase; }
+.nav-home:hover, .nav-link:hover, .nav-link.active { color:var(--teal); }
+.nav-brand { font-family:var(--display); font-size:.62rem; letter-spacing:.18em; color:var(--teal); text-transform:uppercase; }
+.nav-sep { width:1px; height:16px; background:var(--border); }
+.theme-btn { width:38px; height:21px; position:relative; border:1px solid rgba(0,231,183,.28); border-radius:999px; background:rgba(0,231,183,.12); cursor:pointer; }
+.theme-btn::after { content:''; position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:var(--teal); box-shadow:0 0 10px var(--teal); transition:transform .3s ease; }
+html.light .theme-btn { border-color:rgba(255,165,0,.4); background:rgba(255,180,0,.16); }
+html.light .theme-btn::after { transform:translateX(17px); }
+.nav-dot { width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+.page { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 1.5rem 4rem; }
+.hero { min-height:100vh; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr); gap:2rem; align-items:center; padding:90px 0 4rem; }
+.eyebrow { display:inline-flex; align-items:center; gap:.7rem; margin-bottom:1.4rem; color:var(--teal); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase; }
+.eyebrow::before, .eyebrow::after { content:''; width:24px; height:1px; background:currentColor; }
+.hero-title { font-family:var(--display); font-size:clamp(2.1rem,5vw,4.5rem); line-height:1.05; letter-spacing:-.04em; }
+.hero-title .grad { background:linear-gradient(120deg, var(--teal), var(--cyan), var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-subtitle { max-width:60ch; margin-top:1.3rem; color:var(--text-dim); font-size:.9rem; }
+.badge-row { display:flex; flex-wrap:wrap; gap:.65rem; margin-top:1.6rem; }
+.badge, .chip { padding:.32rem .7rem; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); color:var(--text-dim); font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; }
+.hero-meta { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:.9rem; margin-top:1.8rem; }
+.card, .meta-card, .faq-item, .role-card, .flow-card { background:var(--glass); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter:blur(18px); }
+.meta-card { padding:1rem; }
+.meta-value { font-family:var(--display); font-size:1.1rem; color:var(--teal); }
+.meta-label { margin-top:.35rem; color:var(--text-dim); font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; }
+.hero-panel { padding:1.25rem; border-radius:22px; background:var(--glass-strong); border:1px solid var(--border-strong); box-shadow:var(--shadow); }
+.panel-box { border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.06); background:#050913; }
+html.light .panel-box { background:#edf4ff; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; padding:.75rem 1rem; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.06); }
+.dots { display:flex; gap:.35rem; }
+.dots span { width:9px; height:9px; border-radius:50%; }
+.dots span:nth-child(1){background:#ff5f57;} .dots span:nth-child(2){background:#ffbd2e;} .dots span:nth-child(3){background:#28c840;}
+.panel-head strong { font-size:.58rem; color:var(--text-dim); letter-spacing:.14em; text-transform:uppercase; }
+.panel-body { padding:1rem; color:#cbfff2; font-size:.74rem; }
+html.light .panel-body { color:#116651; }
+.panel-body pre { white-space:pre-wrap; }
+.source-note { margin-top:1rem; color:var(--text-dim); font-size:.68rem; }
+.source-note a { color:var(--teal); }
+.section { padding:4.5rem 0 0; }
+.section-head { margin-bottom:1.8rem; }
+.section-label { color:var(--cyan); font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; }
+.section-title { margin-top:.6rem; font-family:var(--head); font-size:clamp(1.8rem,3vw,2.6rem); line-height:1.05; }
+.section-desc { margin-top:.7rem; max-width:62ch; color:var(--text-dim); font-size:.9rem; }
+.grid { display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:1rem; }
+.span-4 { grid-column:span 4; } .span-5 { grid-column:span 5; } .span-6 { grid-column:span 6; } .span-7 { grid-column:span 7; } .span-8 { grid-column:span 8; }
+.card, .role-card, .flow-card { padding:1.35rem; }
+.card h3, .role-card h3, .flow-card h3, .faq-item summary { font-family:var(--head); font-size:1.2rem; }
+.card p, .role-card p, .flow-card p { margin-top:.65rem; color:var(--text-dim); font-size:.82rem; }
+.list { margin-top:.85rem; list-style:none; display:grid; gap:.7rem; }
+.list li { padding-left:1.2rem; position:relative; color:var(--text-dim); font-size:.8rem; }
+.list li::before { content:''; position:absolute; left:0; top:.52rem; width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+.role-grid, .faq-list { display:grid; gap:1rem; }
+.role-grid { grid-template-columns:repeat(3, minmax(0,1fr)); }
+.role-card { border-top:3px solid; }
+.timeline { display:grid; gap:1rem; }
+.flow-card { position:relative; padding-left:4.6rem; }
+.flow-num {
+  position:absolute; left:1.15rem; top:1.1rem; width:2.5rem; height:2.5rem; border-radius:14px; display:grid; place-items:center; font-family:var(--display); font-size:.78rem;
+  background:rgba(0,231,183,.12); color:var(--teal); border:1px solid rgba(0,231,183,.22);
+}
+.faq-item { padding:.2rem 1rem; }
+.faq-item summary { list-style:none; cursor:pointer; padding:1rem 0; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item p { padding:0 0 1rem; color:var(--text-dim); font-size:.82rem; }
+.cta {
+  margin-top:4.5rem; padding:2rem; border-radius:28px; text-align:center; background:linear-gradient(135deg, rgba(0,231,183,.12), rgba(255,138,61,.08)), var(--glass-strong);
+  border:1px solid var(--border-strong); box-shadow:var(--shadow);
+}
+.cta h2 { font-family:var(--display); font-size:clamp(1.7rem,3vw,2.8rem); }
+.cta p { margin:.9rem auto 0; max-width:58ch; color:var(--text-dim); font-size:.85rem; }
+.cta-links { display:flex; justify-content:center; flex-wrap:wrap; gap:.9rem; margin-top:1.3rem; }
+.cta-link { padding:.75rem 1.1rem; border-radius:999px; text-decoration:none; border:1px solid var(--border-strong); color:var(--text); background:rgba(255,255,255,.04); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; }
+footer { padding:2rem 0 0; color:var(--text-dim); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; }
+.reveal { opacity:0; transform:translateY(24px); transition:opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+@media (max-width: 980px) {
+  .hero { grid-template-columns:1fr; min-height:auto; padding-top:100px; }
+  .hero-meta, .role-grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column:span 12; }
+}
+@media (max-width: 720px) {
+  nav { padding:0 1rem; }
+  .nav-right .nav-link, .nav-sep:nth-of-type(2), .nav-dot { display:none; }
+  .page { padding:0 1rem 3rem; }
+  .hero-meta, .role-grid { grid-template-columns:1fr; }
+  .flow-card { padding-left:1.25rem; padding-top:4rem; }
+  .flow-num { left:1rem; top:1rem; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<nav>
+  <div class="nav-left">
+    <a class="nav-home" href="index.html">← Back</a>
+    <div class="nav-sep"></div>
+    <div class="nav-brand">CC // AI Workforce</div>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#roles">Roles</a>
+    <a class="nav-link" href="#workflow">Workflow</a>
+    <a class="nav-link" href="#ops">Ops</a>
+    <a class="nav-link" href="#pitfalls">Pitfalls</a>
+    <div class="nav-sep"></div>
+    <span>🌙</span>
+    <button class="theme-btn" id="theme-btn" aria-label="切換主題"></button>
+    <span>☀️</span>
+    <div class="nav-sep"></div>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="eyebrow reveal">Claude Cowork · AI Workforce</div>
+      <h1 class="hero-title reveal">Claude Cowork 全套工作流<br><span class="grad">帶你組建第一支 AI 員工軍團</span></h1>
+      <p class="hero-subtitle reveal">
+        這篇頁面根據 `2026-03-18` 的 X Article metadata 重組。主題不是單純教你安裝 Cowork，而是把它變成一套可分工、可交接、可持續運作的 <strong>AI 員工軍團工作流</strong>。
+      </p>
+      <div class="badge-row reveal">
+        <span class="badge">Claude Cowork</span>
+        <span class="badge">AI Workforce</span>
+        <span class="badge">Role Design</span>
+        <span class="badge">Workflow Ops</span>
+      </div>
+      <div class="hero-meta reveal">
+        <div class="meta-card"><div class="meta-value">2026-03-18</div><div class="meta-label">Source Publish</div></div>
+        <div class="meta-card"><div class="meta-value">3 Roles</div><div class="meta-label">Core Team</div></div>
+        <div class="meta-card"><div class="meta-value">5 Steps</div><div class="meta-label">Ops Loop</div></div>
+        <div class="meta-card"><div class="meta-value">4 Risks</div><div class="meta-label">Failure Modes</div></div>
+      </div>
+    </div>
+    <aside class="hero-panel reveal">
+      <div class="panel-box">
+        <div class="panel-head">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <strong>ai-workforce.md</strong>
+        </div>
+        <div class="panel-body"><pre>1. 先定義角色，不要先丟一堆任務
+2. AI 負責草稿、研究、技術執行
+3. 人類負責判斷、承諾、對外溝通
+4. 每個任務都要有完成定義
+5. 每天用同一節奏做 handoff</pre></div>
+      </div>
+      <div class="source-note">
+        來源：
+        <a href="https://x.com/imaxichuhai/status/2034259904853074033?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">X 貼文</a>
+        ·
+        <a href="http://x.com/i/article/2034256530124701696" target="_blank" rel="noreferrer">X Article ID 2034256530124701696</a>
+      </div>
+      <div class="source-note">
+        可驗證 metadata：標題為 <strong>Claude Cowork 全套工作流：带你组建第一支 AI 员工军团</strong>；preview 明確指出多數人棄用 Cowork 的原因在於不理解工作流，而不是工具本身不行。
+      </div>
+    </aside>
+  </section>
+
+  <section class="section" id="roles">
+    <div class="section-head reveal">
+      <div class="section-label">Roles</div>
+      <h2 class="section-title">先把 AI 當成團隊角色，不要只把它當一個聊天框</h2>
+      <p class="section-desc">
+        如果你想組建「AI 員工軍團」，第一步不是寫更聰明的 prompt，而是定義每個角色負責什麼、不負責什麼，讓工作不再混成一團。
+      </p>
+    </div>
+    <div class="role-grid">
+      <article class="role-card reveal" style="border-top-color:var(--teal)">
+        <h3>AI 執行員</h3>
+        <p>負責草稿、研究、彙整、技術執行與可標準化的流程。重點是穩定輸出，不是最終拍板。</p>
+        <ul class="list">
+          <li>資料彙整與研究摘要</li>
+          <li>內容初稿與格式整理</li>
+          <li>固定流程的自動執行</li>
+        </ul>
+      </article>
+      <article class="role-card reveal" style="border-top-color:var(--cyan)">
+        <h3>人類管理者</h3>
+        <p>負責決策、優先順序、關係維護與高風險判斷。你不是什麼都自己做，而是決定哪些事情可以交給 AI。</p>
+        <ul class="list">
+          <li>設定目標與成功標準</li>
+          <li>判斷最終採用版本</li>
+          <li>對外承諾與責任歸屬</li>
+        </ul>
+      </article>
+      <article class="role-card reveal" style="border-top-color:var(--gold)">
+        <h3>營運助理</h3>
+        <p>無論是真人助理還是半自動流程，這個角色負責發送、排程、歸檔與追蹤，讓交辦真正落地。</p>
+        <ul class="list">
+          <li>排程與行事曆處理</li>
+          <li>檔案管理與交付跟進</li>
+          <li>把 AI 產出轉成可執行任務</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="workflow">
+    <div class="section-head reveal">
+      <div class="section-label">Workflow</div>
+      <h2 class="section-title">一支 AI 員工軍團至少需要一條固定的協作鏈</h2>
+      <p class="section-desc">
+        工具不是問題，缺的是節奏。當同一條 handoff 鏈每天都用同樣方式執行，AI 才會開始像團隊成員，而不是隨機產生文字的助手。
+      </p>
+    </div>
+    <div class="timeline">
+      <article class="flow-card reveal">
+        <div class="flow-num">01</div>
+        <h3>晨間 brief：定義今天的主線任務</h3>
+        <p>先說清楚今天最重要的是什麼、截止時間是什麼、哪些任務可以交給 AI，哪些必須由人類拍板。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">02</div>
+        <h3>交辦格式化：每個任務都寫明 why / done / access</h3>
+        <p>沒有背景、完成定義與所需資料入口，AI 只能猜。任務描述越標準，AI 的表現越接近專業員工。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">03</div>
+        <h3>AI 執行：先做草稿、摘要與可重複工作</h3>
+        <p>把高頻、可結構化、容易驗證的工作優先交出去，例如研究整理、提案初稿、待辦分類、會議準備。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">04</div>
+        <h3>人類審核：保留決策與對外承諾節點</h3>
+        <p>對外訊息、價格、排程、合作承諾與重要取捨，仍由人類確認。這一步不是多餘，而是風險控制。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">05</div>
+        <h3>收尾交接：記錄下一班該接手什麼</h3>
+        <p>每天結束時只記錄真正會影響明天的資訊，包含已完成、待決策、待追蹤與下一步，讓下一次 session 能無縫接手。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="ops">
+    <div class="section-head reveal">
+      <div class="section-label">Ops</div>
+      <h2 class="section-title">讓 AI 員工軍團真的運轉起來的 4 個營運原則</h2>
+      <p class="section-desc">
+        這些原則的目的只有一個：減少猜測，增加交付。當工作流可以被重複驗證，Cowork 才會真正變成生產系統。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-6 reveal">
+        <h3>先做一條主線閉環</h3>
+        <ul class="list">
+          <li>只先做一個最常用流程，例如內容產出、會議準備或待辦整理。</li>
+          <li>先驗證這條線是否真的省時間，再擴充第二條、第三條。</li>
+          <li>不要一開始就想同時管理所有部門與所有工具。</li>
+        </ul>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>任務比 prompt 更重要</h3>
+        <ul class="list">
+          <li>把需求寫成任務，而不是寫成一大段即興說明。</li>
+          <li>任務需要完成定義，才能衡量 AI 到底做完沒有。</li>
+          <li>任務要有來源資料與權限入口，避免卡在上下文不足。</li>
+        </ul>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>角色越清楚，協作越順</h3>
+        <ul class="list">
+          <li>AI 不該同時當執行者、審核者與最終負責人。</li>
+          <li>人類要保留高風險決策與關係維護工作。</li>
+          <li>助理或營運流程要負責把輸出真正送到下一站。</li>
+        </ul>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>用固定 cadence 維持穩定</h3>
+        <ul class="list">
+          <li>每天固定時間 brief 與收尾，讓協作可預期。</li>
+          <li>不要今天用一種方式、明天又換另一種。</li>
+          <li>真正省下來的時間，來自一致性，不只來自模型能力。</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="pitfalls">
+    <div class="section-head reveal">
+      <div class="section-label">Pitfalls</div>
+      <h2 class="section-title">4 個最容易讓 AI 員工軍團失敗的地方</h2>
+      <p class="section-desc">
+        很多人不是不會用 Cowork，而是沒有把它當成一個需要管理的工作系統。下面四個問題最常讓整套流程在幾天內瓦解。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-6 reveal">
+        <h3>沒有角色邊界</h3>
+        <p>AI、人類與營運流程全部混成一團，最後每個人都以為別人會處理。</p>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>沒有完成定義</h3>
+        <p>只說「幫我做一下」，不說怎樣算做完，最後輸出好像有內容，但無法直接採用。</p>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>一次接太多任務</h3>
+        <p>還沒跑順第一條流程，就想一次自動化所有工作，結果反而難以維護。</p>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>缺少每日 handoff</h3>
+        <p>沒有交接紀錄與下一步說明，每次新 session 都像重新開始，自然很快被放棄。</p>
+      </article>
+    </div>
+    <div class="faq-list" style="margin-top:1rem">
+      <details class="faq-item reveal">
+        <summary>我是一人公司，也需要做角色分工嗎？</summary>
+        <p>需要。角色分工不是代表你要有很多人，而是讓你知道哪些工作由 AI 執行、哪些工作由你決策、哪些工作要交給工具或流程去落地。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>第一支 AI 員工軍團應該從哪種任務開始？</summary>
+        <p>從高頻、可重複、容易驗證輸出的任務開始，例如內容整理、會前 briefing、銷售跟進清單整理。這類任務最容易形成主線閉環。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>怎樣判斷這套流程真的有效？</summary>
+        <p>如果你能連續多天用同一套流程完成同類任務，而且明顯減少重複說明與返工，就代表它有效。反之，多半是任務格式或角色邊界還不夠清楚。</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cta reveal">
+    <h2>先建立第一條 AI 團隊主線</h2>
+    <p>這篇最值得帶走的觀念是：Cowork 真正強的不是聊天，而是讓你把工作拆成角色、任務與交接節奏。先讓第一條線跑起來，AI 員工軍團才有可能真的成形。</p>
+    <div class="cta-links">
+      <a class="cta-link" href="index.html">回首頁看全部文章</a>
+      <a class="cta-link" href="https://x.com/imaxichuhai/status/2034259904853074033?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">查看原始貼文</a>
+    </div>
+  </section>
+
+  <footer>
+    <div>Rebuilt for this project architecture · Static HTML article</div>
+    <div style="margin-top:.4rem">Source metadata: 阿西_出海（2.0版） · 2026-03-18 · X Article preview title and summary clues</div>
+  </footer>
+</main>
+
+<script>
+/* 切換網站主題，並將偏好保存到 localStorage。 */
+function setupThemeToggle() {
+  const themeButton = document.getElementById('theme-btn');
+  let isLight = localStorage.getItem('theme') === 'light';
+  function applyTheme() {
+    document.documentElement.classList.toggle('light', isLight);
+  }
+  themeButton.addEventListener('click', function () {
+    isLight = !isLight;
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    applyTheme();
+  });
+  applyTheme();
+}
+
+/* 根據捲動進度更新頂部進度條寬度。 */
+function setupScrollProgress() {
+  const progressBar = document.getElementById('progress');
+  function updateProgress() {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+    progressBar.style.width = percent + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}
+
+/* 進入可視範圍時顯示區塊，降低首屏資訊壓力。 */
+function setupRevealAnimation() {
+  const items = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  items.forEach(function (item) {
+    observer.observe(item);
+  });
+}
+
+/* 根據目前可視章節同步更新導覽列高亮狀態。 */
+function setupActiveSectionLinks() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  function updateActiveLink() {
+    let currentId = '';
+    sections.forEach(function (section) {
+      const top = section.getBoundingClientRect().top;
+      if (top <= 140) {
+        currentId = section.id;
+      }
+    });
+    links.forEach(function (link) {
+      const targetId = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', targetId === currentId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  updateActiveLink();
+}
+
+setupThemeToggle();
+setupScrollProgress();
+setupRevealAnimation();
+setupActiveSectionLinks();
+</script>
+</body>
+</html>

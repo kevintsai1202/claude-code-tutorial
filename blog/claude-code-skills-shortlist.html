@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>實測了上百個 Claude Code Skills，最後只留下這 10 個</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg:#060816; --bg2:#0c1024; --bg3:#151b36; --glass:rgba(10,16,38,.75); --glass-strong:rgba(5,10,24,.87);
+  --border:rgba(255,200,87,.18); --border-strong:rgba(255,200,87,.3); --text:#eef6ff; --text-dim:rgba(216,228,247,.78);
+  --cyan:#00d4ff; --gold:#ffc857; --orange:#ff8a3d; --teal:#00e7b7; --red:#ff6b6b; --display:'Orbitron', monospace; --head:'Rajdhani', sans-serif; --mono:'IBM Plex Mono', monospace; --radius:18px; --shadow:0 20px 46px rgba(0,0,0,.42);
+}
+html.light {
+  --bg:#f0f5ff; --bg2:#e6ecfb; --bg3:#dbe4f8; --glass:rgba(247,249,255,.84); --glass-strong:rgba(236,241,255,.92);
+  --border:rgba(156,106,0,.16); --border-strong:rgba(156,106,0,.28); --text:#101b31; --text-dim:rgba(43,60,96,.78);
+  --cyan:#006ba8; --gold:#9c6a00; --orange:#bf5b00; --teal:#007e65; --red:#b43a3a; --shadow:0 18px 40px rgba(86,108,156,.18);
+}
+body {
+  font-family:var(--mono); color:var(--text); line-height:1.7; overflow-x:hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255,200,87,.14), transparent 24%),
+    radial-gradient(circle at 78% 15%, rgba(0,212,255,.12), transparent 26%),
+    linear-gradient(180deg, var(--bg), #03060f 72%);
+}
+html.light body {
+  background:
+    radial-gradient(circle at top left, rgba(156,106,0,.12), transparent 24%),
+    radial-gradient(circle at 78% 15%, rgba(0,107,168,.1), transparent 26%),
+    linear-gradient(180deg, var(--bg), #f4f8ff 72%);
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:linear-gradient(rgba(144,166,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(144,166,255,.035) 1px, transparent 1px);
+  background-size:44px 44px;
+}
+#progress { position:fixed; top:0; left:0; z-index:200; width:0; height:3px; background:linear-gradient(90deg, var(--gold), var(--orange), var(--cyan)); }
+nav {
+  position:fixed; inset:0 0 auto 0; z-index:120; height:62px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between;
+  background:rgba(3,7,18,.74); backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,200,87,.08);
+}
+html.light nav { background:rgba(243,247,255,.82); border-bottom-color:rgba(156,106,0,.08); }
+.nav-left, .nav-right { display:flex; align-items:center; gap:1rem; }
+.nav-home, .nav-link { color:var(--text-dim); text-decoration:none; font-size:.58rem; letter-spacing:.16em; text-transform:uppercase; }
+.nav-home:hover, .nav-link:hover, .nav-link.active { color:var(--gold); }
+.nav-brand { font-family:var(--display); font-size:.62rem; letter-spacing:.18em; color:var(--gold); text-transform:uppercase; }
+.nav-sep { width:1px; height:16px; background:var(--border); }
+.theme-btn { width:38px; height:21px; position:relative; border:1px solid rgba(255,200,87,.28); border-radius:999px; background:rgba(255,200,87,.12); cursor:pointer; }
+.theme-btn::after { content:''; position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:var(--gold); box-shadow:0 0 10px var(--gold); transition:transform .3s ease; }
+html.light .theme-btn { border-color:rgba(255,165,0,.4); background:rgba(255,180,0,.16); }
+html.light .theme-btn::after { transform:translateX(17px); }
+.nav-dot { width:7px; height:7px; border-radius:50%; background:var(--orange); box-shadow:0 0 10px var(--orange); }
+.page { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 1.5rem 4rem; }
+.hero { min-height:100vh; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr); gap:2rem; align-items:center; padding:90px 0 4rem; }
+.eyebrow { display:inline-flex; align-items:center; gap:.7rem; margin-bottom:1.4rem; color:var(--gold); font-size:.62rem; letter-spacing:.28em; text-transform:uppercase; }
+.eyebrow::before, .eyebrow::after { content:''; width:24px; height:1px; background:currentColor; }
+.hero-title { font-family:var(--display); font-size:clamp(2.1rem,5vw,4.4rem); line-height:1.05; letter-spacing:-.04em; }
+.hero-title .grad { background:linear-gradient(120deg, var(--gold), var(--orange), var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-subtitle { max-width:60ch; margin-top:1.3rem; color:var(--text-dim); font-size:.9rem; }
+.badge-row, .chip-row { display:flex; flex-wrap:wrap; gap:.65rem; }
+.badge-row { margin-top:1.6rem; }
+.badge, .chip { padding:.32rem .7rem; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); color:var(--text-dim); font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; }
+.hero-meta { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:.9rem; margin-top:1.8rem; }
+.card, .meta-card, .faq-item, .group-card, .flow-card { background:var(--glass); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter:blur(18px); }
+.meta-card { padding:1rem; }
+.meta-value { font-family:var(--display); font-size:1.1rem; color:var(--gold); }
+.meta-label { margin-top:.35rem; color:var(--text-dim); font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; }
+.hero-panel { padding:1.25rem; border-radius:22px; background:var(--glass-strong); border:1px solid var(--border-strong); box-shadow:var(--shadow); }
+.panel-box { border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.06); background:#050913; }
+html.light .panel-box { background:#edf4ff; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; padding:.75rem 1rem; background:rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.06); }
+.dots { display:flex; gap:.35rem; }
+.dots span { width:9px; height:9px; border-radius:50%; }
+.dots span:nth-child(1){background:#ff5f57;} .dots span:nth-child(2){background:#ffbd2e;} .dots span:nth-child(3){background:#28c840;}
+.panel-head strong { font-size:.58rem; color:var(--text-dim); letter-spacing:.14em; text-transform:uppercase; }
+.panel-body { padding:1rem; color:#ffe9b4; font-size:.74rem; }
+html.light .panel-body { color:#7a5300; }
+.panel-body pre { white-space:pre-wrap; }
+.source-note { margin-top:1rem; color:var(--text-dim); font-size:.68rem; }
+.source-note a { color:var(--gold); }
+.section { padding:4.5rem 0 0; }
+.section-head { margin-bottom:1.8rem; }
+.section-label { color:var(--cyan); font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; }
+.section-title { margin-top:.6rem; font-family:var(--head); font-size:clamp(1.8rem,3vw,2.6rem); line-height:1.05; }
+.section-desc { margin-top:.7rem; max-width:62ch; color:var(--text-dim); font-size:.9rem; }
+.grid { display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:1rem; }
+.span-4 { grid-column:span 4; } .span-5 { grid-column:span 5; } .span-6 { grid-column:span 6; } .span-7 { grid-column:span 7; } .span-8 { grid-column:span 8; }
+.card, .group-card, .flow-card { padding:1.35rem; }
+.card h3, .group-card h3, .flow-card h3, .faq-item summary { font-family:var(--head); font-size:1.2rem; }
+.card p, .group-card p, .flow-card p { margin-top:.65rem; color:var(--text-dim); font-size:.82rem; }
+.list { margin-top:.85rem; list-style:none; display:grid; gap:.7rem; }
+.list li { padding-left:1.2rem; position:relative; color:var(--text-dim); font-size:.8rem; }
+.list li::before { content:''; position:absolute; left:0; top:.52rem; width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+.groups { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem; }
+.group-card { border-top:3px solid; }
+.timeline { display:grid; gap:1rem; }
+.flow-card { position:relative; padding-left:4.6rem; }
+.flow-num {
+  position:absolute; left:1.15rem; top:1.1rem; width:2.5rem; height:2.5rem; border-radius:14px; display:grid; place-items:center; font-family:var(--display); font-size:.78rem;
+  background:rgba(255,200,87,.12); color:var(--gold); border:1px solid rgba(255,200,87,.22);
+}
+.faq-list { display:grid; gap:1rem; }
+.faq-item { padding:.2rem 1rem; }
+.faq-item summary { list-style:none; cursor:pointer; padding:1rem 0; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item p { padding:0 0 1rem; color:var(--text-dim); font-size:.82rem; }
+.cta {
+  margin-top:4.5rem; padding:2rem; border-radius:28px; text-align:center; background:linear-gradient(135deg, rgba(255,200,87,.12), rgba(255,138,61,.08)), var(--glass-strong);
+  border:1px solid var(--border-strong); box-shadow:var(--shadow);
+}
+.cta h2 { font-family:var(--display); font-size:clamp(1.7rem,3vw,2.8rem); }
+.cta p { margin:.9rem auto 0; max-width:58ch; color:var(--text-dim); font-size:.85rem; }
+.cta-links { display:flex; justify-content:center; flex-wrap:wrap; gap:.9rem; margin-top:1.3rem; }
+.cta-link { padding:.75rem 1.1rem; border-radius:999px; text-decoration:none; border:1px solid var(--border-strong); color:var(--text); background:rgba(255,255,255,.04); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; }
+footer { padding:2rem 0 0; color:var(--text-dim); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; }
+.reveal { opacity:0; transform:translateY(24px); transition:opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+@media (max-width: 980px) {
+  .hero { grid-template-columns:1fr; min-height:auto; padding-top:100px; }
+  .hero-meta, .groups { grid-template-columns:1fr; }
+  .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column:span 12; }
+}
+@media (max-width: 720px) {
+  nav { padding:0 1rem; }
+  .nav-right .nav-link, .nav-sep:nth-of-type(2), .nav-dot { display:none; }
+  .page { padding:0 1rem 3rem; }
+  .hero-meta { grid-template-columns:1fr; }
+  .flow-card { padding-left:1.25rem; padding-top:4rem; }
+  .flow-num { left:1rem; top:1rem; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<nav>
+  <div class="nav-left">
+    <a class="nav-home" href="index.html">← Back</a>
+    <div class="nav-sep"></div>
+    <div class="nav-brand">CC // Skills Shortlist</div>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#criteria">Criteria</a>
+    <a class="nav-link" href="#groups">Groups</a>
+    <a class="nav-link" href="#maintenance">Maintenance</a>
+    <a class="nav-link" href="#pitfalls">Pitfalls</a>
+    <div class="nav-sep"></div>
+    <span>🌙</span>
+    <button class="theme-btn" id="theme-btn" aria-label="切換主題"></button>
+    <span>☀️</span>
+    <div class="nav-sep"></div>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="eyebrow reveal">Claude Code · Skills Shortlist</div>
+      <h1 class="hero-title reveal">實測了上百個 <span class="grad">Claude Code Skills</span><br>最後只留下這 10 個</h1>
+      <p class="hero-subtitle reveal">
+        這篇頁面根據 `2026-03-19` 的 X Article metadata 重組。主題不是收集更多 skill，而是從實際使用角度回答：<strong>哪些 skills 值得留下，哪些只是在增加系統噪音</strong>。
+      </p>
+      <div class="badge-row reveal">
+        <span class="badge">Skills</span>
+        <span class="badge">Curation</span>
+        <span class="badge">Workflow Efficiency</span>
+        <span class="badge">Minimal Stack</span>
+      </div>
+      <div class="hero-meta reveal">
+        <div class="meta-card"><div class="meta-value">2026-03-19</div><div class="meta-label">Source Publish</div></div>
+        <div class="meta-card"><div class="meta-value">10 Types</div><div class="meta-label">Kept Skills</div></div>
+        <div class="meta-card"><div class="meta-value">4 Rules</div><div class="meta-label">Selection Criteria</div></div>
+        <div class="meta-card"><div class="meta-value">3 Risks</div><div class="meta-label">Overload Signals</div></div>
+      </div>
+    </div>
+    <aside class="hero-panel reveal">
+      <div class="panel-box">
+        <div class="panel-head">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <strong>skills-shortlist.md</strong>
+        </div>
+        <div class="panel-body"><pre>1. Skill 不在於數量，而在於命中率
+2. 不能穩定省時間的 skill 就該移除
+3. 類型重疊太多會互搶觸發
+4. 真正留下來的 skill 都有明確場景
+5. Skill 清單要定期修剪，不要無限膨脹</pre></div>
+      </div>
+      <div class="source-note">
+        來源：
+        <a href="https://x.com/cnyzgkc/status/2034432870455140746?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">X 貼文</a>
+        ·
+        <a href="http://x.com/i/article/2034304992845455360" target="_blank" rel="noreferrer">X Article ID 2034304992845455360</a>
+      </div>
+      <div class="source-note">
+        可驗證 metadata：標題為 <strong>实测了上百个Claude Code Skills，最后只留下这10个</strong>；preview 明確指出裝太多 skills 反而讓 Claude 表現變差，核心在於精簡與篩選。
+      </div>
+    </aside>
+  </section>
+
+  <section class="section" id="criteria">
+    <div class="section-head reveal">
+      <div class="section-label">Criteria</div>
+      <h2 class="section-title">Skill 留不留，不看酷不酷，只看能不能穩定省時間</h2>
+      <p class="section-desc">
+        這篇的核心洞見很直接：技能越多不一定越強。當 skill 類型彼此重疊、命中率不穩、輸出差異太大，整個系統只會越來越難用。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-6 reveal">
+        <h3>保留標準</h3>
+        <ul class="list">
+          <li>高頻任務會穩定觸發，而且能持續省時間。</li>
+          <li>輸入場景清楚，不容易和其他 skill 重疊。</li>
+          <li>輸出品質足夠一致，能進入日常工作流。</li>
+          <li>維護成本合理，不需要你每週重寫一次。</li>
+        </ul>
+      </article>
+      <article class="card span-6 reveal">
+        <h3>該刪除的訊號</h3>
+        <ul class="list">
+          <li>你已經忘記這個 skill 何時該用。</li>
+          <li>它和其他 skill 功能相近，常常互搶觸發。</li>
+          <li>每次用還是要補很多口頭說明。</li>
+          <li>它讓 Claude 更常走錯方向，而不是更穩定。</li>
+        </ul>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>判斷問題一</h3>
+        <p>這個 skill 是否對某個高頻場景形成明確優勢？如果沒有，通常只是收藏，不是工作資產。</p>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>判斷問題二</h3>
+        <p>這個 skill 是否比「直接說一句話」更省事？如果沒有，它可能不值得長期維護。</p>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>判斷問題三</h3>
+        <p>它是否會讓 Claude 更難選擇正確路徑？如果會，代表 skill 數量或邊界已經失控。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="groups">
+    <div class="section-head reveal">
+      <div class="section-label">Groups</div>
+      <h2 class="section-title">真正值得留下的 10 類 skill，通常都屬於這幾個群組</h2>
+      <p class="section-desc">
+        原文標題提到最後只留下 10 個。這類保留清單通常不是 10 個零散名字，而是 10 種高價值能力。下面用分組方式整理，方便你依照自己場景取用。
+      </p>
+    </div>
+    <div class="groups">
+      <article class="group-card reveal" style="border-top-color:var(--gold)">
+        <h3>研究與摘要類</h3>
+        <p>適合高頻資訊整理工作，像是文章研究、競品分析、會前 briefing、重點摘要。</p>
+        <ul class="list">
+          <li>輸入固定、輸出容易驗證</li>
+          <li>很容易形成可重複模板</li>
+        </ul>
+      </article>
+      <article class="group-card reveal" style="border-top-color:var(--orange)">
+        <h3>內容與格式類</h3>
+        <p>例如品牌語氣、固定欄位輸出、長文改寫、資料整理。這類 skill 很常用，但也最容易互相重疊。</p>
+        <ul class="list">
+          <li>要明確切分不同輸出場景</li>
+          <li>避免「萬用內容 skill」過肥</li>
+        </ul>
+      </article>
+      <article class="group-card reveal" style="border-top-color:var(--cyan)">
+        <h3>工具與轉換類</h3>
+        <p>把 CLI、腳本或資料轉換工作包成穩定入口，例如 CSV 整理、檔案轉換、命令流程封裝。</p>
+        <ul class="list">
+          <li>最適合有明確輸入輸出 contract 的任務</li>
+          <li>能大幅降低重複操作成本</li>
+        </ul>
+      </article>
+      <article class="group-card reveal" style="border-top-color:var(--teal)">
+        <h3>流程與交接類</h3>
+        <p>像是會議準備、任務 handoff、context log、專案節奏維護。這類 skill 的價值在於讓協作可持續，而不是只做好單次輸出。</p>
+        <ul class="list">
+          <li>對長期專案最有價值</li>
+          <li>能明顯降低 session 斷裂成本</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="maintenance">
+    <div class="section-head reveal">
+      <div class="section-label">Maintenance</div>
+      <h2 class="section-title">Skill 清單需要像產品一樣維護，而不是只會增加不會刪除</h2>
+      <p class="section-desc">
+        很多人的 skill 體驗變差，不是因為個別 skill 做不好，而是整體 skill 庫從來沒有做過整理。真正有效的做法是持續修剪。
+      </p>
+    </div>
+    <div class="timeline">
+      <article class="flow-card reveal">
+        <div class="flow-num">01</div>
+        <h3>先列出目前真正常用的場景</h3>
+        <p>不是看你裝了什麼，而是看你一週內真的重複做了哪些工作。場景比 skill 名字重要。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">02</div>
+        <h3>把 skill 對應到場景，不要一個場景掛三四個技能</h3>
+        <p>如果一個需求對應太多 skill，Claude 的選擇成本會上升，人自己也會搞不清楚該用哪一個。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">03</div>
+        <h3>每隔一段時間移除低命中、低收益的 skill</h3>
+        <p>保留「真的會用、真的有效」的 skill，刪掉只會增加噪音的項目，整體體驗反而會更好。</p>
+      </article>
+      <article class="flow-card reveal">
+        <div class="flow-num">04</div>
+        <h3>用 references 或拆分方式降低技能肥大</h3>
+        <p>如果某個高價值 skill 開始變得過重，應該拆分或做 progressive disclosure，而不是讓它無限膨脹。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="pitfalls">
+    <div class="section-head reveal">
+      <div class="section-label">Pitfalls</div>
+      <h2 class="section-title">Skill 爆量後最常出現的 3 個問題</h2>
+      <p class="section-desc">
+        一旦 skill 太多，問題通常不是「找不到功能」，而是「選不到正確功能」。這會直接降低 Claude 的穩定性與可預測性。
+      </p>
+    </div>
+    <div class="grid">
+      <article class="card span-4 reveal">
+        <h3>互搶觸發</h3>
+        <p>多個 skill 都覺得自己適用，導致啟動錯誤或結果不一致。</p>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>維護失控</h3>
+        <p>技能一多，更新成本暴增，最後沒有任何一個人確定哪個版本才是有效版本。</p>
+      </article>
+      <article class="card span-4 reveal">
+        <h3>使用者混亂</h3>
+        <p>連你自己都不確定該用哪個 skill，代表整個 skill 系統已經超出可管理範圍。</p>
+      </article>
+    </div>
+    <div class="faq-list" style="margin-top:1rem">
+      <details class="faq-item reveal">
+        <summary>是不是 skill 越多，Claude 能力就越強？</summary>
+        <p>不是。能力來自正確匹配與高品質執行，不來自選項數量。當選項過多，反而會增加模型與使用者的判斷成本。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>我應該保留幾個 skill 才合理？</summary>
+        <p>沒有固定數字，重點是每個 skill 都要對應一個穩定高頻場景，而且你清楚知道什麼時候該用它。若做不到，數量就太多了。</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>怎麼開始整理現有 skill 庫？</summary>
+        <p>先列出最近一週最常做的 5 到 10 種任務，再把 skill 逐一對應。沒有對應高頻任務、或和別人高度重疊的 skill，優先檢討或移除。</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cta reveal">
+    <h2>保留真正高價值的 skill</h2>
+    <p>這篇最重要的觀點是：Claude Code 的 skill 庫不是收藏櫃，而是工作系統的一部分。只留下真正有命中率、能省時間、能被維護的 skill，整體效率才會上升。</p>
+    <div class="cta-links">
+      <a class="cta-link" href="index.html">回首頁看全部文章</a>
+      <a class="cta-link" href="https://x.com/cnyzgkc/status/2034432870455140746?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">查看原始貼文</a>
+    </div>
+  </section>
+
+  <footer>
+    <div>Rebuilt for this project architecture · Static HTML article</div>
+    <div style="margin-top:.4rem">Source metadata: 木马人 · 2026-03-19 · X Article preview title and summary clues</div>
+  </footer>
+</main>
+
+<script>
+/* 切換網站主題，並將偏好保存到 localStorage。 */
+function setupThemeToggle() {
+  const themeButton = document.getElementById('theme-btn');
+  let isLight = localStorage.getItem('theme') === 'light';
+  function applyTheme() {
+    document.documentElement.classList.toggle('light', isLight);
+  }
+  themeButton.addEventListener('click', function () {
+    isLight = !isLight;
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    applyTheme();
+  });
+  applyTheme();
+}
+
+/* 根據捲動進度更新頂部進度條寬度。 */
+function setupScrollProgress() {
+  const progressBar = document.getElementById('progress');
+  function updateProgress() {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+    progressBar.style.width = percent + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}
+
+/* 進入可視範圍時顯示區塊，降低首屏資訊壓力。 */
+function setupRevealAnimation() {
+  const items = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  items.forEach(function (item) {
+    observer.observe(item);
+  });
+}
+
+/* 根據目前可視章節同步更新導覽列高亮狀態。 */
+function setupActiveSectionLinks() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  function updateActiveLink() {
+    let currentId = '';
+    sections.forEach(function (section) {
+      const top = section.getBoundingClientRect().top;
+      if (top <= 140) {
+        currentId = section.id;
+      }
+    });
+    links.forEach(function (link) {
+      const targetId = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', targetId === currentId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  updateActiveLink();
+}
+
+setupThemeToggle();
+setupScrollProgress();
+setupRevealAnimation();
+setupActiveSectionLinks();
+</script>
+</body>
+</html>

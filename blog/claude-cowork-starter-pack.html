@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Claude Cowork Starter Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+:root {
+  --bg: #040814; --bg2: #081022; --bg3: #0d1730; --glass: rgba(8, 17, 38, 0.72);
+  --glass-strong: rgba(4, 10, 24, 0.84); --border: rgba(93, 148, 255, 0.14); --border-strong: rgba(93, 148, 255, 0.3);
+  --text: #ebf5ff; --text-dim: rgba(213, 228, 248, 0.78); --cyan: #00d4ff; --teal: #00e7b7; --gold: #ffc857;
+  --orange: #ff8a3d; --pink: #ff5fa2; --red: #ff6363; --display: 'Orbitron', monospace; --head: 'Rajdhani', sans-serif;
+  --mono: 'IBM Plex Mono', monospace; --radius: 16px; --shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+}
+html.light {
+  --bg: #edf4ff; --bg2: #e1ebfb; --bg3: #d7e3f8; --glass: rgba(245, 249, 255, 0.84); --glass-strong: rgba(233, 241, 255, 0.92);
+  --border: rgba(0, 104, 176, 0.16); --border-strong: rgba(0, 104, 176, 0.34); --text: #0c1b33; --text-dim: rgba(34, 57, 95, 0.78);
+  --cyan: #0068b0; --teal: #007f67; --gold: #a06a00; --orange: #bf5b00; --pink: #b00067; --red: #b43a3a; --shadow: 0 18px 44px rgba(82, 114, 170, 0.18);
+}
+body {
+  font-family: var(--mono); color: var(--text); line-height: 1.7; overflow-x: hidden; transition: background .35s ease, color .35s ease;
+  background:
+    radial-gradient(circle at top, rgba(0, 212, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255, 95, 162, 0.12), transparent 24%),
+    linear-gradient(180deg, var(--bg), #02050d 70%);
+}
+html.light body {
+  background:
+    radial-gradient(circle at top, rgba(0, 104, 176, 0.12), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(176, 0, 103, 0.08), transparent 24%),
+    linear-gradient(180deg, var(--bg), #f4f8ff 70%);
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(116, 169, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(116, 169, 255, 0.04) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+#progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 200; background: linear-gradient(90deg, var(--cyan), var(--teal), var(--gold)); }
+nav {
+  position: fixed; inset: 0 0 auto 0; z-index: 120; height: 62px; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  background: rgba(3, 8, 20, 0.72); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 212, 255, 0.08);
+}
+html.light nav { background: rgba(244, 248, 255, 0.8); border-bottom-color: rgba(0, 104, 176, 0.08); }
+.nav-left, .nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-home, .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.nav-home:hover, .nav-link:hover, .nav-link.active { color: var(--cyan); }
+.nav-brand { font-family: var(--display); font-size: 0.62rem; letter-spacing: 0.18em; color: var(--cyan); text-transform: uppercase; }
+.nav-sep { width: 1px; height: 16px; background: var(--border); }
+.theme-btn { width: 38px; height: 21px; position: relative; border: 1px solid rgba(0, 212, 255, 0.28); border-radius: 999px; background: rgba(0, 212, 255, 0.12); cursor: pointer; }
+.theme-btn::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); transition: transform .3s ease;
+}
+html.light .theme-btn { border-color: rgba(255, 165, 0, 0.4); background: rgba(255, 180, 0, 0.18); }
+html.light .theme-btn::after { transform: translateX(17px); }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+.page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+.hero { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); gap: 2rem; align-items: center; padding: 90px 0 4rem; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 0.7rem; margin-bottom: 1.4rem; color: var(--cyan); font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase;
+}
+.eyebrow::before, .eyebrow::after { content: ''; width: 24px; height: 1px; background: currentColor; }
+.hero-title { font-family: var(--display); font-size: clamp(2.2rem, 5.2vw, 4.8rem); line-height: 1.06; letter-spacing: -0.04em; }
+.hero-title .grad {
+  background: linear-gradient(120deg, var(--cyan), var(--teal), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-subtitle { max-width: 58ch; margin-top: 1.4rem; color: var(--text-dim); font-size: 0.9rem; }
+.hero-badges, .stack-tags { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+.hero-badges { margin-top: 1.6rem; }
+.badge {
+  padding: 0.32rem 0.7rem; border-radius: 999px; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03);
+  color: var(--text-dim); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.hero-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.9rem; margin-top: 1.8rem; }
+.meta-card, .glass-card, .step-card, .faq-item, .mini-card {
+  background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(18px);
+}
+.meta-card { padding: 1rem; }
+.meta-value { font-family: var(--display); font-size: 1.15rem; color: var(--cyan); }
+.meta-label { margin-top: 0.35rem; color: var(--text-dim); font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.hero-panel { padding: 1.2rem; background: var(--glass-strong); border: 1px solid var(--border-strong); border-radius: 22px; box-shadow: var(--shadow); }
+.terminal { border-radius: 18px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.06); background: #050914; }
+html.light .terminal { background: #eaf1ff; }
+.terminal-head { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.terminal-dots { display: flex; gap: 0.35rem; }
+.terminal-dots span { width: 9px; height: 9px; border-radius: 50%; }
+.terminal-dots span:nth-child(1) { background: #ff5f57; }
+.terminal-dots span:nth-child(2) { background: #ffbd2e; }
+.terminal-dots span:nth-child(3) { background: #28c840; }
+.terminal-title { color: var(--text-dim); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.terminal-body { padding: 1rem; font-size: 0.75rem; color: #cbf2ff; }
+html.light .terminal-body { color: #11456d; }
+.terminal-body pre, .file-tree pre { white-space: pre-wrap; }
+.terminal-note {
+  margin-top: 1rem; padding: 1rem; border-radius: 16px; border: 1px solid rgba(0, 231, 183, 0.22); background: rgba(0, 231, 183, 0.06);
+  color: var(--text-dim); font-size: 0.76rem;
+}
+.source-note { margin-top: 1rem; color: var(--text-dim); font-size: 0.68rem; }
+.source-note a { color: var(--cyan); }
+.section { padding: 4.5rem 0 0; }
+.section-head { margin-bottom: 1.8rem; }
+.section-label { color: var(--teal); font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.section-title { margin-top: 0.6rem; font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.05; }
+.section-desc { margin-top: 0.7rem; max-width: 62ch; color: var(--text-dim); font-size: 0.9rem; }
+.section-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+.span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+.span-7 { grid-column: span 7; } .span-12 { grid-column: span 12; }
+.glass-card { padding: 1.35rem; }
+.glass-card h3, .step-card h3, .faq-item summary, .mini-card h3 { font-family: var(--head); font-size: 1.2rem; }
+.glass-card p, .step-card p, .mini-card p { margin-top: 0.65rem; color: var(--text-dim); font-size: 0.82rem; }
+.checklist, .bullet-list, .mistake-list { margin-top: 0.85rem; list-style: none; display: grid; gap: 0.7rem; }
+.checklist li, .bullet-list li, .mistake-list li { padding-left: 1.2rem; position: relative; color: var(--text-dim); font-size: 0.8rem; }
+.checklist li::before, .bullet-list li::before, .mistake-list li::before {
+  content: ''; position: absolute; left: 0; top: 0.52rem; width: 7px; height: 7px; border-radius: 50%;
+}
+.checklist li::before { background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+.bullet-list li::before { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.mistake-list li::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
+.diagram, .workflow, .faq-list { display: grid; gap: 1rem; }
+.stack-tier {
+  padding: 1.2rem; border-radius: 18px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), transparent);
+}
+.stack-tier::before {
+  content: attr(data-layer); display: block; color: var(--text-dim); font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.4rem;
+}
+.stack-tier h3 { font-family: var(--head); font-size: 1.2rem; }
+.stack-tier p { margin-top: 0.45rem; color: var(--text-dim); font-size: 0.8rem; }
+.stack-tier .stack-tags { margin-top: 0.8rem; }
+.stack-chip {
+  padding: 0.3rem 0.65rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04);
+  color: var(--text); font-size: 0.56rem; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.step-card { position: relative; padding: 1.4rem 1.4rem 1.4rem 4.8rem; }
+.step-num {
+  position: absolute; left: 1.2rem; top: 1.2rem; width: 2.4rem; height: 2.4rem; border-radius: 16px; display: grid; place-items: center;
+  font-family: var(--display); font-size: 0.8rem; background: rgba(0, 212, 255, 0.12); border: 1px solid rgba(0, 212, 255, 0.24); color: var(--cyan);
+}
+.mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.mini-card { padding: 1.2rem; }
+.file-tree {
+  padding: 1.2rem; border-radius: 18px; background: rgba(6, 14, 34, 0.82); border: 1px solid rgba(93, 148, 255, 0.22); color: #c9e6ff; font-size: 0.74rem;
+}
+html.light .file-tree { background: rgba(225, 236, 255, 0.92); color: #13385d; }
+.faq-item { padding: 0.2rem 1rem; }
+.faq-item summary { list-style: none; cursor: pointer; padding: 1rem 0; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item p { padding: 0 0 1rem; color: var(--text-dim); font-size: 0.82rem; }
+.cta {
+  margin-top: 4.5rem; padding: 2rem; border-radius: 28px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 95, 162, 0.08)), var(--glass-strong);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow); text-align: center;
+}
+.cta h2 { font-family: var(--display); font-size: clamp(1.7rem, 3vw, 2.8rem); }
+.cta p { margin: 0.9rem auto 0; max-width: 58ch; color: var(--text-dim); font-size: 0.85rem; }
+.cta-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.9rem; margin-top: 1.3rem; }
+.cta-link {
+  padding: 0.75rem 1.1rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--border-strong); color: var(--text);
+  background: rgba(255, 255, 255, 0.04); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+footer { padding: 2rem 0 0; color: var(--text-dim); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 100px; }
+  .hero-meta, .mini-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .span-4, .span-5, .span-6, .span-7 { grid-column: span 12; }
+}
+@media (max-width: 720px) {
+  nav { padding: 0 1rem; }
+  .nav-right .nav-link, .nav-sep:nth-of-type(2), .nav-dot { display: none; }
+  .hero-meta, .mini-grid { grid-template-columns: 1fr; }
+  .page { padding: 0 1rem 3rem; }
+  .step-card { padding-left: 1.4rem; padding-top: 4rem; }
+  .step-num { left: 1.1rem; top: 1rem; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<nav>
+  <div class="nav-left">
+    <a class="nav-home" href="index.html">← Back</a>
+    <div class="nav-sep"></div>
+    <div class="nav-brand">CC // Cowork Pack</div>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#starter">Starter</a>
+    <a class="nav-link" href="#stack">Stack</a>
+    <a class="nav-link" href="#workflow">Workflow</a>
+    <a class="nav-link" href="#pitfalls">Pitfalls</a>
+    <div class="nav-sep"></div>
+    <span>🌙</span>
+    <button class="theme-btn" id="theme-btn" aria-label="切換主題"></button>
+    <span>☀️</span>
+    <div class="nav-sep"></div>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="eyebrow reveal">Starter Pack · Claude Cowork</div>
+      <h1 class="hero-title reveal">Ultimate <span class="grad">Claude Cowork</span><br>Starter Pack</h1>
+      <p class="hero-subtitle reveal">
+        把 Corey Ganim 在 X 提到的《Every Plugin, Skill, and Workflow You Need》重組成可直接照做的教學頁。核心不是「裝更多外掛」，而是先把 <strong>上下文、插件、技能、日常節奏</strong>排成一條能重複執行的工作線。
+      </p>
+      <div class="hero-badges reveal">
+        <span class="badge">Claude Cowork</span><span class="badge">Plugins</span><span class="badge">Skills</span><span class="badge">Workflow Design</span>
+      </div>
+      <div class="hero-meta reveal">
+        <div class="meta-card"><div class="meta-value">2026-03-15</div><div class="meta-label">Source Publish</div></div>
+        <div class="meta-card"><div class="meta-value">4 Layers</div><div class="meta-label">Starter Stack</div></div>
+        <div class="meta-card"><div class="meta-value">5 Steps</div><div class="meta-label">Daily Workflow</div></div>
+        <div class="meta-card"><div class="meta-value">3 Roles</div><div class="meta-label">Human + AI Split</div></div>
+      </div>
+    </div>
+    <aside class="hero-panel reveal">
+      <div class="terminal">
+        <div class="terminal-head">
+          <div class="terminal-dots"><span></span><span></span><span></span></div>
+          <div class="terminal-title">starter-pack.run</div>
+        </div>
+        <div class="terminal-body"><pre>01. 安裝 Productivity 類外掛
+02. 建立 about-me / business / voice / prefs 四份 context
+03. 只先做一條可重複工作流
+04. 把重複提示升級成 reusable skill
+05. 每天固定用同一節奏交接任務</pre></div>
+      </div>
+      <div class="terminal-note">
+        這篇頁面依據可驗證公開資訊整理。原始貼文本身只是一則連到 X Article 的入口，因此本頁以 <strong>tweet metadata + article title/preview + Corey 後續公開 workflow 貼文</strong>重組為實作導向版本。
+      </div>
+      <div class="source-note">
+        來源：
+        <a href="https://x.com/coreyganim/status/2033206539595461070?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">X 貼文</a>
+        · <a href="http://x.com/i/article/2033203065709350912" target="_blank" rel="noreferrer">X Article ID 2033203065709350912</a>
+        · <a href="https://www.linkedin.com/posts/coreyganim_i-gave-my-ai-agent-real-work-for-3-weeks-activity-7429872411694653440-OlRF" target="_blank" rel="noreferrer">Corey workflow 貼文</a>
+      </div>
+    </aside>
+  </section>
+
+  <section class="section" id="starter">
+    <div class="section-head reveal">
+      <div class="section-label">Starter</div>
+      <h2 class="section-title">先建立一個能跑的起手式，不要先追求全家桶</h2>
+      <p class="section-desc">根據原始文章標題與 preview，這份 starter pack 的重點是「setup」。所以第一階段只做一件事：讓 Claude Cowork 每次開工都拿到同一組上下文、同一套插件入口、同一條執行路線。</p>
+    </div>
+    <div class="section-grid">
+      <article class="glass-card span-5 reveal">
+        <h3>最小可用組合</h3>
+        <ul class="checklist">
+          <li>一個主要用途，例如內容營運、客戶跟進、會議準備或研究整理。</li>
+          <li>一組固定 context 檔，而不是每次重新打一段提示詞。</li>
+          <li>一個主要插件，先把資料入口接好，不要同時裝十個。</li>
+          <li>一條可以每天重複的 workflow，才能驗證是否真的省時間。</li>
+        </ul>
+      </article>
+      <article class="glass-card span-7 reveal">
+        <h3>建議先做的 4 份 context</h3>
+        <div class="file-tree"><pre>context/
+├─ about-me.md
+├─ business-overview.md
+├─ brand-voice.md
+└─ working-preferences.md
+
+about-me.md
+  - 你是誰、做什麼、主要客群
+business-overview.md
+  - 產品、服務、流程、輸出格式
+brand-voice.md
+  - 語氣、禁用詞、常用 CTA
+working-preferences.md
+  - 你喜歡的工作節奏、回報格式、交付標準</pre></div>
+        <p>這組切法的好處是：人設、商業背景、品牌語氣、操作偏好彼此獨立。之後要調整時，只需要更新單一檔案，不必整份 system prompt 重寫。</p>
+      </article>
+      <article class="glass-card span-6 reveal">
+        <h3>什麼時候該升級成 Skill？</h3>
+        <ul class="bullet-list">
+          <li>同一段開場指令已經重複三次以上。</li>
+          <li>這個任務有固定輸入格式與固定完成定義。</li>
+          <li>Claude 每次都做得差不多，但你還要補同樣的提醒。</li>
+          <li>你希望新開一個 session 也能用同一套方式執行。</li>
+        </ul>
+      </article>
+      <article class="glass-card span-6 reveal">
+        <h3>第一條 workflow 應該怎麼選</h3>
+        <ul class="bullet-list">
+          <li>選結果容易驗證的工作，例如整理待辦、寫文章初稿、會前研究。</li>
+          <li>選資料邊界清楚的工作，不要一開始就做跨十個工具的總控台。</li>
+          <li>選每週至少會重複兩到三次的工作，否則很難驗證效益。</li>
+          <li>選可以保留人工審核的一段流程，不要直接把高風險決策全自動化。</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="stack">
+    <div class="section-head reveal">
+      <div class="section-label">Stack</div>
+      <h2 class="section-title">把 Cowork 拆成 4 層：Context、Plugins、Skills、Cadence</h2>
+      <p class="section-desc">這樣拆的理由很直接：如果所有問題都塞進 prompt，你永遠不知道到底是缺資料、缺工具、缺流程，還是缺回報節奏。分層後，每一層都可以獨立調整。</p>
+    </div>
+    <div class="section-grid">
+      <div class="span-7 diagram reveal">
+        <div class="stack-tier" data-layer="Layer 01 · Context" style="border-color:rgba(0,212,255,0.22)">
+          <h3>讓 Claude 知道你是誰、做什麼、什麼才算交付完成</h3>
+          <p>這層解決的是理解問題。沒有 context，再好的插件也只是在更快地做錯事。</p>
+          <div class="stack-tags"><span class="stack-chip">About Me</span><span class="stack-chip">Business Overview</span><span class="stack-chip">Brand Voice</span><span class="stack-chip">Working Preferences</span></div>
+        </div>
+        <div class="stack-tier" data-layer="Layer 02 · Plugins" style="border-color:rgba(0,231,183,0.22)">
+          <h3>給 Cowork 資料入口，而不是把資料手貼進對話</h3>
+          <p>原始文章標題特別提到 plugins。對多數使用者來說，先裝一個 Productivity 類插件，再視需要串 Notion、Calendar、Drive 或通訊工具，就足夠形成工作閉環。</p>
+          <div class="stack-tags"><span class="stack-chip">Productivity</span><span class="stack-chip">Calendar</span><span class="stack-chip">Drive / Docs</span><span class="stack-chip">Task Sources</span></div>
+        </div>
+        <div class="stack-tier" data-layer="Layer 03 · Skills" style="border-color:rgba(255, 200, 87, 0.22)">
+          <h3>把重複工作 productize，而不是每次 improvising</h3>
+          <p>Corey 在後續公開貼文提到，他停止寫一次性 prompt，改成 reusable skills。這代表流程被明確定義，輸出更穩定，也更容易交接。</p>
+          <div class="stack-tags"><span class="stack-chip">Article Writer</span><span class="stack-chip">Meeting Prep</span><span class="stack-chip">Task Triage</span><span class="stack-chip">Research Brief</span></div>
+        </div>
+        <div class="stack-tier" data-layer="Layer 04 · Cadence" style="border-color:rgba(255, 95, 162, 0.24)">
+          <h3>固定開工節奏，決定這套系統到底省不省時間</h3>
+          <p>如果每天都用不同方法交辦，同一套技能也會失效。Cadence 的本質是讓人與 AI 之間的 handoff 變得可預期。</p>
+          <div class="stack-tags"><span class="stack-chip">Daily Brief</span><span class="stack-chip">Ownership Split</span><span class="stack-chip">Done Definition</span><span class="stack-chip">Human Review</span></div>
+        </div>
+      </div>
+      <article class="glass-card span-5 reveal">
+        <h3>判斷哪一層出問題的速查表</h3>
+        <ul class="checklist">
+          <li><strong>回答很空泛：</strong>多半是 Context 不夠，不是模型不夠強。</li>
+          <li><strong>知道要做什麼但沒資料：</strong>先補 Plugins 或資料來源。</li>
+          <li><strong>每次做法都不同：</strong>該把流程升級成 Skill。</li>
+          <li><strong>有時快有時慢：</strong>多半是沒有固定 Cadence，handoff 品質不穩。</li>
+        </ul>
+        <p>先找故障層級，再決定要改哪裡。這比無止盡換 prompt 有效得多。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="workflow">
+    <div class="section-head reveal">
+      <div class="section-label">Workflow</div>
+      <h2 class="section-title">每天照著同一條工作流跑，Claude 才會像系統而不是聊天框</h2>
+      <p class="section-desc">Corey 公開描述過一個三方分工模型：他本人負責最終決策，AI agent 負責草稿、研究與技術執行，人類助理負責訊息發送、排程與檔案管理。這代表 Cowork 的價值不在「取代所有人」，而在於讓任務分派更清楚。</p>
+    </div>
+    <div class="workflow">
+      <article class="step-card reveal">
+        <div class="step-num">01</div>
+        <h3>先做晨間 brief，不要直接丟散亂任務</h3>
+        <p>每天開始前，用 5 到 10 分鐘把今天的主要目標、限制、截止時間與優先順序講清楚。這一步不是形式，而是避免 agent 後續猜測。</p>
+        <ul class="bullet-list">
+          <li>今天最重要的 1 到 3 件事是什麼。</li>
+          <li>哪件事需要你本人決策，哪件事可以先由 AI 起草。</li>
+          <li>有沒有特定資料夾、文件、日曆事件或素材要優先讀。</li>
+        </ul>
+      </article>
+      <article class="step-card reveal">
+        <div class="step-num">02</div>
+        <h3>每個任務都補齊 Why / Done / Access</h3>
+        <p>這是 Corey 在公開貼文裡提到最有價值的任務欄位組合。沒有這三欄，AI 只能自己猜；有了這三欄，任務就更接近可執行 SOP。</p>
+        <ul class="bullet-list">
+          <li><strong>Why：</strong>為什麼要做，幫助模型抓到上下文與優先順序。</li>
+          <li><strong>Done：</strong>完成定義是什麼，避免只做「看起來差不多」。</li>
+          <li><strong>Access：</strong>需要哪些連結、檔案、登入或資料位置。</li>
+        </ul>
+      </article>
+      <article class="step-card reveal">
+        <div class="step-num">03</div>
+        <h3>把高頻工作封裝成 reusable skill</h3>
+        <p>一旦某個任務重複出現，就不要再從零交辦。直接寫成 skill，讓 Claude 知道輸入格式、執行順序、例外處理與最終輸出長什麼樣子。</p>
+        <ul class="bullet-list">
+          <li>文章工作流：研究 → 大綱 → 初稿 → 標題變體 → 素材清單。</li>
+          <li>會議工作流：背景研究 → 人物摘要 → 討論風險 → 問題清單。</li>
+          <li>待辦整理：分類 → 指派 → 草擬回覆 → 建立 follow-up。</li>
+        </ul>
+      </article>
+      <article class="step-card reveal">
+        <div class="step-num">04</div>
+        <h3>保留人工審核點，尤其是外發內容與行程</h3>
+        <p>Claude 可以準備，但不代表應該直接替你送出所有東西。對外訊息、排程、承諾、付款與高風險決策，仍應保留人類確認節點。</p>
+      </article>
+      <article class="step-card reveal">
+        <div class="step-num">05</div>
+        <h3>每日收尾只記錄下一班要接什麼，不要寫成流水帳</h3>
+        <p>如果你希望跨 session 穩定銜接，收尾紀錄要足夠讓下一次開工的人或 agent 立刻知道「現在做到哪、還缺什麼、下一步先做哪件」。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="examples">
+    <div class="section-head reveal">
+      <div class="section-label">Examples</div>
+      <h2 class="section-title">可以先複製的 3 種 starter workflow</h2>
+      <p class="section-desc">不要一開始就做複雜代理人群組。先挑一個資料來源清楚、輸出容易驗證、每週重複度高的工作，這樣最容易真的跑起來。</p>
+    </div>
+    <div class="mini-grid">
+      <article class="mini-card reveal"><h3>Content Sprint</h3><p>適合創作者或顧問。用固定 context 與品牌語氣，讓 Claude 先完成研究摘要、文章大綱、標題備選與發佈 checklist。</p></article>
+      <article class="mini-card reveal"><h3>Meeting Prep</h3><p>適合業務、創辦人與顧問。把日曆事件、來賓資料、過往紀錄與目標 outcome 串起來，在會前自動生成 briefing note。</p></article>
+      <article class="mini-card reveal"><h3>Task Triage</h3><p>適合個人經營者與小團隊。將待辦清單按 Why / Done / Access 補齊，並預先標記哪些任務交給 AI，哪些保留給人處理。</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="pitfalls">
+    <div class="section-head reveal">
+      <div class="section-label">Pitfalls</div>
+      <h2 class="section-title">大多數人不是不會用 Claude，而是錯把 setup 問題當成模型問題</h2>
+      <p class="section-desc">原始文章 preview 直接點出問題本質：很多人裝完 Claude Cowork，摸十分鐘就放棄。真正卡住的通常不是模型，而是這四個地方。</p>
+    </div>
+    <div class="section-grid">
+      <article class="glass-card span-6 reveal">
+        <h3>常見失敗點</h3>
+        <ul class="mistake-list">
+          <li>沒有固定 context，導致每次都像第一次合作。</li>
+          <li>一次接太多插件，結果資料來源彼此衝突或難以維護。</li>
+          <li>把所有事情都丟給 Claude，卻沒有定義完成標準。</li>
+          <li>任務沒有 human review 節點，最後不敢真的交辦。</li>
+        </ul>
+      </article>
+      <article class="glass-card span-6 reveal">
+        <h3>修正原則</h3>
+        <ul class="checklist">
+          <li>先讓第一條 workflow 每週穩定跑兩次以上，再擴充。</li>
+          <li>先把資料入口與任務格式標準化，再追求更高自主性。</li>
+          <li>先把重複工作 productize，再討論 agent network。</li>
+          <li>讓 AI 先做準備與草稿，決策與承諾仍由人完成。</li>
+        </ul>
+      </article>
+    </div>
+    <div class="faq-list" style="margin-top:1rem">
+      <details class="faq-item reveal"><summary>我需要一開始就寫很多 skills 嗎？</summary><p>不需要。先挑一個高頻任務，把輸入、步驟與完成定義寫清楚。第一個 skill 的目的不是完整，而是驗證你自己的工作流是否能被標準化。</p></details>
+      <details class="faq-item reveal"><summary>如果我已經有很多 prompt，下一步是什麼？</summary><p>先找出重複率最高且最容易驗證輸出的那一條，把它升級成 skill。再把相關背景資訊拆成 references 或 context 檔，不要繼續把所有內容堆在同一個 prompt。</p></details>
+      <details class="faq-item reveal"><summary>這套方法適合個人工作者還是團隊？</summary><p>兩者都適合。個人工作者可以把它當成單人營運系統；小團隊則可以把任務 ownership、handoff 與 review 節點標準化，降低資訊落差。</p></details>
+    </div>
+  </section>
+
+  <section class="cta reveal">
+    <h2>先做出第一條可重複工作流</h2>
+    <p>如果你今天只帶走一件事，那就是：先建立一條你每週真的會跑的流程，把它拆成 context、plugin、skill、cadence 四層。當這條線穩定後，再去擴充第二條、第三條。</p>
+    <div class="cta-links">
+      <a class="cta-link" href="index.html">回首頁看全部文章</a>
+      <a class="cta-link" href="https://x.com/coreyganim/status/2033206539595461070?s=53&t=Q87zc1SClHYDLDa2POhTRg" target="_blank" rel="noreferrer">查看原始貼文</a>
+    </div>
+  </section>
+
+  <footer>
+    <div>Rebuilt for this project architecture · Static HTML article</div>
+    <div style="margin-top:0.4rem">Source metadata: Corey Ganim · 2026-03-15 · X Article preview title and related public workflow posts</div>
+  </footer>
+</main>
+<script>
+/* 切換網站主題，並將偏好保存到 localStorage。 */
+function setupThemeToggle() {
+  const themeButton = document.getElementById('theme-btn');
+  let isLight = localStorage.getItem('theme') === 'light';
+  function applyTheme() {
+    document.documentElement.classList.toggle('light', isLight);
+  }
+  themeButton.addEventListener('click', function () {
+    isLight = !isLight;
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    applyTheme();
+  });
+  applyTheme();
+}
+
+/* 根據捲動進度更新頂部進度條寬度。 */
+function setupScrollProgress() {
+  const progressBar = document.getElementById('progress');
+  function updateProgress() {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+    progressBar.style.width = percent + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+}
+
+/* 進入可視範圍時顯示區塊，降低首屏資訊壓力。 */
+function setupRevealAnimation() {
+  const items = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  items.forEach(function (item) {
+    observer.observe(item);
+  });
+}
+
+/* 根據目前可視章節同步更新導覽列高亮狀態。 */
+function setupActiveSectionLinks() {
+  const sections = document.querySelectorAll('section[id]');
+  const links = Array.from(document.querySelectorAll('.nav-link'));
+  function updateActiveLink() {
+    let currentId = '';
+    sections.forEach(function (section) {
+      const top = section.getBoundingClientRect().top;
+      if (top <= 140) {
+        currentId = section.id;
+      }
+    });
+    links.forEach(function (link) {
+      const targetId = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', targetId === currentId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  updateActiveLink();
+}
+
+setupThemeToggle();
+setupScrollProgress();
+setupRevealAnimation();
+setupActiveSectionLinks();
+</script>
+</body>
+</html>
