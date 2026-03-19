@@ -4,6 +4,15 @@
 - [ ] 無
 
 ## 已完成
+- [x] 更新 `blog/spec.md`，補上一鍵複製 RSS URL 需求
+- [x] 更新 `blog/api.md`，記錄前端 clipboard 複製方式
+- [x] 更新 `blog/index.html`，加入一鍵複製 RSS URL 按鈕與提示
+- [x] 驗證首頁 RSS 複製功能相關結構
+- [x] 更新 `blog/spec.md`，補上 RSS 訂閱需求
+- [x] 更新 `blog/api.md`，記錄本次為純靜態 feed 無新增 API
+- [x] 建立 `blog/feed.xml`
+- [x] 在 `blog/index.html` 加入 RSS metadata 與訂閱入口
+- [x] 驗證首頁與 `feed.xml` 連結
 - [x] 更新 `blog/spec.md`，補上 `2034432870455140746` 教學頁規格
 - [x] 更新 `blog/api.md`，記錄本次為純靜態頁無新增 API
 - [x] 設計並實作 `blog/claude-code-skills-shortlist.html`

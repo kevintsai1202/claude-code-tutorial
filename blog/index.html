@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claude Code · 技術筆記</title>
+<link rel="alternate" type="application/rss+xml" title="Claude Code 技術筆記 RSS" href="feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
@@ -309,6 +310,50 @@ main {
   border-radius: var(--r); overflow: hidden;
   background: var(--border);
 }
+.subscribe-panel {
+  margin-top: 2rem;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: linear-gradient(135deg, rgba(0,212,255,.05), rgba(212,160,67,.05));
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.subscribe-copy {
+  max-width: 60ch;
+}
+.subscribe-title {
+  font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: var(--cyan);
+  margin-bottom: .45rem;
+}
+.subscribe-desc {
+  font-size: .7rem; color: var(--dim2); line-height: 1.75;
+}
+.subscribe-actions {
+  display: flex; flex-wrap: wrap; gap: .65rem;
+  align-items: center;
+}
+.subscribe-link, .subscribe-btn {
+  text-decoration: none; color: var(--text);
+  font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: .65rem .9rem; background: rgba(255,255,255,.03);
+  transition: transform .2s, border-color .2s, color .2s;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.subscribe-btn {
+  cursor: pointer;
+}
+.subscribe-link:hover, .subscribe-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0,212,255,.24);
+  color: var(--cyan);
+}
+.subscribe-status {
+  font-size: .58rem;
+  color: var(--dim);
+  min-width: 120px;
+}
 .stat-item {
   flex: 1; min-width: 140px;
   padding: 1.2rem 1.4rem;
@@ -585,6 +630,22 @@ footer {
 
   </div>
 
+  <div class="section-div">subscribe</div>
+
+  <div class="subscribe-panel">
+    <div class="subscribe-copy">
+      <div class="subscribe-title">RSS 更新訂閱</div>
+      <div class="subscribe-desc">
+        這個站點已提供低成本的 RSS 訂閱。將 `feed.xml` 加到你的 RSS Reader、Readwise Reader、Inoreader 或其他自動化工具後，之後文章更新會由閱讀器自動抓取。
+      </div>
+    </div>
+    <div class="subscribe-actions">
+      <a class="subscribe-link" href="feed.xml" target="_blank" rel="noopener noreferrer">Open RSS Feed</a>
+      <button class="subscribe-btn" id="copy-rss-btn" type="button">Copy Feed URL</button>
+      <span class="subscribe-status" id="rss-copy-status" aria-live="polite">Ready</span>
+    </div>
+  </div>
+
   <!-- ── Stats ── -->
   <div class="section-div">stats</div>
 
@@ -625,6 +686,21 @@ function toggleTheme() {
   applyTheme();
 }
 applyTheme();
+
+const rssFeedUrl = new URL('feed.xml', window.location.href).href;
+const copyRssButton = document.getElementById('copy-rss-btn');
+const rssCopyStatus = document.getElementById('rss-copy-status');
+
+async function copyRssUrl() {
+  try {
+    await navigator.clipboard.writeText(rssFeedUrl);
+    rssCopyStatus.textContent = 'Copied';
+  } catch (error) {
+    rssCopyStatus.textContent = 'Copy failed';
+  }
+}
+
+copyRssButton.addEventListener('click', copyRssUrl);
 </script>
 </body>
 </html>

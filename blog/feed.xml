@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Claude Code 技術筆記</title>
+    <link>https://kevintsai1202.github.io/claude-code-tutorial/</link>
+    <description>Claude Code 教學頁與技術筆記的最新更新。</description>
+    <language>zh-TW</language>
+    <lastBuildDate>Thu, 19 Mar 2026 12:00:00 +0800</lastBuildDate>
+    <generator>Manual static RSS for GitHub Pages</generator>
+
+    <item>
+      <title>實測了上百個 Claude Code Skills，最後只留下這 10 個</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/claude-code-skills-shortlist.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/claude-code-skills-shortlist.html</guid>
+      <pubDate>Thu, 19 Mar 2026 11:00:00 +0800</pubDate>
+      <description>技能不是越多越好。整理高價值 skill 的保留標準、技能分組與定期修剪策略。</description>
+    </item>
+
+    <item>
+      <title>Claude Cowork 全套工作流：帶你組建第一支 AI 員工軍團</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/claude-cowork-ai-workforce.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/claude-cowork-ai-workforce.html</guid>
+      <pubDate>Thu, 19 Mar 2026 10:40:00 +0800</pubDate>
+      <description>從角色分工、任務 handoff、營運節奏到 AI 員工軍團的常見失敗點。</description>
+    </item>
+
+    <item>
+      <title>Lessons from Building Claude Code: How We Use Skills</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/claude-code-skills-lessons.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/claude-code-skills-lessons.html</guid>
+      <pubDate>Thu, 19 Mar 2026 10:20:00 +0800</pubDate>
+      <description>整理 Skills 作為 Claude Code extension point 的設計方式與常見誤用。</description>
+    </item>
+
+    <item>
+      <title>Ultimate Claude Cowork Starter Pack</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/claude-cowork-starter-pack.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/claude-cowork-starter-pack.html</guid>
+      <pubDate>Thu, 19 Mar 2026 09:50:00 +0800</pubDate>
+      <description>整理 Claude Cowork 的 context、plugins、skills 與 daily handoff 起手式。</description>
+    </item>
+
+    <item>
+      <title>Build Your First Claude Skill · Full Course</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/claude-skills-course.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/claude-skills-course.html</guid>
+      <pubDate>Sat, 14 Mar 2026 00:00:00 +0800</pubDate>
+      <description>從 Skills / Projects / MCP 的分工開始，延伸到 references、Evals 與跨會話 handover。</description>
+    </item>
+
+    <item>
+      <title>Lessons from Building Claude Code: Seeing like an Agent</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/agent-lessons.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/agent-lessons.html</guid>
+      <pubDate>Fri, 28 Feb 2026 00:00:00 +0800</pubDate>
+      <description>從工具設計、搜尋介面到漸進揭露，深入 Agent 視角的工程取捨。</description>
+    </item>
+
+    <item>
+      <title>Anthropic 10 個部門如何使用 Claude Code</title>
+      <link>https://kevintsai1202.github.io/claude-code-tutorial/anthropic-teams.html</link>
+      <guid>https://kevintsai1202.github.io/claude-code-tutorial/anthropic-teams.html</guid>
+      <pubDate>Sun, 01 Mar 2026 00:00:00 +0800</pubDate>
+      <description>整理 10 個部門、30+ use cases，觀察 Claude Code 在真實團隊中的應用方式。</description>
+    </item>
+  </channel>
+</rss>

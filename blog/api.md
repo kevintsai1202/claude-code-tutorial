@@ -106,3 +106,8 @@ stateDiagram-v2
 ## Claude Code Skills 精簡策略頁備註
 - `blog/claude-code-skills-shortlist.html` 為純靜態教學頁，不新增 API。
 - 頁面內容於編輯階段寫入 HTML，執行階段不對外抓取文章全文。
+
+## RSS 訂閱備註
+- `blog/feed.xml` 為純靜態 RSS feed，不新增 API。
+- 使用者透過 RSS Reader 輪詢 `feed.xml` 取得更新，GitHub Pages 本身不主動推播通知。
+- RSS URL 複製功能於前端以 `navigator.clipboard` 實作，不依賴後端 API。

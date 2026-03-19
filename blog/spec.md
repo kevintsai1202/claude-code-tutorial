@@ -283,6 +283,133 @@ stateDiagram-v2
 
 ---
 
+# Blog 前端規格：RSS 訂閱更新
+
+## 1. 架構與選型
+- 採用純靜態 `RSS 2.0` feed，檔案放在 `blog/feed.xml`，不新增後端服務。
+- 首頁透過 `<link rel="alternate" type="application/rss+xml">` 宣告 feed，並在畫面上加入訂閱入口。
+- 以最低成本維持更新通知能力，優先支援 RSS reader、瀏覽器擴充與自動化服務。
+
+## 2. 資料模型
+- `FeedMeta`
+  - `title`
+  - `link`
+  - `description`
+  - `language`
+  - `lastBuildDate`
+- `FeedItem`
+  - `title`
+  - `link`
+  - `guid`
+  - `pubDate`
+  - `description`
+
+## 3. 關鍵流程
+```mermaid
+flowchart TD
+  A[新增或更新 blog 文章] --> B[同步更新 feed.xml]
+  B --> C[首頁顯示 RSS 訂閱入口]
+  C --> D[使用者以 RSS Reader 訂閱]
+  D --> E[後續更新時由 Reader 主動抓取]
+```
+
+## 4. 虛擬碼
+```text
+define site metadata for RSS feed
+list published blog articles with canonical URLs and publish dates
+render feed.xml as RSS 2.0
+add alternate feed link in index head
+add subscribe UI on index page pointing to feed.xml
+verify feed file and homepage links exist
+```
+
+## 5. 系統脈絡圖
+```mermaid
+flowchart LR
+  Reader[讀者 / RSS Reader] --> Feed[blog/feed.xml]
+  Reader --> Index[blog/index.html]
+  Index --> Feed
+```
+
+## 6. 容器/部署概觀
+```mermaid
+flowchart TD
+  StaticHost[GitHub Pages] --> Index[blog/index.html]
+  StaticHost --> Feed[blog/feed.xml]
+  RSSReader[RSS Reader] --> Feed
+```
+
+## 7. 模組關係圖（Frontend）
+```mermaid
+flowchart TD
+  Index[index.html] --> SubscribeCard[訂閱區塊]
+  Index[index.html] --> FeedLink[alternate RSS link]
+  Feed[feed.xml] --> FeedItems[文章項目]
+```
+
+## 8. 序列圖
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant I as blog/index.html
+  participant R as RSS Reader
+  participant F as blog/feed.xml
+  U->>I: 開啟首頁
+  U->>I: 點選 RSS 訂閱
+  I->>R: 提供 feed URL
+  R->>F: 定期抓取更新
+  F-->>R: 回傳最新文章列表
+```
+
+## 9. ER 圖
+```mermaid
+erDiagram
+  FEED ||--o{ FEED_ITEM : contains
+```
+
+## 10. 類別圖（前端資料結構）
+```mermaid
+classDiagram
+  class FeedMeta {
+    +string title
+    +string link
+    +string description
+    +string lastBuildDate
+  }
+  class FeedItem {
+    +string title
+    +string link
+    +string guid
+    +string pubDate
+  }
+  FeedMeta --> FeedItem
+```
+
+## 11. 流程圖
+```mermaid
+flowchart TD
+  A[開始] --> B[建立 feed.xml]
+  B --> C[首頁加入 RSS metadata]
+  C --> D[首頁加入訂閱入口]
+  D --> E[驗證 feed 與連結]
+```
+
+## 12. 狀態圖
+```mermaid
+stateDiagram-v2
+  [*] --> FeedDefined
+  FeedDefined --> FeedPublished
+  FeedPublished --> LinkedFromIndex
+  LinkedFromIndex --> Verified
+  Verified --> [*]
+```
+
+### 補充需求
+- 首頁 RSS 訂閱區塊需提供「一鍵複製 RSS URL」按鈕，降低使用者自行選取 URL 的成本。
+- 複製操作需在前端直接完成，並提供成功或失敗的即時文字回饋。
+
+---
+
 # Blog 前端規格：Claude Code Skills 精簡策略教學頁
 
 ## 1. 架構與選型
