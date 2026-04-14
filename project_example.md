@@ -1,10 +1,10 @@
-# 🎯 課程實作主線：Bug 獵人積分系統 (Bug Hunter Leaderboard)
+# 📦 課程實作主線：小組訂單 + 庫存管理系統
 
 ---
 
 ## 一句話描述
 
-> **一個讓開發者透過「修 Bug」賺取積分、互相競爭的遊戲化 Bug 追蹤平台。**
+> **一個讓小型團隊管理商品、下訂單、追蹤出貨、監控庫存的訂單管理系統。**
 
 ---
 
@@ -12,141 +12,138 @@
 
 | 評估標準 | 說明 |
 |---|---|
-| ❌ 不太常見 | 大多數教學是 Todo / Blog / 電商，這個有遊戲化機制 |
-| ✅ 難度適中 | 有狀態機、積分邏輯，但不需要複雜演算法 |
-| ✅ 開發者有感 | 就是「修 Bug」這件事本身，對象是開發者 |
-| ✅ 功能完整 | CRUD + 狀態流轉 + 計算邏輯 + 排行榜 |
-| ✅ 視覺有亮點 | 排行榜、Badge、積分進度條讓前端好看 |
+| ✅ 非常常見 | 任何人都知道「下訂單」是什麼 |
+| ✅ 難度適中 | 庫存扣減、多品項訂單、狀態機是真實複雜度 |
+| ✅ TDD 天然適合 | 「庫存不足不能確認訂單」是完美測試場景 |
+| ✅ 前後端都有亮點 | 商品目錄、訂單追蹤頁、庫存警示 Dashboard |
+| ✅ 企業感強 | 資安 Skill 掃「金額計算有無被竄改」很有感 |
 
 ---
 
-## 系統全貌（你最終會做出什麼）
+## 系統畫面示意
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              Bug Hunter Leaderboard                      │
-├──────────────┬──────────────────────────────────────────┤
-│              │  🏆 本月排行榜        本週冠軍 @Alice    │
-│  📋 Bug 列表 │  1. Alice     ★ 820 pts                 │
-│             │  2. Bob       ★ 650 pts                  │
-│  [#001] 登入│  3. Carol     ★ 410 pts                 │
-│  頁面閃退   │                                           │
-│  🔴 OPEN   │  ──────────────────────────────────────── │
-│  嚴重度: 🔥  │  📊 我的統計                             │
-│  懸賞: 50pt │  今日: +30 pts  本月: +280 pts           │
-│             │  已修: 12 bugs  進行中: 2 bugs            │
-│  [#002] API │                                           │
-│  回傳 500   │  🏅 Badge 成就                            │
-│  🟡 IN PROG │  🥇 Speed Fix  🛡️ Security Pro           │
-│  認領: Bob  │  🔥 5連勝      ──未解鎖──                 │
-│             │                                           │
-│  [#003] 搜尋│                                           │
-│  結果排序錯 │                                           │
-│  ✅ FIXED   │                                           │
-│  修復者:Alice│                                          │
-└──────────────┴──────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  📦 Order Manager                      👤 Admin ▼        │
+├────────────┬─────────────────────────────────────────────┤
+│            │  📊 Dashboard                               │
+│  🧭 選單   │                                             │
+│            │  本月訂單   庫存警示   待出貨   本月營收    │
+│  商品管理  │  [ 142 ]   [ 3項 ]    [ 28 ]  [$48,200]   │
+│  訂單列表  │                                             │
+│  庫存報表  │  ─────────────────────────────────────────  │
+│            │  ⚠️ 庫存不足警示                           │
+│            │  • 藍芽耳機 剩 2 件 (最低安全庫存: 10)     │
+│            │  • 滑鼠墊  剩 0 件  ← 已售完               │
+│            │                                             │
+│            │  📋 最新訂單                                 │
+│            │  #0089  Alice  3 件  待確認  [確認] [取消]  │
+│            │  #0088  Bob    1 件  出貨中  ─────────────  │
+│            │  #0087  Carol  5 件  已完成  ─────────────  │
+└────────────┴─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 核心實體（你要建的資料庫）
+## 核心實體
 
 ```
-Bug（問題單）
-├── id, title, description
-├── severity: CRITICAL(100pt) / HIGH(50pt) / MEDIUM(20pt) / LOW(5pt)
-├── status: OPEN → CLAIMED → IN_REVIEW → FIXED → REJECTED
-├── pointBounty          ← 自動依嚴重度換算
-├── reporter (User)      ← 誰報的
-└── claimedBy (User)     ← 誰在修
+Product（商品）
+├── id, name, description, price
+├── stock            ← 現有庫存數量
+├── minStock         ← 最低安全庫存（低於此值發警示）
+└── category         ← 商品分類
 
-User（開發者）
-├── id, username, email
-├── totalPoints          ← 累積積分
-├── monthlyPoints        ← 本月積分
-└── badges[]             ← 解鎖的成就
+Order（訂單）
+├── id, orderNumber  ← 自動產生如 #0089
+├── customer (User)
+├── status: PENDING → CONFIRMED → SHIPPED → DELIVERED → CANCELLED
+├── totalAmount      ← 自動計算（各 item 加總）
+└── items[]          ← 一筆訂單可含多種商品
 
-Fix（修復記錄）
-├── bug (Bug)
-├── fixer (User)
-├── fixDescription       ← 怎麼修的
-├── pointsEarned         ← 這次拿到幾分
-└── createdAt
+OrderItem（訂單明細）
+├── order, product
+├── quantity
+└── unitPrice        ← 下單當下的售價快照（價格可能之後改變）
+
+User（客戶/管理員）
+├── id, username, email, role(ADMIN|CUSTOMER)
 ```
 
 ---
 
 ## 商業邏輯（讓它「不只是 CRUD」的地方）
 
-### 積分規則
-| 嚴重度 | 基礎分 | 24h 內修完 | 連續 3 Bug | 首次回報者 |
-|---|---|---|---|---|
-| CRITICAL 🔥 | 100 | +50 | +20% | +10 |
-| HIGH ⚠️ | 50 | +25 | +20% | +5 |
-| MEDIUM 🟡 | 20 | +10 | +20% | +3 |
-| LOW 🟢 | 5 | +2 | +20% | +1 |
-
-### 狀態機
+### 狀態機與庫存聯動
 ```
-OPEN → CLAIMED（開發者認領）
-CLAIMED → IN_REVIEW（提交修復）
-IN_REVIEW → FIXED（審核通過 → 發積分）
-IN_REVIEW → REJECTED（打回 → 積分不發）
-CLAIMED → OPEN（放棄認領）
+下訂單          確認訂單           出貨              送達
+PENDING    →   CONFIRMED   →    SHIPPED      →   DELIVERED
+               ↑ 此時扣庫存                      
+               庫存不足 → 拋出 InsufficientStockException
+
+PENDING → CANCELLED（取消，不扣庫存）
+CONFIRMED → CANCELLED（取消，庫存歸還）
 ```
 
-### Badge 成就
-- 🥇 **Speed Fix**：24h 內修完 CRITICAL
-- 🛡️ **Bug Slayer**：累積修 50 個 Bug
-- 🔥 **On Fire**：連續 5 Bug 未中斷
-- 🎯 **Precision**：連續 5 次 IN_REVIEW → FIXED（無 REJECTED）
+### 金額計算規則
+- `unitPrice` = 下單當下的 Product.price（快照，不受日後改價影響）
+- `totalAmount` = Σ (quantity × unitPrice)
+- 超過 $5000 自動套用 9 折優惠碼折扣
+
+### 庫存警示
+- 任何操作導致 `stock < minStock` → 回應附加 `stockAlert: true`
+- `stock == 0` → 商品自動標記 `outOfStock: true`，前端禁止下單
 
 ---
 
-## API 端點（你要實作的後端）
+## API 端點
 
 ```
-POST   /api/bugs              ← 新增 Bug
-GET    /api/bugs              ← 列表（可篩選 status/severity）
-GET    /api/bugs/{id}         ← 詳情
-PUT    /api/bugs/{id}/claim   ← 認領
-PUT    /api/bugs/{id}/submit  ← 提交修復（附說明）
-PUT    /api/bugs/{id}/approve ← 審核通過（發積分）
-PUT    /api/bugs/{id}/reject  ← 打回重來
+# 商品
+GET    /api/products              ← 列表（可過濾 category/outOfStock）
+POST   /api/products              ← 新增商品（ADMIN）
+PUT    /api/products/{id}         ← 修改價格/庫存（ADMIN）
+GET    /api/products/{id}         ← 詳情
 
-GET    /api/leaderboard       ← 排行榜（month/all-time）
-GET    /api/users/{id}/stats  ← 個人統計
-GET    /api/users/{id}/fixes  ← 修復歷史
+# 訂單
+POST   /api/orders                ← 下訂單（含多品項 items[]）
+GET    /api/orders                ← 訂單列表（ADMIN 看全部，客戶看自己）
+GET    /api/orders/{id}           ← 訂單詳情
+PUT    /api/orders/{id}/confirm   ← 確認訂單（ADMIN，扣庫存）
+PUT    /api/orders/{id}/ship      ← 出貨（ADMIN）
+PUT    /api/orders/{id}/deliver   ← 確認送達
+PUT    /api/orders/{id}/cancel    ← 取消訂單（自動歸還庫存）
 
-POST   /api/users/register    ← 註冊
-POST   /api/users/login       ← 登入（JWT）
+# 報表
+GET    /api/reports/inventory     ← 庫存現況 + 警示清單
+GET    /api/reports/sales         ← 月銷售報表（?year=2026&month=4）
 ```
 
 ---
 
-## 前端畫面（你要做的 React 頁面）
+## 前端頁面
 
-| 頁面 | 功能 |
+| 頁面 | 重點功能 |
 |---|---|
-| 📋 Bug 列表 | 篩選狀態/嚴重度、顯示懸賞積分、一鍵認領 |
-| 🔎 Bug 詳情 | 完整描述、狀態歷程、提交修復表單 |
-| ➕ 新增 Bug | 填寫標題/說明/嚴重度，自動換算積分 |
-| 🏆 排行榜 | 本月 / 全時 Tab，Top 10 開發者 |
-| 👤 個人頁面 | 我的積分、Badge 牆、修復歷史 |
+| 🏠 Dashboard | 本月統計 + 庫存警示 Banner + 最新 5 筆訂單 |
+| 📦 商品列表 | 商品卡片 + 庫存數量進度條 + 售完標示 |
+| 🛒 下訂單 | 選商品 + 填數量 + 即時計算金額 + 超過$5000自動折扣提示 |
+| 📋 訂單列表 | 狀態篩選 + 顏色標籤 + 一鍵確認/出貨/取消 |
+| 📊 庫存報表 | 庫存量 Bar Chart + 警示清單 |
 
 ---
 
-## 各 Milestone 在這個系統裡對應什麼
+## 各 Milestone 對應
 
 | Milestone | 做什麼 |
 |---|---|
-| **M1 骨架** | 建 Repo、寫 spec.md 定義以上所有欄位與規則 |
-| **M2 後端** | TDD 先行：先寫「認領 → 提交 → 審核通過 → 積分發放」的測試 |
-| **M3 前端** | Bug 列表 + 詳情頁串接 API，Playwright 驗證列表有顯示 |
-| **M4 Skill** | 資安 Skill 掃描（JWT 驗證有無洩漏），Agent 生成 30 筆假 Bug 資料 |
-| **M5 收尾** | `/review` TicketService，`/simplify` 積分計算邏輯，發 PR |
+| **M1** | spec.md 定義狀態機、庫存聯動規則、金額計算快照邏輯 |
+| **M2** | TDD：「確認訂單時庫存不足應拋出例外」「取消已確認訂單庫存歸還」 |
+| **M3** | Dashboard + 訂單列表串接，Playwright 驗證庫存警示 Banner 出現 |
+| **M4** | 資安 Skill 掃「金額計算有無可被偽造」，Agent 生成 50 筆假訂單 |
+| **M5** | `/review` OrderService，`/simplify` 庫存計算邏輯，最終 PR |
 
 ---
 
-> 💡 **一句話讓學員有感**：
-> 「你在這堂課裡，要用 Claude Code 從零打造一個讓工程師搶著修 Bug 的積分遊戲。」
+> 💡 **讓學員有感的一句話**：
+> 「這套系統你在便利商店後台或任何電商都能看到同樣的邏輯——庫存聯動、多品項、取消退庫存——Claude Code 幫你一次講清楚。」
