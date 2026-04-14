@@ -1,7 +1,8 @@
-# 📦 訂單 + 庫存管理系統 — 課程漸進式實作計畫
+# 🛒 購物車系統 — 課程漸進式實作計畫（5 Milestones）
 
-> **作品**：讓小型團隊管理商品、下訂單、追蹤出貨、監控庫存的訂單管理系統  
-> **技術棧**：Spring Boot 3 + JPA + H2（後端）/ React + Vite + TypeScript（前端）/ JUnit 5 + Playwright MCP（測試）
+> **作品**：具備商品瀏覽、購物車管理、結帳下單、訂單追蹤的電商購物車系統  
+> **技術棧**：Spring Boot 3 + JPA + H2（後端）/ React + Vite + TypeScript（前端）  
+> **測試**：JUnit 5 + Playwright MCP（E2E）
 
 ---
 
@@ -10,32 +11,81 @@
 ```mermaid
 flowchart LR
   M1["🟢 M1\nRepo + spec.md\n骨架打底"]
-  M2["🔵 M2\n訂單 + 庫存狀態機\n後端完工"]
-  M3["🟣 M3\nDashboard + 訂單列表\n前端串接"]
+  M2["🔵 M2\n商品 + 購物車 + 結帳\n後端完工"]
+  M3["🟣 M3\n商品列表 + 購物車頁\n前端串接"]
   M4["🟠 M4\n資安 Skill\n假資料 Agent"]
   M5["🔴 M5\nReview + PR\nHarness 收尾"]
   M1 --> M2 --> M3 --> M4 --> M5
 ```
 
-| Milestone | 課程段落 | 時間目標 | 可展示成果 |
+| Milestone | 課程對應 | 時間目標 | 可展示成果 |
 |---|---|---|---|
-| **M1** — 骨架打底 | 第 1 段 50min | T+50 | Repo + CLAUDE.md + spec.md |
-| **M2** — 後端完工 | 第 2-1 段 25min | T+75 | 訂單狀態機 + 庫存聯動 全 GREEN |
-| **M3** — 全端串接 | 第 2-2 段 25min | T+100 | Dashboard + 訂單列表 + E2E 驗證 |
-| **M4** — 智能強化 | 第 3 段 60min | T+160 | 資安 Skill + 50 筆假訂單 Agent |
-| **M5** — 收尾發布 | 第 4-5 段 45min | T+205 | PR 通過 CI + Harness 升級文件 |
+| **M1** — 骨架打底 | 第 1 段（50 min） | T+50 | Repo + CLAUDE.md + spec.md |
+| **M2** — 後端完工 | 第 2-1 段（25 min） | T+75 | 購物車結帳 + 庫存聯動 全 GREEN |
+| **M3** — 全端串接 | 第 2-2、2-3 段（50 min） | T+125 | 商品列表 + 購物車頁 + E2E 驗證 |
+| **M4** — 智能強化 | 第 3 段（60 min） | T+185 | 資安 Skill + 假商品 / 訂單 Agent |
+| **M5** — 收尾發布 | 第 4-5 段（45 min） | T+230 | PR 通過 CI + Harness 升級文件 |
+
+---
+
+## 核心資料模型
+
+```
+Product（商品）
+├── id, name, description, price, imageUrl
+├── stock           ← 庫存數量
+├── minStock        ← 安全庫存（低於此值顯示警示）
+└── category        ← 商品分類（3C / 服飾 / 食品）
+
+Cart（購物車）
+├── id, user(User)
+├── status: ACTIVE | CHECKED_OUT | ABANDONED
+└── items[]         ← CartItem 清單
+
+CartItem（購物車明細）
+├── cart, product
+└── quantity
+
+Order（訂單）
+├── id, orderNumber ← 自動產生 #0001
+├── user(User)
+├── status: PENDING → PAID → SHIPPED → DELIVERED / CANCELLED
+├── totalAmount     ← 伺服器計算，不接受客戶端傳入
+└── items[]         ← OrderItem 清單（含 unitPrice 快照）
+
+OrderItem（訂單明細）
+├── order, product
+├── quantity
+└── unitPrice       ← 下單當下 product.price 的快照
+
+User（會員）
+├── id, username, email
+└── role: ADMIN | CUSTOMER
+```
+
+---
+
+## 關鍵業務規則
+
+```
+加入購物車：stock == 0 → 拋 OutOfStockException
+結帳：       CartItem 每項扣 stock
+             stock < quantity → 拋 InsufficientStockException（全部 rollback）
+             結帳成功 → Cart.status = CHECKED_OUT → 建立 Order
+取消訂單：   status == PAID → stock 歸還
+             status == PENDING → 不退（未實際扣）
+金額快照：   OrderItem.unitPrice 從 Product.price 複製，改價不影響舊訂單
+```
 
 ---
 
 ## Milestone 1：骨架打底（第 1 段）
 
-> **做出來的東西**：有完整業務規則的 spec.md，Claude 看完就能開始寫程式
-
 ### 📋 任務清單
 
-- [ ] `claude doctor` 確認環境、安裝 Claude Code
-- [ ] `gh repo create order-manager --public` 建立遠端 Repo
-- [ ] `/init` 初始化 `CLAUDE.md`，補充以下規則：
+- [ ] `claude doctor` 確認環境 + Claude Code 安裝
+- [ ] `gh repo create shopping-cart --public` 建立遠端 Repo
+- [ ] `/init` → 初始化 `CLAUDE.md`
 
 ```markdown
 ## 技術棧
@@ -44,136 +94,89 @@ flowchart LR
 - 測試：JUnit 5 / Playwright MCP
 
 ## 核心規則（不可違反）
-- 庫存扣減只能在 OrderService.confirmOrder() 中執行
-- 金額計算：unitPrice 必須在下單時從 Product.price 快照，不受日後改價影響
-- 庫存歸還只能在訂單從 CONFIRMED → CANCELLED 時觸發，PENDING → CANCELLED 不扣所以不還
-- 不得硬編碼任何 JWT Secret 或資料庫密碼
+- 庫存扣減只能在 CartService.checkout() 中執行
+- OrderItem.unitPrice 必須在結帳時從 Product.price 快照
+- totalAmount 由伺服器計算，禁止接受客戶端傳入
+- 不得硬編碼 JWT Secret 或資料庫密碼
 ```
 
-- [ ] 自然語言描述需求 → Claude 產出 `spec.md`，包含：
-
-**資料模型**
-```
-Product: id / name / description / price / stock / minStock / category / outOfStock
-
-Order: id / orderNumber(自動產生 #0001) / customer(User)
-       status: PENDING→CONFIRMED→SHIPPED→DELIVERED / CANCELLED
-       totalAmount(自動計算) / items[] / createdAt
-
-OrderItem: order / product / quantity / unitPrice(下單快照)
-
-User: id / username / email / role(ADMIN|CUSTOMER)
-```
-
-**關鍵業務規則**
-```
-確認訂單：stock -= quantity（每個 item 都要扣）
-           stock < quantity → 拋出 InsufficientStockException
-取消訂單：status==CONFIRMED → stock 歸還
-           status==PENDING  → 無庫存動作
-庫存警示：stock < minStock → 回應附帶 stockAlert: true
-售完禁購：stock == 0 → outOfStock=true，拋出 OutOfStockException
-金額快照：totalAmount = Σ(item.quantity × item.unitPrice)
-折扣規則：totalAmount > 5000 → 自動套用 9 折
-```
-
-- [ ] 確認 spec.md 正確後 commit + push
+- [ ] 自然語言描述購物車需求 → 讓 Claude 用 Plan Mode 產出 `spec.md`
+  - 資料模型（Product / Cart / CartItem / Order / OrderItem / User）
+  - 狀態機（Cart、Order 各自的狀態流轉）
+  - API 端點清單（含 HTTP method 和路徑）
+  - 關鍵業務規則（結帳扣庫存、快照、取消退庫存）
+- [ ] 與 Claude 確認 spec.md 細節後 commit + push
 
 ### 🎯 M1 結束產出
 
 ```
-order-manager/
-├── CLAUDE.md   ← 技術棧 + 核心不可違反規則
-├── spec.md     ← 完整資料模型 + 狀態機 + API 清單 + 業務規則
+shopping-cart/
+├── CLAUDE.md   ← 技術棧 + 禁止行為規則
+├── spec.md     ← 購物車完整規格
 └── README.md
 ```
-
-### 🛠 Claude Code 技巧
-
-| 技巧 | 示範點 |
-|---|---|
-| `gh repo create` | 終端機一鍵建 Repo，不開瀏覽器 |
-| `/init` | 感知專案、初始化 CLAUDE.md |
-| Plan Mode | 讓 Claude 先提 spec 草稿、確認後才開始寫程式 |
-| `@spec.md` | 每次任務前帶入完整規格上下文 |
 
 ---
 
 ## Milestone 2：後端完工（第 2-1 段）
 
-> **做出來的東西**：Spring Boot 後端，庫存聯動和金額計算都有 JUnit 測試保護
-
 ### 📋 任務清單
 
-**TDD 先行（Prompt 範本）**
+**TDD 先行 Prompt 範本**：
 > 「請先依據 @spec.md 針對以下場景撰寫 JUnit 5 測試，**不要實作程式碼**：
-> 1. 確認訂單時，Product.stock 應正確扣減（含多品項）
-> 2. 庫存不足時，confirmOrder() 應拋出 InsufficientStockException，且庫存不變
-> 3. 取消一筆 CONFIRMED 訂單後，庫存應歸還；取消 PENDING 訂單庫存不變
-> 4. 下單後改變 Product.price，原訂單的 totalAmount 不受影響（快照驗證）
-> 5. totalAmount > 5000 時，計算結果應為原價 ×0.9
+> 1. 加入購物車：stock==0 時應拋出 OutOfStockException
+> 2. 結帳成功：每個 CartItem 對應的 Product.stock 應正確扣減
+> 3. 結帳失敗：某商品庫存不足時，所有庫存都不應被扣（全部 rollback）
+> 4. 結帳後：Cart.status 應變為 CHECKED_OUT，且建立了一筆新 Order
+> 5. 改變 Product.price 後，舊訂單的 OrderItem.unitPrice 應保持不變
+> 6. 取消 PAID 訂單後，庫存應歸還；取消 PENDING 訂單不歸還
 > 等我確認測試場景後再開始實作。」
 
 - [ ] 確認測試後，Claude 建立 Spring Boot 骨架：
 
 ```
-src/main/java/com/example/ordermanager/
-├── entity/
-│   ├── Product.java
-│   ├── Order.java        ← @Enumerated status 欄位
-│   ├── OrderItem.java    ← unitPrice 快照欄位
-│   └── User.java
-├── repository/           ← JPA Repositories
+src/main/java/com/example/shoppingcart/
+├── entity/            ← Product, Cart, CartItem, Order, OrderItem, User
+├── repository/        ← JPA Repositories
 ├── service/
-│   ├── OrderService.java  ← confirmOrder / cancelOrder（含庫存聯動）
-│   ├── StockService.java  ← 庫存扣減 / 歸還 / 警示邏輯
-│   └── PriceService.java  ← 金額計算 + 折扣
+│   ├── ProductService.java
+│   ├── CartService.java    ← addItem / removeItem / checkout
+│   └── OrderService.java   ← cancel（含庫存歸還）
 ├── controller/
 │   ├── ProductController.java
-│   ├── OrderController.java
-│   └── ReportController.java
-├── dto/                   ← OrderRequest / OrderResponse / OrderItemDto
+│   ├── CartController.java
+│   └── OrderController.java
+├── dto/               ← CartItemRequest / CheckoutResponse / OrderResponse
 └── exception/
-    ├── InsufficientStockException.java
-    └── OutOfStockException.java
+    ├── OutOfStockException.java
+    └── InsufficientStockException.java
 ```
 
 - [ ] `mvn test` → RED（預期失敗）
-- [ ] Auto Mode：讓 Claude 自主「讀錯誤 → 修正 → 再測試」直到 GREEN
+- [ ] Auto Mode：Claude 自主「讀錯誤 → 修正 → 再測試」直到 GREEN
 - [ ] 全部 GREEN 後 commit
 
-### 🎯 M2 結束產出（可用 Postman 驗證）
+### 🎯 M2 結束產出（API 清單）
 
 | 端點 | 功能 |
 |---|---|
-| `GET /api/products` | 商品列表（可過濾 `?outOfStock=false`） |
+| `GET /api/products` | 商品列表（可過濾 category / `?inStock=true`） |
+| `GET /api/products/{id}` | 商品詳情 |
 | `POST /api/products` | 新增商品（ADMIN） |
-| `PUT /api/products/{id}` | 調整價格 / 庫存（ADMIN） |
-| `POST /api/orders` | 下訂單（含多品項 items[]） |
+| `GET /api/cart` | 取得目前購物車（含 items） |
+| `POST /api/cart/items` | 加入商品（含數量） |
+| `PUT /api/cart/items/{itemId}` | 修改數量 |
+| `DELETE /api/cart/items/{itemId}` | 移除商品 |
+| `POST /api/cart/checkout` | 結帳 → 建立 Order + 扣庫存 + 清空 Cart |
 | `GET /api/orders` | 訂單列表（ADMIN 全部 / 客戶自己） |
-| `PUT /api/orders/{id}/confirm` | 確認訂單（扣庫存） |
-| `PUT /api/orders/{id}/ship` | 出貨 |
-| `PUT /api/orders/{id}/deliver` | 確認送達 |
-| `PUT /api/orders/{id}/cancel` | 取消（自動退庫存） |
-| `GET /api/reports/inventory` | 庫存現況 + 警示清單 |
-| `GET /api/reports/sales` | 月銷售報表（`?year=&month=`） |
+| `GET /api/orders/{id}` | 訂單詳情 |
+| `PUT /api/orders/{id}/cancel` | 取消訂單（含庫存歸還邏輯） |
 
-**JUnit 5 測試全 GREEN ✅（含庫存邊界、快照、折扣）**
-
-### 🛠 Claude Code 技巧
-
-| 技巧 | 示範點 |
-|---|---|
-| TDD Prompt 範本 | 「先寫測試，**不要實作**，等確認再開始」 |
-| Auto Mode | 自主完成 測試→修正→GREEN 閉環，不需每步確認 |
-| `/compact` | 跑完一輪 RED→GREEN 後壓縮對話 |
-| `@` 跨檔參照 | `@spec.md @OrderService.java` 同時理解規格與程式 |
+**JUnit 5 全 GREEN ✅（含庫存邊界、快照、rollback）**
 
 ---
 
-## Milestone 3：全端串接（第 2-2 段）
-
-> **做出來的東西**：可操作的 React 介面，Playwright 自動驗證庫存警示 Banner 正確出現
+## Milestone 3：全端串接（第 2-2 + 2-3 段）
 
 ### 📋 任務清單
 
@@ -182,226 +185,104 @@ src/main/java/com/example/ordermanager/
 ```
 frontend/src/
 ├── pages/
-│   ├── Dashboard.tsx      ← 統計卡 + 庫存警示 + 最新訂單
-│   ├── ProductList.tsx    ← 商品卡片 + 庫存進度條
-│   ├── OrderNew.tsx       ← 選商品 → 填數量 → 即時計算金額
-│   ├── OrderList.tsx      ← 狀態篩選 + 一鍵操作按鈕
-│   └── InventoryReport.tsx ← 庫存 Bar Chart + 警示清單
+│   ├── ProductList.tsx    ← 商品列表 + 分類篩選 + 加入購物車
+│   ├── ProductDetail.tsx  ← 商品詳情 + 庫存狀態 + 加入購物車
+│   ├── CartPage.tsx       ← 購物車明細 + 數量調整 + 結帳按鈕
+│   └── OrderHistory.tsx   ← 我的訂單列表 + 狀態進度條
 ├── components/
-│   ├── StockBadge.tsx     ← 庫存量 / 警示 / 售完三種狀態
-│   ├── StatusTag.tsx      ← PENDING/CONFIRMED/SHIPPED 顏色標籤
-│   ├── OrderSummary.tsx   ← 訂單金額明細 + 折扣提示
-│   └── AlertBanner.tsx    ← 庫存不足警示橫幅
+│   ├── CartBadge.tsx      ← 導覽列購物車圖示（顯示商品數量）
+│   ├── StockStatus.tsx    ← 現貨 / 庫存不足 / 售完 三種狀態
+│   ├── OrderStatus.tsx    ← PENDING/PAID/SHIPPED 顏色標籤
+│   └── PriceSummary.tsx   ← 小計 + 折扣 + 總計
 └── api/
     ├── productApi.ts
+    ├── cartApi.ts
     └── orderApi.ts
 ```
 
-- [ ] 先用假資料跑起 UI（確認視覺層）
+- [ ] 先用假資料跑起 UI
 - [ ] 切換為串接 Spring Boot API
-  - 同時 `@OrderController.java @orderApi.ts` 讓 Claude 一次理解串接點
-- [ ] **整合錯誤示範**：
-  - CORS 錯誤 → Claude 分析並修正 `WebMvcConfigurer`
-  - 訂單金額精度問題（`float` vs `BigDecimal`）→ Claude 修正型別
-- [ ] **Playwright MCP 驗證**（重點示範）：
+  - 同時 `@CartController.java @cartApi.ts` 讓 Claude 一次看到串接點
+- [ ] **整合錯誤示範（第 2-3 段）**：
+  - CORS 錯誤 → Claude 分析修正 `WebMvcConfigurer`
+  - 購物車數量顯示不即時更新（React state 問題）→ `/bug` 模式切入
+  - 結帳後購物車未清空（前端快取問題）→ `@` 參照前端 context 找根因
+- [ ] **Playwright MCP 驗證**：
   > 「請用 playwright 打開 localhost:5173：
-  > 1. 驗證 Dashboard 的庫存警示區塊有顯示至少 1 筆不足警示
-  > 2. 前往商品列表，確認有商品顯示「售完」標示
-  > 3. 前往訂單列表，點擊第一筆 PENDING 訂單的「確認」按鈕，驗證狀態變為 CONFIRMED」
-- [ ] Claude 產出 Playwright E2E 腳本：
-
-```typescript
-// e2e/dashboard.spec.ts
-test('Dashboard 庫存警示正確顯示', async ({ page }) => {
-  await page.goto('http://localhost:5173')
-  await expect(page.locator('[data-testid="stock-alert-banner"]')).toBeVisible()
-  const alertCount = await page.locator('[data-testid="alert-item"]').count()
-  expect(alertCount).toBeGreaterThan(0)
-})
-
-// e2e/order-flow.spec.ts
-test('確認訂單後狀態更新', async ({ page }) => {
-  await page.goto('http://localhost:5173/orders')
-  await page.locator('[data-testid="confirm-btn"]').first().click()
-  await expect(page.locator('[data-testid="status-tag"]').first())
-    .toHaveText('CONFIRMED')
-})
-```
-
-- [ ] `gh pr create`（Claude 自動生成完整 PR 說明）
+  > 1. 驗證商品列表有至少 6 筆商品
+  > 2. 點擊任一「加入購物車」按鈕，確認導覽列的購物車 badge 數字 +1
+  > 3. 前往購物車頁，確認剛加入的商品有顯示在清單中」
+- [ ] 讓 Claude 產出 Playwright E2E 腳本
+- [ ] `gh pr create`（Claude 自動生成 PR 說明）
 
 ### 🎯 M3 結束產出
 
 ```
-✅ Dashboard：統計卡 + 庫存警示 Banner + 最新 5 筆訂單
-✅ 商品列表：庫存進度條 + 售完禁購標示
-✅ 訂單列表：狀態篩選 + 確認/出貨/取消操作
-✅ Playwright E2E 測試腳本 2 支（可納入 CI）
-✅ 第一個 PR 發出（含 Claude 生成的 PR 說明）
+✅ 商品列表：分類篩選 + 庫存狀態 + 加入購物車
+✅ 購物車頁：數量調整 + 小計計算 + 一鍵結帳
+✅ 訂單頁：訂單列表 + 狀態進度條
+✅ Playwright E2E 腳本（加入購物車 badge 更新驗證）
+✅ 第一個 PR 發出
 ```
-
-### 🛠 Claude Code 技巧
-
-| 技巧 | 示範點 |
-|---|---|
-| Playwright `browser_snapshot` | Claude 自主讀頁面結構，驗證警示 Banner |
-| `/bug` | 切除錯模式，聚焦分析 BigDecimal 精度問題 |
-| `/rewind` | 串接方向錯時快速回退 |
-| `gh pr create` | 搭配 Claude 生成完整 PR 說明 |
 
 ---
 
 ## Milestone 4：智能強化（第 3 段）
 
-> **做出來的東西**：可重用的資安 Skill + 50 筆符合真實業務情境的假資料
-
 ### 📋 任務清單
 
-**4-1 企業資安規範 Skill**
+**4-1 資安 Skill**
 
-用 `skill-creator` 產出 `security-check.skill.md`：
-```markdown
-# 資安規範檢查 Skill（訂單管理系統版）
-
-## 輸入
-- 要檢查的 Java Service 或 Controller 檔案
-
-## 檢查清單
-- [ ] JWT Secret 有無硬編碼在程式碼中
-- [ ] /confirm 和 /cancel 端點有無驗證使用者身份（只有 ADMIN 或訂單本人可操作）
-- [ ] totalAmount 計算有無可被客戶端傳入偽造的風險
-- [ ] 庫存扣減操作有無 @Transactional 保護（防止並發扣超）
-- [ ] OrderItem.unitPrice 有無可能被客戶端直接傳入覆蓋（應伺服器端從 Product 讀取）
-
-## 輸出格式
-- 🔴 高風險：立即修正
-- 🟡 中風險：建議修正
-- 🟢 通過：符合規範
+`security-check.skill.md` 掃描重點：
+```
+- [ ] JWT Secret 有無硬編碼
+- [ ] /checkout 端點有無驗證使用者身份
+- [ ] totalAmount 有無防止客戶端偽造（應伺服器計算）
+- [ ] CartService.checkout() 有無 @Transactional 防並發超賣
+- [ ] OrderItem.unitPrice 有無可能被客戶端直接傳入
 ```
 
-- [ ] 立即套用 Skill 掃描 `OrderService.java` 和 `OrderController.java`
-- [ ] 最常見問題修正示範：`unitPrice` 改為伺服器端從 `Product` 讀取，不接受客戶端傳入
-- [ ] 說明 `PreToolUse` Hook：每次寫入 `.java` 自動觸發此 Skill
-
-**4-2 背景 Agent 生成假資料**
-
-> 「/agent：請按照 @spec.md 的資料模型，生成以下假資料並輸出到 src/test/resources/：
-> - seed-products.json：20 筆商品，分 3C / 文具 / 辦公用品 3 種 category，
->   其中 3 筆 stock < minStock（觸發警示），1 筆 stock=0（售完）
-> - seed-orders.json：50 筆訂單，status 分佈：PENDING 15 筆、CONFIRMED 20 筆、
->   SHIPPED 10 筆、DELIVERED 5 筆，每筆含 1~3 個 OrderItem
-> title 和 name 要用真實產品名稱」
-
-- [ ] 主線繼續開發（示範主線不被 Agent 打斷）
-- [ ] Agent 完成後套入 `DataInitializer.java`，啟動自動載入
+**4-2 背景 Agent（/agent）**
+> 「生成 seed 資料到 src/test/resources/：
+> - seed-products.json：30 筆商品（分 3C / 服飾 / 食品），其中 5 筆 stock < 5
+> - seed-orders.json：20 筆訂單，status 分佈 PENDING/PAID/SHIPPED/DELIVERED 各 5 筆」
 
 ### 🎯 M4 結束產出
 
 ```
-✅ security-check.skill.md — 訂單系統專用資安 Skill（可重用）
-✅ seed-products.json — 20 筆商品，含庫存警示邊界案例
-✅ seed-orders.json — 50 筆訂單，status 分佈合理
-✅ DataInitializer.java — 啟動時自動載入假資料
+✅ security-check.skill.md（可重用於其他電商專案）
+✅ seed-products.json（30 筆，含庫存邊界案例）
+✅ seed-orders.json（20 筆，status 分佈合理）
+✅ DataInitializer.java（啟動自動載入）
 ```
-
-### 🛠 Claude Code 技巧
-
-| 技巧 | 示範點 |
-|---|---|
-| `skill-creator` | 把企業規範固化成可重用工具 |
-| `/agent` | 背景長任務，主線不中斷 |
-| `PreToolUse` Hook | 寫入 .java 前自動觸發資安掃描 |
-| Git Worktrees（選） | 多 Agent 平行工作在不同分支 |
 
 ---
 
 ## Milestone 5：收尾發布（第 4-5 段）
 
-> **做出來的東西**：通過 CI 三道關卡的最終 PR + Harness 升級文件
-
 ### 📋 任務清單
 
-**5-1 程式碼品質審查**
-
-- [ ] `/review @src/service/OrderService.java`
-  - 正確性：並發扣庫存有無競態條件？取消邏輯覆蓋所有狀態？
-  - 安全性：unitPrice 快照有無漏洞？ADMIN 權限有無正確驗證？
-  - 可讀性：confirmOrder 方法是否過長需要拆分？
-- [ ] 根據 review 結果修正（最常見：補 `@Transactional` 在庫存扣減方法）
-- [ ] `/simplify @src/service/StockService.java`（重構精簡庫存判斷邏輯）
+- [ ] `/review @src/service/CartService.java`（正確性 + 安全性 + 可讀性）
+- [ ] `/simplify @src/service/CartService.java`（精簡結帳邏輯）
 - [ ] `mvn test` 確認仍全 GREEN
-- [ ] 完整收尾迴圈：`/review` → 修正 → `/simplify` → 再 `/review` → 無高風險項目
-
-**5-2 版本控制收尾**
-
-- [ ] Claude 整理 diff，生成語意化 commit message
-- [ ] `gh pr create`（Claude 生成含所有 Milestone 的 PR body）
-- [ ] `gh pr checks` 追蹤 CI 狀態
-
-**5-3 Harness 升級文件**
-
-- [ ] `CLAUDE.md` 加入 Level 2 規則：
-```markdown
-## Agent 邊界規則
-- 背景 Agent 禁止修改 OrderService 和 StockService（核心業務邏輯）
-- 庫存相關變更必須先更新 spec.md 再實作
-
-## CI 強制約束
-- PR 合併前必須通過：JUnit GREEN（含庫存邊界測試）+ ESLint + Playwright E2E
-```
-- [ ] 產出 `HARNESS.md`：記錄 Level 1 → 2 的升級歷程與決策
+- [ ] Claude 整理 diff、生成語意化 commit message
+- [ ] `gh pr create`（最終 PR + CI 三道關卡）
+- [ ] 更新 `CLAUDE.md` 至 Harness Level 2 + 產出 `HARNESS.md`
 
 ### 🎯 M5 結束產出（完整作品）
 
 ```
-order-manager/
+shopping-cart/
 ├── CLAUDE.md                ← Level 2 Harness 規則
 ├── HARNESS.md               ← 升級歷程記錄
-├── spec.md                  ← 規格（含狀態機、庫存規則、折扣邏輯）
-├── security-check.skill.md  ← 訂單系統資安 Skill
-├── backend/
-│   └── src/
-│       ├── main/            ← Product / Order / OrderItem / Stock / Price
-│       └── test/            ← JUnit 全 GREEN（庫存扣減、快照、折扣邊界）
-├── frontend/
-│   ├── src/                 ← Dashboard / ProductList / OrderList / Report
-│   └── e2e/                 ← Playwright 2 支 E2E 腳本
-└── .github/
-    └── workflows/ci.yml     ← JUnit + ESLint + Playwright 三道關卡
-```
-
----
-
-## 課程工作流全景
-
-```mermaid
-sequenceDiagram
-  participant L as 講師
-  participant C as Claude Code
-  participant G as GitHub
-
-  Note over L,G: M1 — 骨架打底
-  L->>C: /init + 描述訂單狀態機與庫存聯動規則
-  C->>L: 產出 spec.md（含快照規則、折扣邏輯）
-  L->>G: gh repo create + 首次 commit
-
-  Note over L,G: M2 — 後端 TDD
-  L->>C: 先寫「庫存不足不能確認訂單」的測試
-  C->>L: 確認測試場景後開始實作
-  C->>C: mvn test → RED → 修正庫存邏輯 → GREEN
-
-  Note over L,G: M3 — 前端串接
-  L->>C: Dashboard + 訂單列表串接 API
-  C->>C: browser_snapshot 驗證庫存警示 Banner 出現
-  L->>G: gh pr create（第一個 PR）
-
-  Note over L,G: M4 — 智能強化
-  L->>C: skill-creator 產出資安 Skill
-  L->>C: /agent 生成 50 筆假訂單（背景執行）
-
-  Note over L,G: M5 — 收尾發布
-  L->>C: /review OrderService → /simplify StockService
-  L->>G: gh pr create（最終 PR + CI 三道全通）
+├── spec.md                  ← 購物車規格（全程共識基礎）
+├── security-check.skill.md  ← 電商資安 Skill
+├── backend/src/
+│   ├── main/                ← Product / Cart / Order 全功能後端
+│   └── test/                ← JUnit 全 GREEN（結帳邊界 + 快照 + rollback）
+├── frontend/src/            ← ProductList / Cart / OrderHistory
+├── e2e/                     ← Playwright 腳本
+└── .github/workflows/ci.yml ← JUnit + ESLint + Playwright
 ```
 
 ---
@@ -410,13 +291,8 @@ sequenceDiagram
 
 | Checkpoint | 驗收標準 |
 |---|---|
-| **M1** | `spec.md` 有庫存扣減規則 + 金額快照說明 ✅ / Repo 已 push ✅ |
-| **M2** | `mvn test` 全 GREEN ✅ / Postman 測試「庫存不足回 400」正確 ✅ |
-| **M3** | Dashboard 庫存警示 Banner 顯示 ✅ / E2E 腳本 2 支存在 ✅ / 第一個 PR 發出 ✅ |
-| **M4** | `security-check.skill.md` 存在 ✅ / seed-orders.json 50 筆分佈合理 ✅ |
-| **M5** | `OrderService.java` review 無高風險 ✅ / CI 三道全通 ✅ / `HARNESS.md` 存在 ✅ |
-
----
-
-> 💡 **學員帶回家的是什麼**：
-> 一個任何電商後台都看得到相同邏輯的訂單管理系統（庫存、快照、折扣）+ 一套可直接搬進工作的 Claude Code 開發工作流。
+| **M1** | spec.md 有狀態機 + 庫存規則 ✅ / Repo 已 push ✅ |
+| **M2** | `mvn test` 全 GREEN ✅ / `POST /api/cart/checkout` 庫存不足回 400 ✅ |
+| **M3** | 加入購物車後 badge 數字更新 ✅ / E2E 腳本存在 ✅ / 第一個 PR 發出 ✅ |
+| **M4** | security-check.skill.md 存在 ✅ / seed 資料 50 筆合理 ✅ |
+| **M5** | CartService review 無高風險 ✅ / CI 三道全通 ✅ / HARNESS.md 存在 ✅ |
