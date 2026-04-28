@@ -1,0 +1,3043 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）｜互動教學網頁</title>
+  <style>
+    :root {
+      --bg: #f6f0e5;
+      --ink: #0d2240;
+      --muted: #344761;
+      --navy: #14386f;
+      --teal: #0f746a;
+      --orange: #d96c18;
+      --surface: rgba(255, 251, 245, 0.97);
+      --surface-strong: #fffdf8;
+      --line: rgba(13, 34, 64, 0.18);
+      --shadow: 0 28px 72px rgba(21, 34, 52, 0.14);
+      --radius-xl: 34px;
+      --radius-lg: 26px;
+      --radius-md: 18px;
+      --duration: 240ms;
+      --content-width: 1240px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+      color: var(--ink);
+      line-height: 1.75;
+      background:
+        radial-gradient(circle at left top, rgba(21,124,114,0.14), transparent 28%),
+        radial-gradient(circle at right top, rgba(230,125,47,0.15), transparent 34%),
+        linear-gradient(180deg, #fffbf4 0%, #f2ebdf 100%);
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      width: min(var(--content-width), calc(100vw - 28px));
+      margin: 0 auto;
+    }
+
+    .page-layout {
+      display: flex;
+      gap: 24px;
+      align-items: start;
+      padding: 24px 0 48px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 18px;
+      flex-shrink: 0;
+      width: 290px;
+      display: grid;
+      gap: 14px;
+      align-self: start;
+      overflow: hidden;
+      transition: width 300ms cubic-bezier(.4,0,.2,1), opacity 260ms ease;
+    }
+
+    .sidebar.is-collapsed {
+      width: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-collapse-btn {
+      width: 100%;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(20,56,111,0.08);
+      color: var(--navy);
+      font: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background var(--duration);
+    }
+    .sidebar-collapse-btn:hover,
+    .sidebar-collapse-btn:focus-visible {
+      outline: none;
+      background: rgba(20,56,111,0.18);
+    }
+
+    .sidebar-expand-tab {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 0 14px 14px 0;
+      padding: 18px 9px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      writing-mode: vertical-rl;
+      letter-spacing: 0.06em;
+      box-shadow: 3px 0 18px rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 260ms ease, background var(--duration);
+    }
+    .sidebar-expand-tab.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sidebar-expand-tab:hover,
+    .sidebar-expand-tab:focus-visible {
+      outline: none;
+      background: #1a4a8c;
+    }
+
+    .sidebar-card {
+      background: rgba(255, 252, 247, 0.98);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 14px 36px rgba(34, 50, 74, 0.08);
+      padding: 18px;
+    }
+
+    .sidebar-card h2,
+    .sidebar-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: var(--navy);
+    }
+
+    .sidebar-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .sidebar-toggle {
+      display: none;
+      min-height: 44px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(20,56,111,0.14);
+      color: var(--navy);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .sidebar-nav {
+      display: grid;
+      gap: 6px;
+      max-height: calc(100vh - 220px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .sidebar-link,
+    .sidebar-sublink {
+      display: block;
+      text-decoration: none;
+      border-radius: 16px;
+      transition: background var(--duration), color var(--duration), transform var(--duration);
+      cursor: pointer;
+    }
+
+    .sidebar-link {
+      padding: 10px 12px;
+      color: var(--ink);
+      background: rgba(20,56,111,0.08);
+      font-weight: 600;
+    }
+
+    .sidebar-sublinks {
+      display: grid;
+      gap: 4px;
+      padding: 4px 0 10px 12px;
+    }
+
+    .sidebar-sublink {
+      padding: 8px 10px;
+      color: #233854;
+      font-size: 0.93rem;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link:focus-visible,
+    .sidebar-sublink:hover,
+    .sidebar-sublink:focus-visible,
+    .sidebar-link.is-active,
+    .sidebar-sublink.is-active {
+      outline: none;
+      transform: translateX(2px);
+      background: rgba(15,116,106,0.16);
+      color: #0f315f;
+    }
+
+    .main-column {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hero {
+      padding: 28px 0 44px;
+    }
+
+    .hero-card {
+      overflow: hidden;
+      border-radius: 38px;
+      background: linear-gradient(140deg, rgba(11,29,58,0.98), rgba(23,58,114,0.94));
+      color: #f8fafc;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-grid {
+      display: block;
+      padding: 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      color: #ffd9b5;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.84rem;
+    }
+
+    .hero-copy h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2.3rem, 4vw, 4.4rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      color: rgba(248,250,252,0.92);
+      max-width: 66ch;
+      font-size: 1.03rem;
+    }
+
+    .hero-points {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .hero-point {
+      padding: 16px 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .hero-point strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .hero-point p {
+      font-size: 0.94rem;
+    }
+
+    .hero-media-card {
+      margin-top: 22px;
+      overflow: hidden;
+      border-radius: 34px;
+      background: linear-gradient(140deg, rgba(11,29,58,0.98), rgba(23,58,114,0.94));
+      color: #f8fafc;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-media-shell {
+      display: grid;
+      grid-template-columns: 0.38fr 0.62fr;
+      gap: 18px;
+      align-items: stretch;
+      padding: 24px;
+    }
+
+    .hero-media-copy {
+      display: grid;
+      align-content: start;
+      gap: 14px;
+    }
+
+    .hero-media-copy h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.18;
+    }
+
+    .hero-media-copy p {
+      margin: 0;
+      color: rgba(248,250,252,0.86);
+      font-size: 0.98rem;
+    }
+
+    .hero-visual-slot .visual-preview {
+      margin: 0;
+      min-height: 520px;
+    }
+
+    .intro-card,
+    .chapter-shell,
+    .section-shell {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 38px rgba(30, 43, 63, 0.1);
+    }
+
+    .intro-card {
+      border-radius: var(--radius-xl);
+      padding: 28px;
+    }
+
+    .intro-card h2 {
+      margin: 0 0 12px;
+      font-size: 1.6rem;
+    }
+
+    .chapter-list {
+      display: grid;
+      gap: 30px;
+      padding: 24px 0 48px;
+    }
+
+    .chapter-shell {
+      border-radius: 30px;
+      padding: 24px;
+    }
+
+    .chapter-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .chapter-head h2 {
+      margin: 8px 0 0;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1.14;
+    }
+
+    .chapter-head p {
+      margin: 0;
+      max-width: 44ch;
+      color: #2f4765;
+    }
+
+    .chapter-sections {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-shell {
+      border-radius: 28px;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .section-topline,
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-topline { margin-bottom: 12px; }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(20,56,111,0.12);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .section-topline small {
+      color: #2f4765;
+      font-size: 0.94rem;
+    }
+
+    .section-heading h3 {
+      margin: 0;
+      font-size: clamp(1.26rem, 2.4vw, 1.95rem);
+      line-height: 1.24;
+    }
+
+    .section-heading p {
+      margin: 8px 0 0;
+      color: #334a66;
+    }
+
+    .section-toggle,
+    .visual-preview__close,
+    .visual-preview__chip,
+    .visual-preview__frame,
+    .lightbox__close {
+      border: none;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .section-toggle,
+    .lightbox__close,
+    .visual-preview__close {
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 999px;
+    }
+
+    .section-toggle {
+      background: rgba(20,56,111,0.12);
+      color: var(--navy);
+      transition: background var(--duration), transform var(--duration);
+    }
+
+    .section-toggle:hover,
+    .section-toggle:focus-visible {
+      outline: none;
+      background: rgba(20,56,111,0.2);
+      transform: translateY(-1px);
+    }
+
+    .visual-preview {
+      position: relative;
+      margin: 18px 0 22px;
+      min-height: 94px;
+    }
+
+    .visual-preview__expanded {
+      position: relative;
+      opacity: 1;
+      transform: scale(1);
+      transform-origin: top left;
+      transition: opacity var(--duration), transform var(--duration);
+    }
+
+    .visual-preview:not(.is-open) .visual-preview__expanded {
+      opacity: 0;
+      transform: scale(0.82);
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+    }
+
+    .visual-preview__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 2;
+      background: rgba(11,29,58,0.78);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .visual-preview__frame {
+      width: 100%;
+      padding: 0;
+      display: block;
+      overflow: hidden;
+      border-radius: 24px;
+      background: transparent;
+      box-shadow: var(--shadow);
+    }
+
+    .visual-preview__frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .visual-preview__chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 8px 14px 8px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(13,34,64,0.18);
+      box-shadow: 0 10px 24px rgba(34,50,74,0.1);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity var(--duration), transform var(--duration), border-color var(--duration);
+      pointer-events: none;
+    }
+
+    .visual-preview:not(.is-open) .visual-preview__chip {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .visual-preview__chip:hover,
+    .visual-preview__chip:focus-visible {
+      outline: none;
+      border-color: rgba(21,124,114,0.48);
+    }
+
+    .visual-preview__chip img {
+      width: 62px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 999px;
+      display: block;
+    }
+
+    .section-content {
+      display: grid;
+      grid-template-rows: 1fr;
+      opacity: 1;
+      transform: scaleY(1);
+      transform-origin: top center;
+      transition: grid-template-rows 280ms ease, opacity 280ms ease, transform 280ms ease;
+    }
+
+    .section-content:not(.is-open) {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transform: scaleY(0.96);
+    }
+
+    .section-content__inner {
+      overflow: hidden;
+    }
+
+    .section-content__inner > *:first-child { margin-top: 0; }
+    .section-content__inner > *:last-child { margin-bottom: 0; }
+
+    .section-content p,
+    .intro-card p {
+      margin: 0 0 14px;
+      color: #0f2441;
+    }
+
+    .section-content h4 {
+      margin: 18px 0 10px;
+      font-size: 1.08rem;
+      color: var(--navy);
+    }
+
+    .section-content ul,
+    .section-content ol {
+      margin: 0 0 16px;
+      padding-left: 1.2rem;
+    }
+
+    .section-content li + li {
+      margin-top: 8px;
+    }
+
+    blockquote {
+      margin: 0 0 16px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--orange);
+      background: rgba(217,108,24,0.12);
+      border-radius: 0 20px 20px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 0 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.9);
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(17,38,66,0.08);
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(20,56,111,0.12);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    pre {
+      margin: 0 0 18px;
+      padding: 16px 18px;
+      border-radius: 22px;
+      overflow: auto;
+      background: #10294d;
+      color: #f6fbff;
+      border: 1px solid rgba(132, 184, 255, 0.18);
+      border-left: 4px solid #25b3a4;
+      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+      font-size: 1rem;
+      line-height: 1.76;
+      font-weight: 600;
+      white-space: pre-wrap;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.18);
+    }
+
+    code {
+      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    }
+
+    pre code,
+    .command-block code {
+      color: #ffffff !important;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      -webkit-text-fill-color: #ffffff;
+    }
+
+    p code,
+    li code,
+    td code,
+    blockquote code {
+      display: inline-block;
+      padding: 0.08rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(20,56,111,0.14);
+      color: #123867;
+      font-size: 0.92em;
+    }
+
+    .command-block {
+      white-space: pre-wrap;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(6,14,28,0.78);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--duration);
+      z-index: 60;
+    }
+
+    .lightbox.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lightbox__dialog {
+      width: min(1120px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      border-radius: 28px;
+      background: var(--surface-strong);
+      box-shadow: var(--shadow);
+      transform: translateY(18px) scale(0.96);
+      transition: transform var(--duration);
+    }
+
+    .lightbox.is-open .lightbox__dialog {
+      transform: translateY(0) scale(1);
+    }
+
+    .lightbox__toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .lightbox__toolbar h4 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .lightbox__close {
+      background: rgba(20,56,111,0.16);
+      color: #123867;
+    }
+
+    .lightbox__dialog img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 980px) {
+      .page-layout {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: static;
+        width: 100% !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
+
+      .sidebar-collapse-btn,
+      .sidebar-expand-tab {
+        display: none !important;
+      }
+
+      .sidebar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sidebar-nav {
+        display: none;
+        max-height: none;
+      }
+
+      .sidebar.is-open .sidebar-nav {
+        display: grid;
+      }
+
+      .hero-visual-slot .visual-preview {
+        min-height: 300px;
+      }
+
+      .hero-media-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .chapter-head,
+      .section-header,
+      .section-topline {
+        flex-direction: column;
+        align-items: start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(var(--content-width), calc(100vw - 18px));
+      }
+
+      .hero-grid,
+      .hero-media-shell {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .hero-points {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="page-layout">
+      <aside class="sidebar" id="chapter-sidebar">
+        <div class="sidebar-card">
+          <h2>章節導覽</h2>
+          <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
+          <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" type="button" aria-label="收起側邊欄">
+            ◀ 收起側邊欄
+          </button>
+        </div>
+        <div class="sidebar-card">
+          <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
+          <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
+        </div>
+      </aside>
+      <button class="sidebar-expand-tab" id="sidebar-expand-tab" type="button" aria-label="展開側邊欄">章節導覽 ▶</button>
+
+      <div class="main-column">
+        <header class="hero">
+          <div class="hero-card">
+            <div class="hero-grid">
+              <div class="hero-copy">
+                <span class="eyebrow">Interactive Teaching Website</span>
+                <h1>Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）</h1>
+                <p>講師將帶領學員以一個真實的全端專案為主線，完整展示如何把 Claude Code 放進日常開發流程。課程聚焦在版本控制、文件驅動、SDD/TDD 開發紀律、Skill 設計、背景 Agent、多模式操作與高效率除錯，讓學員學會一套可以直接搬進工作的做法。</p>
+                <div class="hero-points">
+                  <div class="hero-point">
+                    <strong>課程目標</strong>
+                    <p>使用 Claude Code 帶著學員完成一個購物車系統，串起規格、程式、測試與驗證。</p>
+                  </div>
+                  <div class="hero-point">
+                    <strong>教學體驗</strong>
+                    <p>每章先看圖解，再進入可收折的課綱內容與指令區塊，適合授課與自學。</p>
+                  </div>
+                  <div class="hero-point">
+                    <strong>互動重點</strong>
+                    <p>章節圖片可先彈出展示，關閉後縮成圖示，再次點擊即可重新展開。</p>
+                  </div>
+                  <div class="hero-point">
+                    <strong>內容型態</strong>
+                    <p>表格、說明、流程、指令與程式碼都在同一頁中以明確視覺層級整理。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section class="hero-media-card" aria-label="課程主視覺">
+            <div class="hero-media-shell">
+              <div class="hero-media-copy">
+                <span class="eyebrow">Course Visual</span>
+                <h2>課程主視覺</h2>
+                <p>主視覺圖片獨立展示，避免壓縮首頁文字區塊；圖片可像章節圖一樣放大檢視、關閉縮成小圖示，再次點擊重新展開。</p>
+              </div>
+              <div class="hero-visual-slot" id="hero-visual-slot">
+              </div>
+            </div>
+          </section>
+        </header>
+
+        <section class="intro-card">
+          <h2>課程導讀</h2>
+          <div id="intro-root"></div>
+        </section>
+
+        <main class="chapter-list" id="lesson-root"></main>
+
+        <section class="intro-card" id="course-summary" style="margin-top:32px;margin-bottom:48px;">
+          <h2 style="margin:0 0 18px;font-size:1.6rem;">課程總結</h2>
+
+          <blockquote>
+            <p>這堂課的核心<strong>不是</strong>「AI 幫你寫更多 code」，而是「<strong>你如何設計一條更穩定的開發工作流</strong>」——讓 Claude 變成可預測、可治理、可長期維護的工程夥伴，而不是看心情產出的副駕駛。</p>
+          </blockquote>
+
+          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">你在這 4 小時學會的四種能力</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>能力</th><th>核心招式</th><th>來自的段落</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>共識能力</strong></td>
+                <td>用 SDD 寫 <code>spec.md</code> 與 <code>CLAUDE.md</code>，把「你與 Claude 的共識契約」寫進磁碟，避免每次重新解釋</td>
+                <td>1-2、2-1</td>
+              </tr>
+              <tr>
+                <td><strong>紀律能力</strong></td>
+                <td>TDD 三循環（Red → Green → Refactor）+ Auto Mode 自主迴圈 + <strong>superpowers Iron Laws</strong>（沒測試不寫程式、沒驗證不宣稱完成、沒找到根因不動程式），讓測試成為 Claude 不會偏離的軌道</td>
+                <td>2-2、4-3</td>
+              </tr>
+              <tr>
+                <td><strong>治理能力</strong></td>
+                <td>Context 主動管理（<code>/clear</code> <code>/compact</code> <code>/context</code> <code>/rewind</code>）+ 權限模式選擇（Auto vs Bypass），決定 Claude 的「記憶」與「動作授權」</td>
+                <td>1-1、1-2、2-4、4-2</td>
+              </tr>
+              <tr>
+                <td><strong>延伸能力</strong></td>
+                <td>Skill 把規則固化、<code>/agent</code> 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業</td>
+                <td>3-1～3-4</td>
+              </tr>
+            </tbody>
+          </table></div>
+
+          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">三個關鍵心智轉變</h3>
+          <ol style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;">
+            <li style="margin-bottom:8px;"><strong>從「下指令」到「設定環境」</strong>：寫 <code>CLAUDE.md</code> &gt; 重複下 prompt；建 Skill &gt; 一次性教學；定義 Hooks &gt; 事後補救。</li>
+            <li style="margin-bottom:8px;"><strong>從「被動清理 context」到「主動管理 context」</strong>：在階段邊界 <code>/compact</code>、無關任務前 <code>/clear</code>、走偏方向 <code>/rewind</code>，而不是等 Claude 變慢才反應。</li>
+            <li><strong>從「全部自己做」到「分流任務」</strong>：主線用 Plan / Edit 模式精修核心邏輯；長噪音任務丟 <code>/agent</code>；可重複流程做成 Skill；想自治就上 Auto Mode（在分類器把關下）。</li>
+          </ol>
+
+          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">明天上班就能做的三件事</h3>
+          <ul style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;">
+            <li style="margin-bottom:8px;">🟢 <strong>30 分鐘</strong>：在你手上的專案根目錄建立 <code>CLAUDE.md</code>，寫清架構規範、禁止行為、技術棧版本、常用指令——Claude 從此不會忘。</li>
+            <li style="margin-bottom:8px;">🟡 <strong>下一次卡住時</strong>：先按 <code>/context</code> 看 context 被誰吃了，再決定要 <code>/compact</code> 還是 <code>/clear</code>，而不是直接重開 session。</li>
+            <li>🔴 <strong>下一次 Claude 走錯方向</strong>：按 <code>Esc Esc</code> → 選 <strong>Restore code only</strong>，保留對話分析脈絡，只退回檔案重做——比手動 <code>git checkout</code> 快十倍。</li>
+          </ul>
+
+          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">收束到 Harness Engineering</h3>
+          <p style="margin:0 0 14px;color:#0f2441;">你在第 5 段學到：上面這些做法不是零散技巧，而是<strong>圍繞 Agent 的執行與治理層</strong>的具體實踐。<code>CLAUDE.md</code> 是靜態上下文層、TDD 迴圈是錯誤恢復層、Hooks 是架構約束層、<code>/review</code> + <code>/simplify</code> 是熵管理層、Plan Mode 是 Human-in-the-Loop 閘門——你不是在「用 AI 寫程式」，你是在<strong>設計一套讓 AI 持續產出高品質程式碼的系統</strong>。</p>
+          <blockquote>
+            <p><strong>這就是 Harness Engineering——你一直在做的事，現在有了名字。</strong></p>
+          </blockquote>
+
+          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">課後行動清單</h3>
+          <ul style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;list-style:none;">
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 為當前專案建立 <code>CLAUDE.md</code>（含技術棧、禁止行為、常用指令）</li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 把一個重複流程做成 Skill（資安檢查 / Code review / 文件生成擇一）</li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 為一個長噪音任務（如資料生成、log 分析）開一個 <code>/agent</code> 試水</li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 在 PR 流程加入 <code>/review</code> + <code>/simplify</code> 的固定收尾</li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 練習 <code>/rewind</code> 的五個選項，特別是 <strong>Restore code only</strong></li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 評估你的方案是否能用 Auto Mode（Team / Enterprise / API + Sonnet 4.6 以上）</li>
+            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 安裝 <code>superpowers</code> plugin，至少跑過一次 <code>writing-plans</code> + <code>test-driven-development</code> + <code>verification-before-completion</code> 完整管線</li>
+            <li><input type="checkbox" disabled style="margin-right:6px;"> 把三條 Iron Laws 寫進團隊 <code>CLAUDE.md</code>，把紀律從「個人習慣」升級成「團隊契約」</li>
+          </ul>
+
+          <blockquote style="margin-top:24px;">
+            <p><strong>最後提醒</strong>：Claude 會持續變強，但能拉開差距的不是「會用哪個指令」，而是「<strong>有沒有把工作流設計成可長期維護的 Harness</strong>」。這堂課給你的不是 100 個技巧，而是一套可以持續演化的心智模型。</p>
+          </blockquote>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-labelledby="lightbox-title">
+      <div class="lightbox__toolbar">
+        <h4 id="lightbox-title">教學圖解</h4>
+        <button class="lightbox__close" type="button" id="lightbox-close">關閉</button>
+      </div>
+      <img id="lightbox-image" src="" alt="">
+    </div>
+  </div>
+
+  <template id="raw-syllabus">
+<h1 id="claude-code-ai-4">Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）</h1>
+<p><strong>課程定位</strong>：講師將帶領學員以一個真實的全端專案為主線，完整展示如何把 Claude Code 放進日常開發流程。課程聚焦在版本控制、文件驅動、SDD/TDD 開發紀律、Skill 設計、背景 Agent、多模式操作與高效率除錯，讓學員學會一套可以直接搬進工作的做法。</p>
+<hr />
+<h2 id="shopping-cart">🛒 課程主專案：購物車系統（Shopping Cart）</h2>
+<p>本課程所有範例、實作與示範，均圍繞同一個<strong>購物車系統</strong>主線展開。專案涵蓋商品瀏覽、加入購物車、數量管理與結帳表單，讓學員在真實情境中體驗 SDD、TDD、Playwright 驗證、Skill 製作與背景 Agent 的完整工作流。</p>
+<p><strong>技術棧</strong>：</p>
+<ul>
+<li><strong>後端</strong>：Node.js 20 + Express + PostgreSQL（Docker 啟動）</li>
+<li><strong>前端</strong>：React + Vite</li>
+</ul>
+<p><strong>核心實體</strong>：</p>
+<ul>
+<li><code>Product</code>（商品）</li>
+<li><code>Cart</code>（購物車）</li>
+<li><code>CartItem</code>（購物車明細）</li>
+</ul>
+<p><strong>功能範圍</strong>：</p>
+<ol>
+<li>使用者可瀏覽商品並加入購物車</li>
+<li>加入相同商品自動合併數量</li>
+<li>數量改為 0 則自動移除</li>
+<li>購物車合計由伺服器計算（不接受客戶端傳入）</li>
+<li>結帳時填收件資料後清空購物車</li>
+</ol>
+<hr />
+<h2 id="gitgithub-claude-code-60-mins">第 1 段：Git、GitHub 與 Claude Code 起手式（60 mins）</h2>
+<p><strong>目標</strong>：先建立正確的開發起手式，讓學員理解 Claude Code 不是取代版本控制，而是強化版本控制與專案治理。</p>
+<h3 id="section">📦 本章工具一覽（先看清單，再進細節）</h3>
+<blockquote>
+<p>本章會用到以下 7 個工具——<strong>詳細安裝方式分散在 1-1 / 1-2 / 1-3 / 1-4 各小節</strong>，本表先讓你掌握全貌，避免學到中途才發現缺工具。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>工具</th>
+<th>用途</th>
+<th>安裝段落</th>
+<th>必要性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Claude Code（CLI）</strong></td>
+<td>主角；終端機 AI 編程工具</td>
+<td>1-1</td>
+<td>⭐ 必裝</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Node.js v20+</strong></td>
+<td>Claude Code CLI 安裝前提 + 前端 React/Vite 開發</td>
+<td>1-1</td>
+<td>⭐ 必裝</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>VS Code + Claude Code 插件</strong></td>
+<td>圖形化操作介面（與 CLI 二選一或並用）</td>
+<td>1-2</td>
+<td>🔵 推薦</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Docker Desktop</strong></td>
+<td>跑 PostgreSQL（後端資料庫）</td>
+<td>1-3</td>
+<td>⭐ 必裝</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Git</strong></td>
+<td>版本控制</td>
+<td>1-4</td>
+<td>⭐ 必裝</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>GitHub CLI（gh）</strong></td>
+<td>從終端機操作 GitHub（建 repo / 開 PR）</td>
+<td>1-4</td>
+<td>⭐ 必裝</td>
+</tr>
+</tbody>
+</table>
+<p><strong>終端機環境</strong>（不需安裝，但要知道用哪個）：</p>
+<ul>
+<li><strong>Windows</strong>：PowerShell 7+ 或 Windows Terminal</li>
+<li><strong>macOS</strong>：Terminal.app 或 iTerm2</li>
+</ul>
+<h4 id="postgresql-viewer">🗂 PostgreSQL 檢視工具快速參考（雙平台對照）</h4>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>安裝方式</th>
+<th>驗證方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td>安裝 <a href="https://dbeaver.io/">DBeaver</a> 或 TablePlus</td>
+<td>能連上 <code>localhost:5432</code> 的 <code>shoppingcart</code></td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>brew install --cask dbeaver-community</code> 或使用 TablePlus</td>
+<td>能連上 <code>localhost:5432</code> 的 <code>shoppingcart</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>為什麼資料庫選 PostgreSQL</strong>：更貼近真實專案，能自然帶到 schema、constraint、migration 與連線管理等實務議題。</p>
+<p><strong>為什麼強調 Docker</strong>：學員不需手動安裝 PostgreSQL，本課示範如何直接用自然語言讓 Claude 生成 <code>docker-compose.yml</code>、啟動容器、驗證 healthy、回填後端設定。</p>
+<blockquote>
+<p>🟢 <strong>建議課前先把 1～6 全部裝完</strong>，課程進行時就能聚焦在操作示範與 Prompt 設計，不會被環境問題打斷。</p>
+</blockquote>
+<h3 id="mins">1-1 環境安裝、登入與操作模式（20 mins）</h3>
+<ul>
+<li><p><strong>Claude Code 安裝與登入</strong>（雙平台對照）：</p>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>安裝指令</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td><code>npm install -g @anthropic-ai/claude-code</code></td>
+<td>需先裝 Node.js v20+，PowerShell 7+ 執行</td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>brew install claude-code</code> 或 <code>npm install -g @anthropic-ai/claude-code</code></td>
+<td>brew 為主流選項；Apple Silicon / Intel 通用</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>安裝後共用：<code>claude doctor</code> 健檢 → <code>claude</code> 啟動 → <code>/login</code> 登入 OAuth。</li>
+<li>介紹 <code>/login</code>、模型切換與基本指令：<code>@</code> 參照檔案、<code>/help</code>、<code>/init</code>。</li>
+</ul>
+</li>
+<li><p><strong>訂閱方案與費用</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>定位</th>
+<th>Claude Code 預設模型</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pro</td>
+<td>個人開發者</td>
+<td>Sonnet 4.6</td>
+<td>含 Claude Code 基本用量</td>
+</tr>
+<tr>
+<td>Max 5x / 20x</td>
+<td>重度個人用戶</td>
+<td>Opus 4.7</td>
+<td>用量為 Pro 的 5x / 20x</td>
+</tr>
+<tr>
+<td>Team Standard</td>
+<td>團隊協作</td>
+<td>Sonnet 4.6</td>
+<td>含管理控制台</td>
+</tr>
+<tr>
+<td>Team Premium</td>
+<td>團隊重度使用</td>
+<td>Opus 4.7（預設）</td>
+<td>Opus 1M 上下文已含</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>企業合規</td>
+<td>Opus 4.7（可設定）</td>
+<td>SSO、自訂政策、合規 API</td>
+</tr>
+<tr>
+<td>API（按量付費）</td>
+<td>開發者整合</td>
+<td>自選</td>
+<td>依 token 計費</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>API 用量成本</strong>：平均約 <strong>$6／開發者／天</strong>，90% 使用者每日低於 $12；月平均 <strong>$100–200／人</strong>（使用 Sonnet 4.6）。</li>
+<li><strong>額度重置規則</strong>：達到用量上限後，<strong>每 5 小時重置一次</strong>（非固定時間點）。超出部份可開啟「Extra Usage」以 API 計費延續使用，每日上限 $2,000。</li>
+</ul>
+</li>
+<li><p><strong>可用模型與選擇策略</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>別名</th>
+<th>對應模型</th>
+<th>適合場景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sonnet</code></td>
+<td>Claude Sonnet 4.6</td>
+<td>日常編程（性價比最高）</td>
+</tr>
+<tr>
+<td><code>opus</code></td>
+<td>Claude Opus 4.7</td>
+<td>複雜架構決策、多步推理</td>
+</tr>
+<tr>
+<td><code>haiku</code></td>
+<td>Claude Haiku 4.5</td>
+<td>簡單子任務、Agent 分工</td>
+</tr>
+<tr>
+<td><code>opusplan</code></td>
+<td>規劃用 Opus，執行切 Sonnet</td>
+<td>大型任務兼顧品質與成本</td>
+</tr>
+<tr>
+<td><code>sonnet[1m]</code> / <code>opus[1m]</code></td>
+<td>同上 + 100 萬 token 上下文</td>
+<td>超大型程式碼庫</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>模型切換</strong>：session 中用 <code>/model &lt;別名&gt;</code>，啟動時用 <code>--model &lt;別名&gt;</code>，或在 <code>/config</code> 設定預設。</li>
+<li><strong>Effort 等級</strong>：<code>/effort low/medium/high/max</code> 調整推理深度，預設 <code>medium</code>；提示詞中加 <code>ultrathink</code> 可單次觸發 high effort。</li>
+</ul>
+</li>
+<li><p><strong>VS Code 插件 vs CLI 模式差異</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>面向</th>
+<th>VS Code 插件</th>
+<th>CLI（Terminal）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>啟動方式</td>
+<td>側邊欄面板 / Ctrl+Shift+C</td>
+<td><code>claude</code> 指令</td>
+</tr>
+<tr>
+<td>檔案參照</td>
+<td>自動感知當前開啟檔案</td>
+<td>需明確 <code>@</code> 參照</td>
+</tr>
+<tr>
+<td>適合場景</td>
+<td>UI 開發、邊寫邊問</td>
+<td>自動化任務、長流程</td>
+</tr>
+<tr>
+<td>上下文感知</td>
+<td>與編輯器同步</td>
+<td>從終端機角度操作</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p><strong>五種權限／操作模式</strong>（VS Code 插件選單 + CLI 對應）：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>VS Code 名稱</th>
+<th>CLI 對應</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逐步確認</td>
+<td>Ask before edits</td>
+<td>預設互動模式（<code>default</code>）</td>
+<td>每次編輯前詢問，適合探索與學習</td>
+</tr>
+<tr>
+<td>自動編輯</td>
+<td>Edit automatically</td>
+<td><code>--permission-mode acceptEdits</code></td>
+<td>自動接受檔案編輯，不需手動確認每次修改</td>
+</tr>
+<tr>
+<td>規劃模式</td>
+<td>Plan mode</td>
+<td><code>--permission-mode plan</code></td>
+<td>只讀不寫：探索程式碼、提出計畫，再切換模式執行；session 內可用 <code>/plan</code> 前綴觸發</td>
+</tr>
+<tr>
+<td>自動模式</td>
+<td>Auto mode</td>
+<td><code>--permission-mode auto --enable-auto-mode</code></td>
+<td>由背景 classifier 模型審核每個操作，合法才自動執行，無需手動確認；<strong>需 Team / Enterprise / API 方案 + Sonnet 4.6 或 Opus 4.7</strong></td>
+</tr>
+<tr>
+<td>全開模式</td>
+<td>Bypass permissions</td>
+<td><code>--permission-mode bypassPermissions</code>（或 <code>--dangerously-skip-permissions</code>）</td>
+<td>跳過所有權限提示，適合已隔離的容器／CI 環境，<strong>需謹慎使用</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>如何開啟 Auto 與 Bypass 模式（深入版）</strong></p>
+</blockquote>
+<p><strong>Auto Mode 啟用前提</strong>：</p>
+<ul>
+<li><strong>方案限制</strong>：需 <strong>Team / Enterprise / API</strong> 方案（個人 Pro / Max 不可用）</li>
+<li><strong>模型限制</strong>：僅 <strong>Sonnet 4.6 或 Opus 4.7</strong>（不支援 Haiku、claude-3 系列、Bedrock / Vertex / Foundry 等第三方供應商）</li>
+<li><strong>組織層級</strong>：Team 與 Enterprise 需由管理員先在 Claude Code admin settings 啟用</li>
+</ul>
+<p><strong>Auto Mode CLI 啟用方式</strong>：</p>
+<pre><code class="language-bash"># 方法 1：啟用後可用 Shift+Tab 循環切換（推薦）
+claude --enable-auto-mode
+
+# 方法 2：啟動時直接以 auto 為預設模式
+claude --permission-mode auto
+
+# 方法 3：非互動腳本執行
+claude -p &quot;refactor the auth module&quot; --permission-mode auto
+</code></pre>
+<p>進入 session 後，按 <strong>Shift+Tab</strong> 循環切換：<code>default → acceptEdits → plan → auto</code>。</p>
+<p><strong>Bypass Mode（⚠️ 危險）</strong>：</p>
+<p>Bypass 會<strong>停用所有權限提示與安全檢查</strong>，工具呼叫立即執行。<strong>僅 <code>.git</code>、<code>.vscode</code>、<code>.idea</code> 與部分 <code>.claude</code> 子目錄的寫入仍會提示</strong>（這個灰色地帶是為了避免破壞版控與工具設定）。</p>
+<blockquote>
+<p>⚠️ <strong>警告</strong>：此模式對提示詞注入（prompt injection）<strong>完全無保護</strong>，僅應在隔離環境（容器、VM、devcontainer）中使用。</p>
+</blockquote>
+<pre><code class="language-bash"># 兩種等效寫法
+claude --permission-mode bypassPermissions
+claude --dangerously-skip-permissions
+
+# 讓 bypass 出現在 Shift+Tab 循環中但不作為起始模式
+claude --allow-dangerously-skip-permissions --permission-mode plan
+</code></pre>
+<p><strong>VS Code / Desktop 啟用</strong>：在擴充套件設定中勾選「<strong>Allow dangerously skip permissions</strong>」，兩個模式才會出現在底部模式選單。</p>
+<p><strong>Auto vs Bypass 對照（決策依據）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th><strong>Auto Mode</strong></th>
+<th><strong>Bypass Mode</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>權限提示</td>
+<td>無（除非 fallback 觸發）</td>
+<td>無（少數目錄仍提示）</td>
+</tr>
+<tr>
+<td>安全檢查</td>
+<td>分類器審查每個指令</td>
+<td><strong>完全沒有</strong></td>
+</tr>
+<tr>
+<td>Token 使用</td>
+<td>較高（分類器呼叫成本）</td>
+<td>標準</td>
+</tr>
+<tr>
+<td>適用場景</td>
+<td>長時間任務、減少中斷</td>
+<td>僅限隔離容器 / VM</td>
+</tr>
+<tr>
+<td>風險等級</td>
+<td>中等</td>
+<td><strong>高</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>黃金建議</strong>：除非確實在沙盒環境中，否則<strong>優先選擇 Auto Mode 取代 Bypass Mode</strong>。Auto Mode 由分類器在背景阻擋越權或可疑行為（如 <code>curl | bash</code>、生產環境部署、強制推送），保有安全層；Bypass Mode 則完全裸奔。</p>
+</blockquote>
+<p><strong>管理員控制</strong>：組織管理員可透過 managed settings 全面禁用：</p>
+<ul>
+<li>禁用 Bypass：<code>permissions.disableBypassPermissionsMode: &quot;disable&quot;</code></li>
+<li>禁用 Auto：<code>disableAutoMode: &quot;disable&quot;</code></li>
+</ul>
+<ul>
+<li><strong><code>--print</code> 非互動模式</strong>：<code>claude -p &quot;...&quot;</code> 單次輸出後退出，適合腳本整合與管道操作（獨立於上述權限模式之外）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="cli-vs-vs-code-claude.md15-mins">1-2 介面導覽：CLI vs VS Code 插件、設定與 CLAUDE.md（15 mins）</h3>
+<blockquote>
+<p><strong>目標</strong>：讓學員在第一次開啟 Claude Code 後就能找到方向——知道介面在哪、設定怎麼改、以及如何把「共識」寫進 CLAUDE.md 讓 Claude 永遠記住。</p>
+</blockquote>
+<h4 id="cli">CLI 介面導覽</h4>
+<ul>
+<li><p><strong>啟動</strong>：在終端機執行 <code>claude</code>，進入互動式 TUI。</p>
+<ul>
+<li><strong>Windows</strong>：PowerShell 7+（推薦）或 Windows Terminal</li>
+<li><strong>macOS</strong>：Terminal.app 或 iTerm2（推薦）</li>
+</ul>
+</li>
+<li><p><strong>基本佈局</strong>：</p>
+<ul>
+<li>上方顯示目前對話上下文（token 用量、模型名稱）</li>
+<li>中間為對話區</li>
+<li>下方為輸入提示列，支援多行輸入（Shift+Enter 換行）</li>
+</ul>
+</li>
+<li><p><strong>常用快捷鍵</strong>：</p>
+<ul>
+<li><code>Ctrl+C</code>：中斷當前輸出</li>
+<li><code>Shift+Tab</code>：循環切換操作模式（Ask / Edit / Plan 等）</li>
+<li><code>↑ ↓</code>：瀏覽歷史指令</li>
+</ul>
+</li>
+<li><p><strong>重要 CLI 參數速覽</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>參數</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--model &lt;別名&gt;</code></td>
+<td>啟動時指定模型</td>
+</tr>
+<tr>
+<td><code>--permission-mode acceptEdits</code></td>
+<td>自動接受檔案編輯</td>
+</tr>
+<tr>
+<td><code>--print &quot;...&quot;</code></td>
+<td>非互動單次輸出（腳本用）</td>
+</tr>
+<tr>
+<td><code>--resume</code></td>
+<td>恢復上次 session</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<h4 id="vs-code">VS Code 插件介面導覽</h4>
+<ul>
+<li><strong>安裝</strong>：在 VS Code 擴充套件市集搜尋「<strong>Claude Code</strong>」並安裝。</li>
+<li><strong>開啟方式</strong>：點 Claude 圖示。</li>
+<li><strong>介面區塊</strong>：
+<ul>
+<li><strong>Chat 面板</strong>：主要對話區，可直接 <code>@</code> 參照當前開啟的檔案。</li>
+<li><strong>底部狀態列</strong>：顯示目前模式（Ask / Edit / Plan / Auto / Bypass），點擊可切換。</li>
+<li><strong>Diff 預覽</strong>：Claude 提出修改時，右側會顯示 diff，可逐行接受或拒絕。</li>
+</ul>
+</li>
+<li><strong>與 CLI 的關鍵差異</strong>：
+<ul>
+<li>VS Code 插件自動感知目前開啟的檔案，無需手動 <code>@</code>。</li>
+<li>Inline 建議直接嵌入編輯器，適合邊看邊改的 UI 開發流。</li>
+</ul>
+</li>
+</ul>
+<h4 id="global-vs-project">設定層級：Global vs Project</h4>
+<table>
+<thead>
+<tr>
+<th>層級</th>
+<th>位置</th>
+<th>適合放什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Global（全域）</strong></td>
+<td><code>~/.claude/settings.json</code></td>
+<td>個人偏好（預設模型、語言、顏色主題）</td>
+</tr>
+<tr>
+<td><strong>Global CLAUDE.md</strong></td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>跨所有專案的個人慣例（語言風格、常用格式）</td>
+</tr>
+<tr>
+<td><strong>Project（專案）</strong></td>
+<td><code>&lt;專案根&gt;/.claude/settings.json</code></td>
+<td>專案限定的工具允許清單、MCP server</td>
+</tr>
+<tr>
+<td><strong>Project CLAUDE.md</strong></td>
+<td><code>&lt;專案根&gt;/CLAUDE.md</code></td>
+<td>本專案的架構規範、禁止行為、技術棧說明</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>優先級</strong>：Project 設定 &gt; Global 設定。相同 key 以 Project 為準。</p>
+</blockquote>
+<ul>
+<li><strong>開啟設定</strong>：CLI 中執行 <code>/config</code> 進入互動式設定選單，也可直接編輯 JSON 檔案。</li>
+</ul>
+<h4 id="claude.md">CLAUDE.md 怎麼寫（實機示範）</h4>
+<blockquote>
+<p><code>CLAUDE.md</code> 是 Claude 每次啟動都會自動讀取的「共識契約」——把規則寫在這裡，就不用每次對話重複說明。</p>
+</blockquote>
+<p><strong>購物車專案的 CLAUDE.md 範例</strong>：</p>
+<pre><code class="language-markdown"># Shopping Cart 專案規範
+
+## 技術棧
+- 後端：Node.js 20 + Express + PostgreSQL
+- 前端：React 18 + Vite + TypeScript
+- 測試：Vitest + Supertest（後端）、Playwright（E2E）
+
+## 命名規範
+- API 路徑：小寫 kebab-case（/api/cart-items）
+- 後端模組：檔名 kebab-case；函式與變數 camelCase
+- React 元件：PascalCase；hooks：use 前綴
+
+## 禁止行為
+- 禁止在 Node.js 程式碼中 hardcode secret key 或直接信任客戶端傳入金額
+- 禁止直接修改 spec.md，需先與人類確認
+
+## 常用指令
+- 啟動後端：`npm run server`
+- 啟動前端：`cd frontend &amp;&amp; npm run dev`
+- 執行測試：`npm run test:server`
+</code></pre>
+<p><strong>寫法重點</strong>：</p>
+<ol>
+<li><strong>架構規範</strong>：把會反覆說的「合計由伺服器算」等規則寫進去，Claude 就不會忘。</li>
+<li><strong>禁止行為</strong>：明確寫出「禁止」，比說「盡量避免」更有效。</li>
+<li><strong>常用指令</strong>：讓 Claude 知道正確的啟動與測試指令，避免猜錯。</li>
+<li><strong>技術棧版本</strong>：指定版本，避免 Claude 使用已棄用的 API。</li>
+</ol>
+<ul>
+<li><strong>初始化捷徑</strong>：在新專案執行 <code>/init</code>，Claude 會掃描專案結構後自動生成初版 <code>CLAUDE.md</code>，再由人工審閱補充。</li>
+</ul>
+<h4 id="claude.md-memory-path">長期記憶三件套：CLAUDE.md / /memory / @path</h4>
+<blockquote>
+<p><strong>核心觀念</strong>：Claude 每次 session 都是全新的，所有「你希望它下次還記得」的東西都必須寫進磁碟，否則對話一結束就消失。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>機制</th>
+<th>用途</th>
+<th>關鍵特性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>CLAUDE.md</code></strong></td>
+<td>專案根目錄的 Markdown，每次 session 開始自動載入</td>
+<td>寫入編碼規範、架構決定、工具偏好；<strong><code>/compact</code> 後會從磁碟重新注入</strong>，一次性指示寫對話、長期規則寫 CLAUDE.md</td>
+</tr>
+<tr>
+<td><strong><code>/memory</code></strong></td>
+<td>開啟 memory 編輯器，瀏覽 Claude 自動記下的學習筆記</td>
+<td>Claude 會根據你的糾正自動累積學習；<strong>檔案超過 200 行會降低遵循度</strong>，需定期整理</td>
+</tr>
+<tr>
+<td><strong><code>@path</code></strong> 匯入</td>
+<td>在 CLAUDE.md 內以 <code>@docs/coding-style.md</code> 引入其他檔案</td>
+<td>把細節拆到獨立檔案，避免 CLAUDE.md 本身過長</td>
+</tr>
+</tbody>
+</table>
+<p><strong>實務注意事項</strong>：</p>
+<ul>
+<li>巢狀的 CLAUDE.md（子目錄的）<strong>不會</strong>在 <code>/compact</code> 後自動重載——只有當 Claude 再次讀取該目錄下的檔案時才會重新載入。</li>
+<li>若發現某個指示在 <code>/compact</code> 後「失憶」了，通常是它只存在於對話中，解方是把它搬進 <code>CLAUDE.md</code>。</li>
+<li>不要把「一次性任務細節」（例：今天要改某個 bug）塞進 <code>CLAUDE.md</code>，那該寫在對話裡。</li>
+</ul>
+<h3 id="docker-ai-5-mins">1-3 Docker 安裝與 AI 操作資料庫（5 mins）</h3>
+<ul>
+<li><p><strong>Docker 安裝（雙平台對照）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>安裝方式</th>
+<th>驗證指令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td>下載 <a href="https://www.docker.com/products/docker-desktop">Docker Desktop for Windows</a> 並安裝（需 WSL 2 後端）</td>
+<td>PowerShell：<code>docker version</code></td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td><code>brew install --cask docker</code> 或下載 <a href="https://www.docker.com/products/docker-desktop">Docker Desktop for Mac</a>（區分 Apple Silicon / Intel）</td>
+<td>Terminal：<code>docker version</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>安裝後皆須<strong>啟動 Docker Desktop 應用程式</strong>，再回到終端機驗證。</p>
+</blockquote>
+</li>
+<li><p><strong>用 Claude Code 操作 Docker</strong>：不需背 Docker 指令，直接用自然語言叫 Claude 產出 <code>docker-compose.yml</code>、啟動 PostgreSQL、檢查容器狀態，並同步回填 Node.js 連線設定。</p></li>
+<li><p><strong>本課主線依賴 Docker 啟資料庫</strong>：後端採 <code>Node.js + Express + PostgreSQL</code>，資料庫統一由 Docker Compose 啟動，讓學員練習「用 AI 控制基礎設施」。</p></li>
+<li><p><strong>本節示範 Prompt（主軸）</strong>：</p>
+<ul>
+<li>「請幫我建立 <code>docker-compose.yml</code>，包含 PostgreSQL 16，資料庫名稱 <code>shoppingcart</code>、帳號 <code>admin</code>、密碼 <code>secret</code>，並附上 healthcheck。」</li>
+<li>「請幫我執行 <code>docker compose up -d</code>，確認容器 healthy，並產出對應 Node.js <code>.env</code> 與資料庫連線程式。」</li>
+</ul>
+</li>
+<li><p><strong>課堂可見產出</strong>：</p>
+<ul>
+<li><code>docker-compose.yml</code></li>
+<li><code>docker ps</code> / <code>docker compose ps</code> 顯示 healthy</li>
+<li>Node.js 端的 <code>DATABASE_URL</code> 或等價連線設定</li>
+</ul>
+</li>
+</ul>
+<h3 id="git-gh-cli-20-mins">1-4 Git 常用操作與 gh CLI 協作模式（20 mins）</h3>
+<ul>
+<li><p><strong>Git 與 GitHub CLI 安裝（雙平台對照）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>Windows</th>
+<th>macOS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Git</strong></td>
+<td>下載 <a href="https://git-scm.com/download/win">Git for Windows</a> → 預設安裝（勾「Git Bash Here」與「Use Git from CMD」）</td>
+<td><code>brew install git</code> 或 <code>xcode-select --install</code>（macOS 內建 Xcode CLT 已含 Git）</td>
+</tr>
+<tr>
+<td><strong>GitHub CLI（gh）</strong></td>
+<td>下載 <a href="https://github.com/cli/cli/releases">gh_*_windows_amd64.msi</a> → 執行 .msi 預設安裝</td>
+<td><code>brew install gh</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><strong>首次設定（兩平台共用指令）</strong>：</p>
+<pre><code class="language-bash"># 設定全局 Git 帳號（替換成你的 GitHub 資訊）
+git config --global user.name &quot;Your Name&quot;
+git config --global user.email &quot;your.email@example.com&quot;
+
+# gh 首次認證（會跳轉瀏覽器驗證）
+gh auth login
+</code></pre>
+</li>
+<li><p><strong>驗證安裝（兩平台共用）</strong>：在 PowerShell（Windows）或 Terminal（Mac）執行：</p>
+<pre><code class="language-bash">git --version
+gh --version
+gh auth status
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p><strong>Git 常用 5 個操作</strong>：</p>
+<ul>
+<li><code>git status</code>、<code>git add</code>、<code>git commit</code>、<code>git push</code>、<code>git pull</code> 的實務用途。</li>
+<li>不深入原理，直接示範 Claude Code 如何幫你寫 commit message、整理 diff、決定 staging 範圍。</li>
+<li>核心觀念：讓 AI 成為你最強的 Git 協作者，而不是取代版控紀律。</li>
+</ul>
+</li>
+<li><p><strong>AI 互動示範</strong>：</p>
+<blockquote>
+<p>不需要死背指令——直接用自然語言告訴 Claude 你要做什麼，Claude 會產出並執行對應的 git / gh 指令。</p>
+</blockquote>
+<p><strong>示範 1（gh）：建立 GitHub Repo</strong></p>
+<blockquote>
+<p>💬 Prompt：「請幫我在 GitHub 建立一個名為 <code>shopping-cart</code> 的公開 repo，描述為『Claude Code 課程實作專案』，並把目前這個資料夾推送上去當第一個 commit。」</p>
+</blockquote>
+<p>Claude 會自動：</p>
+<ol>
+<li>執行 <code>git init</code> + <code>git add .</code> + <code>git commit</code>（若尚未初始化）</li>
+<li>執行 <code>gh repo create shopping-cart --public --source . --remote origin --push</code></li>
+<li>回報 repo 網址</li>
+</ol>
+<p><strong>示範 2（git）：Commit 目前修改並開新分支繼續開發</strong></p>
+<blockquote>
+<p>💬 Prompt：「請把目前所有修改整理成一個 commit，commit message 依照 Conventional Commits 格式，然後開一條新分支 <code>feature/add-to-cart</code> 讓我繼續開發。」</p>
+</blockquote>
+<p>Claude 會自動：</p>
+<ol>
+<li>分析 <code>git diff</code> 判斷本次變動類型與範圍</li>
+<li>執行 <code>git add .</code> + <code>git commit -m &quot;feat(cart): 新增加入購物車功能&quot;</code></li>
+<li>執行 <code>git checkout -b feature/add-to-cart</code></li>
+<li>回報目前分支狀態，可繼續在新分支上開發</li>
+</ol>
+</li>
+</ul>
+<hr />
+<h2 id="mins-1">第 2 段：全端主線實作（105 mins）</h2>
+<p><strong>目標</strong>：從規格先行（SDD）出發，用全端專案實作完整展示 Claude Code 如何參與設計、撰寫、測試、修正與整合，而不是只做片段生成。</p>
+<h3 id="sdd-claude-spec.md15-mins">2-1 SDD 規格先行：與 Claude 共同撰寫 spec.md（15 mins）</h3>
+<ul>
+<li><p><strong>什麼是 SDD（Specification-Driven Development）</strong>：</p>
+<ul>
+<li>先寫規格、再寫程式的開發紀律。</li>
+<li>規格不是給人看的文件，而是「你與 Claude 的共識契約」。</li>
+</ul>
+</li>
+<li><p><strong>Claude Code 的 SDD 做法</strong>：</p>
+<ol>
+<li>用自然語言描述需求 → 讓 Claude 產出 <code>spec.md</code>（含資料模型、API 端點、頁面行為）。</li>
+<li>與 Claude 確認規格細節，達成共識後才開始開發。</li>
+<li>每次任務前 <code>@spec.md</code> 讓 Claude 取得完整上下文，不重複解釋。</li>
+<li>規格變更時先更新 <code>spec.md</code>，再讓 Claude 依新規格調整程式。</li>
+</ol>
+</li>
+<li><p><strong>實機示範</strong>：講師輸入購物車需求描述，讓 Claude 產出完整 <code>spec.md</code>——學員確認規格符合預期後，後續所有開發（TDD、前端、除錯）均以此為基準。</p>
+</li>
+</ul>
+<h3 id="tdd-30-mins">2-2 後端生成、TDD 先行與自主修正循環（30 mins）</h3>
+<ul>
+<li><p><strong>TDD 概念（2 分鐘快講）</strong>：</p>
+<ul>
+<li>Red → Green → Refactor 三循環的實際意義。</li>
+<li>為什麼 AI 開發特別適合 TDD：Claude 不「猜測」需求，測試就是最精確的規格說明。</li>
+</ul>
+</li>
+<li><p><strong>Claude Code 的 TDD 做法</strong>：</p>
+<ul>
+<li>Prompt 範本：「請先針對 <code>cartService.ts</code> 的購物車邏輯撰寫 <code>Vitest</code> 測試，<strong>不要實作</strong>，等我確認後再開始。測試場景包含：(1) 加入新商品 → 新增一筆 CartItem；(2) 加入相同商品 → 已有的 CartItem 數量 +1，不重複新增；(3) 數量改為 0 → 自動移除；(4) 合計計算正確；(5) 結帳後購物車清空。」</li>
+<li>確認測試意圖後，下指令開始實作 → 執行 <code>npm test</code> → 看到 RED。</li>
+<li>示範 Claude 讀錯誤 → 修正程式 → 再次執行直到全部 GREEN 的完整閉環。</li>
+<li>搭配 Auto Mode：讓 Claude 自主跑完「測試 → 修正 → 再測試」迴圈，不需每步確認。
+<ul>
+<li><strong>啟動方式</strong>：<code>claude --enable-auto-mode</code>，按 Shift+Tab 切到 auto；或直接 <code>claude --permission-mode auto</code>。</li>
+<li><strong>為什麼這裡選 Auto 而非 Bypass</strong>：TDD 迴圈需執行 <code>npm test</code> 與檔案修改，Auto 由分類器把關每個指令（阻擋 <code>curl | bash</code>、強制推送等可疑行為），保留安全層；Bypass 在本機開發環境裸奔，風險過高。</li>
+<li><strong>前提提醒</strong>（呼應 1-1）：需 Team / Enterprise / API 方案 + Sonnet 4.6 或 Opus 4.7。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>根據 spec.md 生成後端骨架</strong>：</p>
+<ul>
+<li>建立 <code>Express</code> 專案、<code>productsRepo.ts</code> / <code>cartRepo.ts</code>、<code>cartService.ts</code>、<code>products.routes.ts</code> / <code>cart.routes.ts</code> 與 DTO / schema 驗證。</li>
+</ul>
+</li>
+</ul>
+<h3 id="api-15-mins">2-3 前端鷹架與 API 串接（15 mins）</h3>
+<ul>
+<li><p><strong>建立前端主畫面</strong>：</p>
+<ul>
+<li>以 React + Vite 建立商品列表頁（分類篩選 + 商品卡片）、購物車抽屜（CartDrawer）與結帳頁。</li>
+<li>先以 <code>mockProducts.ts</code> 假資料跑起 UI，確認視覺層後再切換串接 API。</li>
+<li>展示如何讓 Claude 配合 <code>spec.md</code> 快速落 UI，而不是隨意生成。</li>
+</ul>
+</li>
+<li><p><strong>前後端整合</strong>：</p>
+<ul>
+<li>將假資料改為串接 Node.js API（<code>GET /api/products</code>、<code>POST /api/cart/items</code>）。</li>
+<li>示範同時 <code>@src/server/routes/cart.routes.ts @cartApi.ts</code>，讓 Claude 一次理解串接上下文。</li>
+</ul>
+</li>
+</ul>
+<h3 id="context-35-mins">2-4 Context 管理、會話控制與真實除錯（35 mins）</h3>
+<blockquote>
+<p><strong>本節定位</strong>：除錯之所以困難，不只是「找不到 bug」，更常是「Claude 在錯誤的上下文中打轉」。本節同步教兩件事：(1) 如何主動管理 Context 避免 context rot；(2) 透過購物車三個真實 bug 把 context 指令套用到實戰。</p>
+</blockquote>
+<h4 id="context5-mins">為什麼要管理 Context（5 mins）</h4>
+<blockquote>
+<p>Claude Code 的 <strong>context window</strong> 是它的「工作記憶」——所有對話、讀過的檔案、工具輸出、MCP 回應都會不斷累積在裡面。</p>
+</blockquote>
+<p><strong>三個關鍵事實</strong>：</p>
+<ul>
+<li><strong>Context 有限且邊際遞減</strong>：塞越多 ≠ 效果越好。無關內容會讓 Claude 注意力分散，產生所謂的 <strong>context rot</strong>（上下文腐化）。</li>
+<li><strong>徵兆</strong>：session 開了一段時間後，Claude 變慢、重複問已經回答過的問題、建議跟先前實作衝突的作法。</li>
+<li><strong>主動管理 &gt; 被動等待</strong>：在「階段邊界」主動壓縮或清除，比等系統自動觸發好——自動觸發常打斷任務節奏。</li>
+</ul>
+<h4 id="context-10-mins">Context 三大操作指令（10 mins）</h4>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>用途</th>
+<th>使用時機</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/clear</code></td>
+<td>完全清空對話歷史，開始全新 session（檔案不受影響）</td>
+<td>切換到<strong>無關的新任務</strong>，最乾淨的選項</td>
+</tr>
+<tr>
+<td><code>/compact</code></td>
+<td>將對話歷史壓縮成摘要，保留關鍵資訊繼續使用</td>
+<td>一個階段完成但<strong>需要保留脈絡</strong>繼續下一步時</td>
+</tr>
+<tr>
+<td><code>/compact &lt;指令&gt;</code></td>
+<td>帶指示的壓縮，例：<code>/compact focus on the API layer</code></td>
+<td>想明確告訴 Claude 壓縮時<strong>保留哪些重點</strong></td>
+</tr>
+<tr>
+<td><code>/context</code></td>
+<td>顯示彩色網格，告訴你 context 被什麼佔用（檔案、對話、系統 prompt、MCP 等）</td>
+<td>覺得變慢或想在 compact 前先<strong>診斷空間去向</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>三者差異一句話</strong>：</p>
+<ul>
+<li><code>/clear</code> = 砍掉重練（連續性為零）</li>
+<li><code>/compact</code> = 壓縮成摘要（保留脈絡但變精簡）</li>
+<li><code>/context</code> = 只看不動（診斷工具）</li>
+</ul>
+<p><strong>MCP 的隱藏成本</strong>：每個連線中的 MCP server 都會注入工具定義到 context 裡，很容易佔掉幾千 token 卻沒在用。定期用 <code>/context</code> 檢查，把閒置的用 <code>/mcp</code> 關掉。</p>
+<h4 id="rewind-resume10-mins">會話狀態控制：<code>/rewind</code> 與 <code>/resume</code>（10 mins）</h4>
+<p>這組指令處理「時間軸」層面的 context 操作——跨 session 取回、在 session 內回滾。</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>作用</th>
+<th>對 Context 的影響</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/resume</code></td>
+<td>瀏覽並恢復之前的 session（按上下鍵選，或用搜尋框找）</td>
+<td><strong>載入舊 context</strong>，把當時的對話歷史重新裝回工作記憶</td>
+</tr>
+<tr>
+<td><code>/rewind</code></td>
+<td>回滾到對話中的某個時間點（也可用 <code>Esc</code> 連按兩下觸發）</td>
+<td><strong>選擇性刪除 context</strong>：可分開處理對話與程式碼</td>
+</tr>
+<tr>
+<td><code>/rename</code></td>
+<td>幫當前 session 取個可讀名稱（例：<code>/rename auth-refactor</code>）</td>
+<td>不影響 context 內容，方便日後 <code>/resume</code> 時找到</td>
+</tr>
+<tr>
+<td><code>/fork</code></td>
+<td>從當前點分支出去試另一種作法</td>
+<td>兩個方案都保留，可比較</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>/rewind</code> 的五個選項（最需要懂）</strong>：按 <code>Esc Esc</code> 進入 rewind 模式，用上鍵捲到想回去的點，按 Enter 後出現：</p>
+<table>
+<thead>
+<tr>
+<th>選項</th>
+<th>行為</th>
+<th>教學示範時機</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Restore code and conversation</strong></td>
+<td>程式碼跟對話都回滾</td>
+<td>整段方向錯誤時，最徹底</td>
+</tr>
+<tr>
+<td><strong>Restore conversation</strong></td>
+<td>只回滾對話，<strong>程式碼保留</strong></td>
+<td>想保留 Claude 改好的檔案但重新討論</td>
+</tr>
+<tr>
+<td><strong>Restore code</strong></td>
+<td>只回滾檔案，<strong>對話保留</strong>（極實用）</td>
+<td>Claude 改壞了但<strong>推理過程還想留著參考</strong></td>
+</tr>
+<tr>
+<td><strong>Summarize from here</strong></td>
+<td>把這個點之後的內容壓縮成摘要</td>
+<td>探索完成、要進下一階段</td>
+</tr>
+<tr>
+<td><strong>Never mind</strong></td>
+<td>取消</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>四種「清除/回退」工具的關鍵差異</strong>：</p>
+<ul>
+<li><code>/clear</code> = 全部砍光，從零開始</li>
+<li><code>/compact</code> = 壓縮成摘要，保留重點但失真</li>
+<li><code>/rewind</code> = <strong>時光機</strong>，精準回到某時刻，且能分別處理程式碼和對話</li>
+<li><code>/resume</code> = 從<strong>不同 session</strong> 把舊 context 叫回來</li>
+</ul>
+<h4 id="mins-2">購物車三個真實整合錯誤實戰（10 mins）</h4>
+<blockquote>
+<p><strong>教學設計</strong>：以下三個 bug 不只示範除錯，更示範「在不同 bug 情境下選對 context 指令」。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Bug</th>
+<th>症狀</th>
+<th>使用的 Context 指令</th>
+<th>為什麼這樣選</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CORS 錯誤</strong></td>
+<td>React 呼叫 Express API 時 console 出現紅字</td>
+<td><code>/bug</code> 切除錯模式 → 修完後 <code>/compact focus on cart API contract</code></td>
+<td>bug 解掉就壓縮，避免錯誤訊息與探索路徑佔住 context</td>
+</tr>
+<tr>
+<td><strong>badge 不即時更新</strong></td>
+<td>加入購物車後數字沒變，reload 才對</td>
+<td>同時 <code>@CartContext.tsx @CartBadge.tsx</code> 後直接除錯</td>
+<td>兩個檔小、上下文剛好夠</td>
+</tr>
+<tr>
+<td><strong>數量修改後合計未刷新</strong></td>
+<td>拉 <code>-</code> <code>+</code> 後小計沒變</td>
+<td>Claude 走錯方向 → <code>Esc Esc</code> → <strong>Restore code only</strong>（保留對話脈絡）→ 重新引導</td>
+<td>對話中已分析過 5 種可能性，砍掉太可惜，只退回檔案讓 Claude 換方向重做</td>
+</tr>
+</tbody>
+</table>
+<p><strong>關鍵觀念</strong>：</p>
+<ul>
+<li>slash commands 的價值不在「知道名稱」，而在「知道什麼時機切換工作模式」。</li>
+<li>除錯的 context 越乾淨，Claude 越能聚焦——別讓十條無關 console log 把工作記憶塞滿。</li>
+</ul>
+<h3 id="playwright-e2e-10-mins">2-5 Playwright E2E 測試：安裝、設定與實機驗證（10 mins）</h3>
+<blockquote>
+<p><strong>本節定位</strong>：Vitest 驗單元邏輯、Supertest 驗 API 端點，但「使用者點按鈕 → 購物車 badge 即時更新」這類端到端行為只有 Playwright 才能驗到。本節教兩件事：(1) 在專案中安裝並設定 <code>@playwright/test</code>；(2) 開啟 Playwright MCP 讓 Claude 自主控制瀏覽器執行驗證。</p>
+</blockquote>
+<h4 id="playwright-roles">Playwright 在課程中的兩種角色</h4>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>工具</th>
+<th>誰在操作</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E2E 測試程式</strong></td>
+<td><code>@playwright/test</code></td>
+<td>開發者撰寫、CI 執行</td>
+<td>寫測試腳本，自動化驗收購物車核心流程</td>
+</tr>
+<tr>
+<td><strong>MCP 瀏覽器控制</strong></td>
+<td>Playwright MCP server</td>
+<td>Claude Code 自主操作</td>
+<td>讓 Claude 開瀏覽器、截圖、點按鈕、確認 badge 數字</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="playwright-install">安裝</h4>
+<pre><code class="language-bash"># E2E 測試（@playwright/test）
+npm init playwright@latest
+# 精靈依序選：TypeScript → 測試目錄輸入 e2e → 下載瀏覽器選 Yes
+
+# Playwright MCP（讓 Claude 自主操作瀏覽器）
+claude mcp add playwright npx @playwright/mcp@latest
+</code></pre>
+<h4 id="playwright-e2e-test">購物車核心 E2E 測試（示範撰寫）</h4>
+<ul>
+<li><strong>Prompt 範本</strong>：「請根據 <code>@spec.md</code> 為購物車寫 Playwright E2E 測試，存到 <code>e2e/cart.spec.ts</code>，場景包含：(1) 首頁顯示商品列表；(2) 點「加入購物車」→ badge 數字 +1；(3) 開購物車抽屜 → 確認品項與數量；(4) 數量改為 0 → 品項自動移除；(5) 點結帳 → 購物車清空。<strong>不要實作</strong>，等我確認場景後再開始。」</li>
+</ul>
+<pre><code class="language-typescript">// e2e/cart.spec.ts（Claude 產出範例）
+import { test, expect } from '@playwright/test';
+
+test('加入商品後 badge 即時更新', async ({ page }) =&gt; {
+  await page.goto('http://localhost:5173');
+  await page.getByTestId('add-to-cart-1').click();
+  await expect(page.getByTestId('cart-badge')).toHaveText('1');
+});
+</code></pre>
+<h4 id="playwright-run">執行測試</h4>
+<pre><code class="language-bash"># 啟動前後端（測試需要真實伺服器）
+npm run server &amp;
+cd frontend &amp;&amp; npm run dev &amp;
+
+# 執行 E2E（有頭模式，可看到瀏覽器動作）
+npx playwright test --headed
+
+# 無頭模式（CI 環境）
+npx playwright test
+
+# 只跑購物車測試
+npx playwright test e2e/cart.spec.ts
+
+# 產出 HTML 報告
+npx playwright show-report
+</code></pre>
+<h4 id="playwright-mcp-usage">Playwright MCP 使用方式</h4>
+<ul>
+<li>執行 <code>claude mcp add playwright npx @playwright/mcp@latest</code> 後重啟 Claude Code，側邊欄 MCP 狀態顯示 <code>playwright ✓</code> 即完成。</li>
+<li><strong>Prompt 範本</strong>：「請用 Playwright MCP 開瀏覽器到 <code>http://localhost:5173</code>，點第一個商品的加入購物車按鈕，截圖確認 badge 數字是否變為 1。」</li>
+<li>Claude 會自主控制瀏覽器、截圖回傳、說明結果——這就是 <strong>Verification Harness 的視覺層</strong>。</li>
+</ul>
+<h4 id="playwright-automode">E2E 測試與 Auto Mode 的搭配</h4>
+<ul>
+<li>修完 bug 後，可讓 Claude 在 Auto Mode 下自主跑 <code>npx playwright test</code> → 讀取輸出 → 判斷是否通過 → 必要時自動修正。</li>
+<li>與 2-2 的 Vitest TDD 迴圈合用：「單元通過 + E2E 通過」才算真正的 GREEN。</li>
+</ul>
+<hr />
+<h2 id="skill-agent75-mins">第 3 段：自動化、Skill 與背景 Agent（75 mins）</h2>
+<p><strong>目標</strong>：讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、將規則無程式化為 Skill，以及把耗時長任務交給背景 Agent。</p>
+<h3 id="agent-browser-sop15-mins">3-1 agent-browser：用 CLI 自動操作瀏覽器並產生 SOP（15 mins）</h3>
+<blockquote>
+<p><strong>定位</strong>：<code>agent-browser</code> 是 Vercel Labs 開源的 CLI 工具，專為 AI Agent 設計。它採用<strong>無障礙樹（Accessibility Tree）</strong>而非原始 DOM，大幅降低 token 消耗，讓 Claude 可以用自然語言驅動完整的瀏覽器操作，並自動整理成 Markdown SOP 文件。</p>
+</blockquote>
+<h4 id="agent-browser-vs-playwright-mcp">工具選擇：agent-browser vs Playwright MCP</h4>
+<table>
+<thead>
+<tr>
+<th>面向</th>
+<th><strong>agent-browser</strong>（本節）</th>
+<th><strong>Playwright MCP</strong>（第 2 段）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>安裝方式</td>
+<td><code>npm install -g agent-browser</code></td>
+<td><code>claude mcp add playwright</code></td>
+</tr>
+<tr>
+<td>元素定位</td>
+<td>Accessibility Tree → <code>@ref</code> 語意標籤</td>
+<td>Accessibility Tree</td>
+</tr>
+<tr>
+<td>截圖</td>
+<td>✅ 每步可截圖</td>
+<td>✅ <code>browser_screenshot</code></td>
+</tr>
+<tr>
+<td><strong>持久化 Profile</strong></td>
+<td>✅ <code>--profile</code> 保存登入狀態</td>
+<td>❌ 每次 session 需重新登入</td>
+</tr>
+<tr>
+<td><strong>輸出格式</strong></td>
+<td><code>--json</code> 直接供 Agent 解析</td>
+<td>工具回傳結構化結果</td>
+</tr>
+<tr>
+<td>適合場景</td>
+<td>批次 SOP 生成、CI 自動化、跨 session 操作</td>
+<td>開發中 UI 驗證、即時除錯</td>
+</tr>
+</tbody>
+</table>
+<h4 id="section-1">安裝</h4>
+<pre><code class="language-bash"># 安裝 CLI（Node.js 20+ 前提）
+npm install -g agent-browser
+
+# 安裝瀏覽器驅動（Playwright 底層）
+agent-browser install
+</code></pre>
+<blockquote>
+<p>兩平台（Windows / macOS）指令相同，均需 Node.js 20+。</p>
+</blockquote>
+<h4 id="agent-browser-workflow">核心工作流程</h4>
+<p>每次瀏覽器自動化遵循固定模式：</p>
+<pre><code class="language-bash"># 1. 開啟頁面
+agent-browser open https://localhost:5173
+
+# 2. 取得可互動元素清單（含 @ref）
+agent-browser snapshot -i
+# 輸出範例：
+# @e1 [button] "加入購物車"
+# @e2 [input] placeholder="收件人姓名"
+# @e3 [button] "確認結帳"
+
+# 3. 用 @ref 操作元素
+agent-browser click @e1
+agent-browser fill @e2 "王小明"
+agent-browser press Enter
+
+# 4. 頁面變化後重新 snapshot（@ref 會失效）
+agent-browser snapshot -i
+
+# 5. 取得畫面截圖
+agent-browser screenshot --annotate   # --annotate 標注元素編號
+</code></pre>
+<blockquote>
+<p><strong>重要</strong>：點擊連結或提交表單後 <code>@ref</code> 即失效，必須重新執行 <code>snapshot -i</code> 取得新的 ref。</p>
+</blockquote>
+<h4 id="prompt-sop">示範 Prompt：購物車結帳流程 SOP</h4>
+<blockquote>
+<p>💬「請用 agent-browser 開啟 <code>http://localhost:5173</code>，依序操作購物車結帳流程：(1) snapshot 取得頁面元素；(2) 點擊第一個商品的加入購物車按鈕並截圖；(3) 開購物車抽屜確認品項並截圖；(4) 進入結帳頁，填入收件人資訊後點確認並截圖；(5) 確認結帳成功畫面並截圖。最後將每步操作指令、截圖說明整理成 <code>docs/checkout-sop.md</code>。」</p>
+</blockquote>
+<p>Claude 會依序執行：</p>
+<ol>
+<li><code>agent-browser open http://localhost:5173</code></li>
+<li><code>agent-browser snapshot -i --json</code> → 解析 <code>@ref</code> 對應關係</li>
+<li>每個關鍵步驟 <code>agent-browser click @eN</code> / <code>agent-browser fill @eN "..."</code> + <code>agent-browser screenshot --annotate</code></li>
+<li>整理操作記錄，產出含截圖說明的 <code>checkout-sop.md</code></li>
+</ol>
+<h4 id="sop-example">SOP 產出範例（checkout-sop.md 結構）</h4>
+<pre><code class="language-markdown"># 購物車結帳 SOP
+
+## 步驟 1：加入商品
+指令：`agent-browser click @e1`
+說明：點擊商品卡片的「加入購物車」按鈕
+截圖：![步驟1](screenshots/step1.png)
+
+## 步驟 2：確認購物車
+指令：`agent-browser click @e3`（購物車圖示）
+說明：開啟側邊抽屜，確認品項與數量
+截圖：![步驟2](screenshots/step2.png)
+</code></pre>
+<h4 id="section-2">企業應用場景</h4>
+<table>
+<thead>
+<tr>
+<th>情境</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>系統操作手冊</strong></td>
+<td>內部系統上線後，自動截圖各功能操作流程</td>
+</tr>
+<tr>
+<td><strong>新人培訓手冊</strong></td>
+<td>逐步截圖 + 說明，產出申請/註冊流程文件</td>
+</tr>
+<tr>
+<td><strong>QA Bug 復現</strong></td>
+<td>自動重現步驟並截圖，直接貼入 issue ticket</td>
+</tr>
+<tr>
+<td><strong>CI 自動驗收</strong></td>
+<td>GitHub Actions 無頭模式執行，驗證關鍵流程</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>意義</strong>：一個 Prompt 可取代手動操作 + 截圖 + 紀錄 + 整理，SOP 文件與程式碼同步維護在 repo 中。</li>
+</ul>
+<h3 id="skill-creator-skill25-mins">3-2 用 <code>skill-creator</code> 製作企業資安規範檢查 Skill（25 mins）</h3>
+<ul>
+<li><p><strong>企業情境設定</strong>：</p>
+<ul>
+<li>假設團隊有一套電商資安規範：禁止硬編碼敏感資訊、購物車合計不可由客戶端傳入、結帳端點必須驗證身份。</li>
+</ul>
+</li>
+<li><p><strong>技能拆解方法</strong>：</p>
+<ul>
+<li>示範如何把規範整理成 Skill 的輸入、檢查清單、輸出格式與建議修正模板。</li>
+</ul>
+</li>
+<li><p><strong>實機展示</strong>：</p>
+<ul>
+<li>讓 Claude 協助產出 <code>security-check.skill.md</code>（購物車電商版）：檢查項目包含 session ID 是否可被偽造、<code>totalAmount</code> 是否防止客戶端傳入、<code>/checkout</code> 是否有收件資料驗證。用此 Skill 立即掃描 <code>src/server/routes/cart.routes.ts</code> 與 <code>src/server/services/cartService.ts</code>，預計發現 <code>🔴</code> 高風險項目後現場修正。</li>
+</ul>
+</li>
+<li><p><strong>Hooks 概念（搭配說明）</strong>：</p>
+<ul>
+<li>介紹 <code>PreToolUse</code> / <code>PostToolUse</code> hook 的應用場景，例如：寫入檔案前自動觸發資安檢查。</li>
+</ul>
+</li>
+</ul>
+<h3 id="mins-3">3-3 開發輔助技能分類導覽（15 mins）</h3>
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>技能</th>
+<th>使用時機</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>開發輔助</td>
+<td><code>skill-creator</code></td>
+<td>把重複流程固化成可重用工具</td>
+</tr>
+<tr>
+<td>開發輔助</td>
+<td><code>firecrawl</code></td>
+<td>爬文件、查最新 API、補充 Claude 知識截止後的資料</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:brainstorming</code></strong></td>
+<td>任何創意 / 新功能 / 規格發想前必跑</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:writing-plans</code></strong></td>
+<td>把 spec 拆成 2-5 分鐘 bite-sized tasks 的實作計畫</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:test-driven-development</code></strong></td>
+<td>強制 Red → Green → Refactor，鎖死「先測試後實作」</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:systematic-debugging</code></strong></td>
+<td>任何 bug / 測試失敗時，強制系統化假設驗證</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:verification-before-completion</code></strong></td>
+<td>宣稱「完成」前強制執行驗證命令、看真實證據</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:requesting-code-review</code></strong></td>
+<td>完成主要功能、合併前自動產出 review 請求</td>
+</tr>
+<tr>
+<td><strong>開發紀律</strong></td>
+<td><strong><code>superpowers:finishing-a-development-branch</code></strong></td>
+<td>整合完成、要 PR 收尾時的標準流程</td>
+</tr>
+<tr>
+<td>文件</td>
+<td><code>docx</code></td>
+<td>產出規格文件、結案報告</td>
+</tr>
+<tr>
+<td>文件</td>
+<td><code>pdf</code></td>
+<td>閱讀與摘要 PDF 規格書或技術文件</td>
+</tr>
+<tr>
+<td>前端</td>
+<td><code>reactcomponents</code></td>
+<td>快速生成符合專案風格的 React 元件</td>
+</tr>
+<tr>
+<td>前端</td>
+<td><code>web-perf</code></td>
+<td>效能分析與優化建議</td>
+</tr>
+<tr>
+<td>測試</td>
+<td><code>webapp-testing</code> + Playwright MCP</td>
+<td>UI 自動化驗證、E2E 測試、瀏覽器自動化控制</td>
+</tr>
+<tr>
+<td>AI 整合</td>
+<td><code>claude-api</code></td>
+<td>在應用程式中呼叫 Claude API，實作 AI 功能</td>
+</tr>
+<tr>
+<td>AI 整合</td>
+<td><code>agents-sdk</code></td>
+<td>建立多代理工作流，協同多個 Agent 完成複雜任務</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>判斷原則</strong>：何時「叫 Skill」vs 何時「直接下 prompt」——Skill 適合有固定流程、需重複使用的任務。</li>
+<li><strong><code>superpowers</code> 系列定位</strong>：這是一整套「強制紀律」技能，第 4 段 4-3 會集中講完整管線（spec → TDD → e2e → PR）。先在這裡知道有這套，等下一段就能組合使用。</li>
+</ul>
+<h3 id="agent-20-mins">3-4 深入講解 <code>/agent</code> 背景長任務（20 mins）</h3>
+<ul>
+<li><p><strong>適合交給背景 Agent 的工作</strong>：</p>
+<ul>
+<li>假資料生成、資料清理、大量網頁搜尋、log 分析、規格比對。</li>
+</ul>
+</li>
+<li><p><strong>不干擾主線的工作法</strong>：</p>
+<ul>
+<li>示範 Prompt：「/agent：請按照 @spec.md 的 Product 資料模型，生成 30 筆符合台灣電商風格的商品假資料（3C / 服飾 / 食品各 10 筆），name 與 description 要像真實電商文案，輸出到 <code>src/server/seeds/seed-products.json</code>，並產出 <code>seedProducts.ts</code> 在啟動時自動載入，完成後回報筆數。」</li>
+<li>Agent 在背景執行時，主線繼續改結帳頁面 UI，互不干擾。</li>
+<li>說明如何定義任務邊界（不得修改 <code>CartService</code>）、預期輸出格式與回報格式。</li>
+</ul>
+</li>
+<li><p><strong>Git Worktrees 與平行 Session</strong>：</p>
+<ul>
+<li>介紹 git worktree 讓多個 Agent 在不同分支同時工作，互不干擾。</li>
+<li>適合場景：主線 Agent 繼續改購物車 UI，另一個 Agent 在 <code>feature/coupon</code> 分支開發優惠券功能。</li>
+</ul>
+</li>
+<li><p><strong>進階觀念</strong>：</p>
+<ul>
+<li><code>/agent</code> 的價值是把耗時與高噪音工作切出去，而不是把所有工作都丟出去。</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="review39-mins">第 4 段：Review、程式優化與收尾（39 mins）</h2>
+<p><strong>目標</strong>：建立一套寫完程式後的自我審查與優化流程，讓 Claude Code 變成可長期維護的工程夥伴。</p>
+<h3 id="review-simplify-10-mins">4-1 <code>/review</code> 與 <code>/simplify</code> 內建品質指令（10 mins）</h3>
+<ul>
+<li><p><strong><code>/review</code>（程式碼審查）</strong>：</p>
+<ul>
+<li>觸發時機：完成一段功能後、提交 PR 前。</li>
+<li>三個審查維度：<strong>正確性</strong>（邏輯 bug、邊界條件）、<strong>安全性</strong>（輸入驗證、注入風險）、<strong>可讀性</strong>（命名、結構）。</li>
+<li>進階用法：<code>/review @src/server/services/cartService.ts</code> 針對特定檔案審查；課程示範 Claude 找出「<code>addItem()</code> 未處理 <code>quantity &lt;= 0</code> 輸入」與「金額驗算邏輯沒有統一由伺服器端封裝」兩個問題。</li>
+<li>展示：Claude 給出 review 結果後，如何用 follow-up prompt 追問細節或直接要求修正。</li>
+</ul>
+</li>
+<li><p><strong><code>/simplify</code>（重構精簡）</strong>：</p>
+<ul>
+<li>觸發時機：功能通過測試後，進行重構階段。</li>
+<li>Claude 會找出：過度設計的抽象、重複代碼、可合併的判斷條件。</li>
+<li>強調：<code>/simplify</code> 不改邏輯，只改結構，配合 TDD 確保重構後測試仍通過。</li>
+<li>示範完整收尾迴圈：<code>/review</code> → <code>/simplify</code> → 再 <code>/review</code> → 確認無誤。</li>
+</ul>
+</li>
+</ul>
+<h3 id="slash-commands-17-mins">4-2 slash commands 完整工作流總覽（17 mins）</h3>
+<ul>
+<li><p><strong>常用指令與最佳時機</strong>（依開發工作流順序）：</p>
+<ul>
+<li><code>/init</code>：在專案一開始定義規則與技術棧。</li>
+<li><code>/plan</code>：大任務開始前讓 Claude 先規劃，避免直接亂改。</li>
+<li><code>/review</code>：品質把關，PR 前必跑。</li>
+<li><code>/simplify</code>：功能完成後的重構精簡。</li>
+<li><code>/bug</code>：聚焦抓 bug，切換除錯上下文。</li>
+<li><code>/compact</code>：長任務中段或除錯後壓縮上下文。</li>
+<li><code>/clear</code>：開始新任務前清空脈絡。</li>
+<li><code>/rewind</code>：當推理走偏時快速回退。</li>
+<li><code>/resume</code>：跨天接續上次 session。</li>
+<li><code>/rename</code>：幫 session 命名，方便日後 resume 找回。</li>
+<li><code>/context</code>：診斷 context 空間用量。</li>
+</ul>
+</li>
+<li><p><strong>四個經典 Context 工作流組合</strong>（記下來直接用）：</p>
+<p><strong>A. Review-then-Rollback（審查後決定去留）</strong></p>
+<pre><code>/diff          # 看 Claude 改了什麼
+   ↓
+不滿意？
+   ↓
+Esc Esc → Restore code only（保留對話脈絡當參考）
+</code></pre>
+<p><strong>B. 階段交接（Phase Handoff）</strong></p>
+<pre><code>完成第一階段 → /compact focus on the API contract and remaining tasks
+            → 繼續第二階段（context 變輕但重點還在）
+</code></pre>
+<p><strong>C. Context 體檢</strong></p>
+<pre><code>/context（看總覽）→ 發現 MCP 佔 40%？→ /mcp（停用沒用到的）→ /context（再確認）
+</code></pre>
+<p><strong>D. 跨天接續工作</strong></p>
+<pre><code>下班前：/rename cart-checkout-day1 → /compact（留乾淨摘要）
+隔天：  /resume → 搜尋「cart-checkout」→ 繼續做
+</code></pre>
+</li>
+<li><p><strong>黃金守則</strong>（5 條口訣）：</p>
+<ul>
+<li>🟢 <strong>開新任務前先 <code>/clear</code></strong>——比你想像中更能救回應品質</li>
+<li>🟡 <strong>階段切換時 <code>/compact</code></strong>——不要等自動觸發</li>
+<li>🔵 <strong>覺得卡就 <code>/context</code></strong>——看哪裡在吃空間</li>
+<li>🟣 <strong>一次性指示寫對話、長期規則寫 <code>CLAUDE.md</code></strong></li>
+<li>🔴 <strong>Claude 走錯路就 <code>/rewind</code></strong>——比手動還原檔案快十倍</li>
+</ul>
+</li>
+<li><p><strong>收尾流程</strong>：</p>
+<ul>
+<li>讓 Claude 整理 diff、生成 commit message。</li>
+<li>搭配 <code>gh pr create</code> 發出 PR，Claude 自動生成 PR 說明（含本次購物車功能的改動摘要）。</li>
+<li>回顧整堂課的工作流：規格（SDD <code>spec.md</code>）→ 開發（TDD <code>CartService</code>）→ 測試（Playwright badge 驗證）→ 假資料（<code>/agent</code> 生成商品）→ review / simplify → 版本控制（gh）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="superpowersspec-tdd-e2e-12-mins">4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）</h3>
+<blockquote>
+<p><strong>本節定位</strong>：前面教的是「Claude 能做什麼」，這節教「<strong>怎麼強迫 Claude 守紀律</strong>」。<code>superpowers</code> 是 Claude Code 生態系中的第三方 Skill 套件，把開發紀律寫成一整套<strong>強制執行的 Skill</strong>——不是建議、不是參考，是 Iron Law。</p>
+<p><strong>與課程主軸的對應</strong>：你的 SDD <code>spec.md</code>、TDD <code>CartService</code>、Playwright e2e 在前面已示範完整流程；本節把這個流程<strong>升級成可重複、可審計、不會偷懶的紀律管線</strong>。</p>
+</blockquote>
+<h4 id="superpowers-install">安裝</h4>
+<pre><code class="language-bash">claude plugin install superpowers
+</code></pre>
+<p>安裝後技能會出現在可用 Skill 清單中，依名稱呼叫即可（例：<code>superpowers:test-driven-development</code>）。</p>
+<h4 id="section-3">為什麼需要紀律技能</h4>
+<p>AI 寫程式最大的風險不是「寫錯」，而是「<strong>自信地寫錯然後說已經完成</strong>」。常見失控模式：</p>
+<ul>
+<li>沒寫測試就改程式，跑了一次「看起來對」就宣稱完成</li>
+<li>改完 bug 沒重新跑測試，只看程式碼「應該對」就 commit</li>
+<li>Review 沒做就直接 PR，寄望人類事後找問題</li>
+</ul>
+<p><code>superpowers</code> 用 <strong>Iron Laws</strong>（鐵律）強制 Claude 守紀律——這些技能在 SKILL.md 中明寫「Violating the letter of the rules is violating the spirit of the rules」，讓 Claude 沒有「就這一次例外」的空間。</p>
+<h4 id="iron-laws">三條 Iron Laws（背下來、貼在牆上）</h4>
+<blockquote>
+<p>🔴 <strong>Iron Law 1（TDD）</strong>：<code>NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST</code>
+——沒有失敗測試就不准寫實作程式。先寫了？刪掉重來，不准「拿來參考」。</p>
+<p>🔴 <strong>Iron Law 2（Verification）</strong>：<code>NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE</code>
+——沒有當下執行驗證指令的證據，不准說「完成」「通過」「修好了」。</p>
+<p>🔴 <strong>Iron Law 3（Debugging）</strong>：<code>NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST</code>
+——沒有找到根本原因就不准動程式。禁止「試試看」式除錯，每個修正都需要先確立假設並驗證。</p>
+</blockquote>
+<h4 id="spec-tdd-e2e-pr">spec → TDD → e2e → PR 完整管線對應</h4>
+<table>
+<thead>
+<tr>
+<th>開發階段</th>
+<th>課程實踐</th>
+<th>superpowers 技能</th>
+<th>強制做的事</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>發想</strong></td>
+<td>商討購物車功能範圍</td>
+<td><code>brainstorming</code></td>
+<td>任何創意 / 新功能前必跑，先發散再收斂，避免直接跳實作</td>
+</tr>
+<tr>
+<td><strong>規格</strong></td>
+<td>寫 <code>spec.md</code></td>
+<td><code>writing-plans</code></td>
+<td>把 spec 拆成 <strong>2-5 分鐘 bite-sized tasks</strong>，存到 <code>docs/superpowers/plans/YYYY-MM-DD-*.md</code></td>
+</tr>
+<tr>
+<td><strong>執行</strong></td>
+<td>開始實作 <code>CartService</code></td>
+<td><code>executing-plans</code></td>
+<td>一個 task 一個 commit，跑完才能進下一個，禁止跳步</td>
+</tr>
+<tr>
+<td><strong>TDD</strong></td>
+<td>Vitest 測 <code>cartService.ts</code> 五個場景</td>
+<td><code>test-driven-development</code></td>
+<td>強制 Red → Green → Refactor；<strong>沒看到測試失敗 = 不知道測試在測什麼</strong></td>
+</tr>
+<tr>
+<td><strong>除錯</strong></td>
+<td>CORS / badge / 合計三個 bug</td>
+<td><code>systematic-debugging</code></td>
+<td>強制系統化假設驗證，禁止「亂試運氣」式除錯</td>
+</tr>
+<tr>
+<td><strong>e2e 驗收</strong></td>
+<td>Playwright 驗 badge 即時更新</td>
+<td><code>verification-before-completion</code></td>
+<td>宣稱完成前<strong>必須當場執行驗證指令</strong>，貼出真實輸出</td>
+</tr>
+<tr>
+<td><strong>Review</strong></td>
+<td>完成 CartService + Controller</td>
+<td><code>requesting-code-review</code></td>
+<td>自動產出結構化 review 請求（含改動範圍、測試結果、風險點）</td>
+</tr>
+<tr>
+<td><strong>PR 收尾</strong></td>
+<td>推到 <code>feature/add-to-cart</code> 開 PR</td>
+<td><code>finishing-a-development-branch</code></td>
+<td>標準收尾流程：跑全測試、整理 commit、生 PR body、檢查 CI</td>
+</tr>
+</tbody>
+</table>
+<h4 id="section-4">完整流程圖（背下這條鏈就贏了）</h4>
+<pre><code>brainstorming           writing-plans              executing-plans
+    ↓                        ↓                          ↓
+（發散收斂）  →  （拆 bite-sized tasks）  →  （一 task 一 commit）
+                                                       ↓
+test-driven-development  ←─────────────────  systematic-debugging
+        ↓                                              ↑
+（Red → Green → Refactor）        ←  bug 出現        ──┘
+        ↓
+verification-before-completion
+        ↓
+（跑驗證、看真實輸出，禁止「看起來對」）
+        ↓
+requesting-code-review  →  finishing-a-development-branch  →  PR
+</code></pre>
+<h4 id="cartservice">實機示範：套到購物車的 CartService</h4>
+<blockquote>
+<p>💬 <strong>示範 Prompt</strong>：「請使用 <code>superpowers:writing-plans</code> 技能，根據 <code>@spec.md</code> 為 <code>CartService</code> 產出實作計畫，存到 <code>docs/superpowers/plans/2026-04-22-cart-service.md</code>。每個 task 限 2-5 分鐘、一 task 一 commit、TDD 先行。」</p>
+<p>接下來：「請使用 <code>superpowers:executing-plans</code> 執行該計畫，每個 task 結束時用 <code>superpowers:verification-before-completion</code> 確認，禁止使用『should』『probably』。」</p>
+</blockquote>
+<p>學員會看到：</p>
+<ol>
+<li>Claude 不再跳步——每個 task 都是「寫測試 → 跑測試確認失敗 → 寫實作 → 跑測試確認通過 → commit」</li>
+<li>Claude 不再亂宣稱完成——每個段落結束都會跑指令貼輸出</li>
+<li>Plan 文件本身就是審計軌跡，等於 spec → 實作的可追溯記錄</li>
+</ol>
+<h4 id="section-5">關鍵觀念</h4>
+<ul>
+<li><code>superpowers</code> 不取代 <code>/review</code> <code>/simplify</code>，而是<strong>讓它們真正被執行</strong>——前者是觸發紀律的開關，後者是紀律執行後的精修。</li>
+<li>對企業團隊特別有價值：<strong>Iron Laws 是可審計的契約</strong>，當 Claude 違反規則時你可以指著 SKILL.md 說「你違反了 Iron Law 1」，遠比「你怎麼又這樣做」有效。</li>
+</ul>
+<hr />
+<h2 id="harness-engineering23-mins">第 5 段：Harness Engineering：你一直在做的事，現在有了名字（23 mins）</h2>
+<blockquote>
+<p><strong>本節定位</strong>：這是課程的「概念整合」收尾節點。學員在前四段已接觸 CLAUDE.md、Hooks、/agent、Git Worktrees、TDD 迴圈、/review 與 /simplify——本節幫助他們理解這些實踐共同構成一套 Harness，並提供升級 Harness 的心智模型。</p>
+</blockquote>
+<h3 id="harness-engineering-8-mins">5-1 Harness Engineering 是什麼（8 mins）</h3>
+<ul>
+<li>馬具比喻：AI 模型是千里馬，Harness 是韁繩、馬鞍、車轅的整套配備——把馬的力量引導成生產力。</li>
+<li>工程定義：<strong>圍繞 Agent 的執行與治理層</strong>，包含工具協調、狀態管理、權限邊界、錯誤恢復、可觀測性與人類審批閘門。</li>
+<li>關鍵數據：LangChain 在不換模型的情況下只優化 Harness，Agent 在 Terminal Bench 2.0 的得分從 52.8% 躍升至 66.5%；OpenAI 三人團隊靠 Harness Engineering 在五個月內交付 100 萬行生產程式碼。</li>
+</ul>
+<h4 id="harness-engineering">Harness Engineering 的七種常見類型</h4>
+<blockquote>
+<p><strong>業界尚無單一權威分類</strong>，以下是綜合 Anthropic、LangChain、LangGraph、AutoGen、Devin 等社群實務整理出的最常見 7 大類，每一類都在回答一個明確問題：</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>類型</th>
+<th>中文</th>
+<th>管的核心問題</th>
+<th>業界代表實作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Context Harness</strong></td>
+<td>上下文 Harness</td>
+<td>Agent <strong>看到什麼</strong>？</td>
+<td>Claude <code>CLAUDE.md</code> / <code>AGENTS.md</code>、Cursor Rules、RAG 檢索增強、<code>@import</code></td>
+</tr>
+<tr>
+<td><strong>Tool Harness</strong></td>
+<td>工具 Harness</td>
+<td>Agent <strong>能用什麼工具</strong>？</td>
+<td>MCP server、OpenAI function calling、LangChain Tools、自訂 slash commands、權限白名單</td>
+</tr>
+<tr>
+<td><strong>Control Flow Harness</strong></td>
+<td>控制流 Harness</td>
+<td>Agent <strong>怎麼決策與執行</strong>？</td>
+<td>Plan Mode、Auto Mode、Hooks（PreToolUse / PostToolUse）、LangGraph、ReAct pattern</td>
+</tr>
+<tr>
+<td><strong>Verification Harness</strong></td>
+<td>驗證 Harness</td>
+<td>Agent <strong>做對沒</strong>？</td>
+<td>TDD 迴圈、CI/CD、<code>/review</code>、<code>/simplify</code>、Devin auto-test、SWE-bench eval</td>
+</tr>
+<tr>
+<td><strong>State Harness</strong>（aka Memory Harness）</td>
+<td>狀態 / 記憶 Harness</td>
+<td>Agent <strong>記得什麼</strong>？</td>
+<td><code>/compact</code>、<code>/rewind</code>、<code>/resume</code>、MemGPT、ChromaDB、OpenAI Assistant Memory</td>
+</tr>
+<tr>
+<td><strong>Observability Harness</strong></td>
+<td>可觀測性 Harness</td>
+<td>Agent <strong>在做什麼</strong>？</td>
+<td><code>/context</code>、<code>/cost</code>、<code>/stats</code>、LangSmith、Helicone、Phoenix tracing</td>
+</tr>
+<tr>
+<td><strong>Safety Harness</strong>（aka Guardrails）</td>
+<td>安全 Harness</td>
+<td>Agent <strong>不能做什麼</strong>？</td>
+<td>權限模式（Auto / Bypass）、classifier 分類器、沙盒隔離、NeMo Guardrails、LlamaGuard、Constitutional AI</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>🔸 <strong>第 8 類（進階／選配）：Multi-Agent Orchestration Harness（多代理編排 Harness）</strong>——管 Agent <strong>怎麼協作</strong>？業界代表：Subagent、Git Worktrees 平行 Agent、CrewAI、AutoGen、Anthropic Multi-Agent Research。當你從「單 Agent」走向「Agent 團隊」時才需要。</p>
+</blockquote>
+<h4 id="harness">三個診斷問題：你的 Harness 缺哪一類？</h4>
+<p>回去盤點團隊現況時，照順序問這三題就能快速定位缺口：</p>
+<ol>
+<li><strong>Claude 一直忘記某個規則嗎？</strong> → 缺 Context Harness（沒寫進 <code>CLAUDE.md</code>）</li>
+<li><strong>Claude 做出來品質不穩定嗎？</strong> → 缺 Verification Harness（沒有 TDD 或 <code>/review</code> 守門）</li>
+<li><strong>Claude 偶爾會做出危險動作嗎？</strong> → 缺 Safety Harness（沒設權限模式或 sandbox）</li>
+</ol>
+<blockquote>
+<p><strong>觀察心法</strong>：完整的 Harness 不是一次到位，<strong>七類由弱到強逐步補齊</strong>——大多數團隊只會卡在 Context 與 Verification 兩類，先補這兩個就能解掉 80% 問題。</p>
+</blockquote>
+<h3 id="harness-5-mins">5-2 課程實踐 ↔ Harness 類型對應（5 mins）</h3>
+<blockquote>
+<p><strong>教學設計</strong>：把 5-1 的七種類型套到課程實踐上，讓學員一眼看到「我學的每個招式各屬於哪一類 Harness」，回去就能用 7 類分類法盤點團隊缺口。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>課程中做過的事</th>
+<th>對應的 Harness 組件</th>
+<th>主要 Harness 類型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE.md</code>（「合計伺服器計算」「合併不重複」）、<code>spec.md</code>、<code>@import</code></td>
+<td>靜態上下文層（Single Source of Truth）</td>
+<td><strong>Context Harness</strong></td>
+</tr>
+<tr>
+<td><code>/clear</code> <code>/compact</code> <code>/rewind</code> <code>/resume</code> 管理對話記憶</td>
+<td>動態狀態管理</td>
+<td><strong>State / Memory Harness</strong></td>
+</tr>
+<tr>
+<td><code>/context</code> <code>/cost</code> <code>/stats</code> 診斷空間用量</td>
+<td>執行可見性</td>
+<td><strong>Observability Harness</strong></td>
+</tr>
+<tr>
+<td>MCP server 編排（Playwright、firecrawl）、自訂 Skill</td>
+<td>工具能力擴充</td>
+<td><strong>Tool Harness</strong></td>
+</tr>
+<tr>
+<td>Plan Mode → 確認 <code>spec.md</code> → 實作；Auto Mode 自主 TDD 迴圈</td>
+<td>決策流控制</td>
+<td><strong>Control Flow Harness</strong> + Human-in-the-Loop</td>
+</tr>
+<tr>
+<td><code>PreToolUse</code> Hook 觸發 <code>security-check</code> Skill</td>
+<td>架構約束與自動驗證閘門</td>
+<td><strong>Control Flow Harness</strong>（架構約束）</td>
+</tr>
+<tr>
+<td>Vitest TDD 迴圈（<code>cartService.ts</code> 合計 / 合併 / 清空測試）</td>
+<td>錯誤恢復與回饋迴路</td>
+<td><strong>Verification Harness</strong></td>
+</tr>
+<tr>
+<td>Playwright MCP 驗證購物車 badge 更新</td>
+<td>自動化驗收</td>
+<td><strong>Verification Harness</strong></td>
+</tr>
+<tr>
+<td><code>/review</code> + <code>/simplify</code> CartService</td>
+<td>熵管理（防止程式碼庫劣化）</td>
+<td><strong>Verification Harness</strong>（熵管理子類）</td>
+</tr>
+<tr>
+<td>權限模式（Auto Mode 分類器把關 / Bypass 沙盒）</td>
+<td>動作授權邊界</td>
+<td><strong>Safety Harness</strong></td>
+</tr>
+<tr>
+<td><code>/agent</code> 生成 30 筆商品假資料 + Git Worktrees 平行 Agent</td>
+<td>工具協調層、並行 Agent 隔離</td>
+<td><strong>Multi-Agent Orchestration Harness</strong>（進階）</td>
+</tr>
+<tr>
+<td><strong><code>superpowers</code> 套組（brainstorming → writing-plans → TDD → verification → review → finishing-branch）</strong></td>
+<td><strong>強制紀律：Iron Laws 把規則升級成可審計契約</strong></td>
+<td><strong>Verification + Control Flow + Context Harness 三類同時強化</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>核心洞察 1</strong>：你從課程第一天就在做 Harness Engineering，只是現在有了名字與框架。
+<strong>核心洞察 2</strong>：這堂課七大類<strong>全部覆蓋到了</strong>——多數團隊只實作其中 2-3 類就上線，真正能拉開差距的是「七類齊備且持續演化」。</p>
+</blockquote>
+<h3 id="mins-4">5-3 三大支柱的工程意涵（5 mins）</h3>
+<ol>
+<li><strong>上下文工程（Context Engineering）</strong>：<code>CLAUDE.md</code> 是靜態上下文；CI 測試結果、日誌、其他 Agent 進度是動態上下文。Agent 存取不到的資訊等於不存在——文件必須住在 repo 裡。</li>
+<li><strong>架構約束（Architectural Constraints）</strong>：越多約束，決策疲勞越少，Token 利用率越高。用 Hooks 把約束機械性強制執行，而不是靠「善意」。</li>
+<li><strong>熵管理（Entropy Management）</strong>：AI 生成的程式碼庫會隨時間劣化（文件與程式碼不一致、命名風格混亂）。定期用 <code>/review</code>、<code>/simplify</code> 或排程 Agent 執行「清理迴圈」。</li>
+</ol>
+<h3 id="harness-5-mins-1">5-4 你的 Harness 升級路徑（5 mins）</h3>
+<table>
+<thead>
+<tr>
+<th>層級</th>
+<th>時間</th>
+<th>核心工作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Level 1（今天就能做）</strong></td>
+<td>30 分鐘</td>
+<td>建立 <code>CLAUDE.md</code>，寫清架構規範、禁止動作、命名規則，設定 pre-commit hook 執行 lint + test</td>
+</tr>
+<tr>
+<td><strong>Level 2（1-2 天）</strong></td>
+<td>1-2 天</td>
+<td>新增 <code>AGENTS.md</code>（團隊級約定），CI 強制架構約束，定義 Agent 生成 PR 的審查清單</td>
+</tr>
+<tr>
+<td><strong>Level 3（生產級）</strong></td>
+<td>1-2 週</td>
+<td>死循環偵測中間件、可觀測性 Dashboard、熵管理 Agent 排程、Harness A/B 測試</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>陷阱提示</strong>：
+<ul>
+<li><code>CLAUDE.md</code> 是 Harness 核心——每次 Agent 犯錯，就更新它，把它當程式碼一樣維護。</li>
+<li>不要過度設計控制流：Harness 要設計成「可拆卸」的，當模型變聰明後能輕鬆移除不必要的控制邏輯。</li>
+<li>從嚴格約束開始，隨著 Agent 表現成熟再放寬，而不是反過來。</li>
+</ul>
+</li>
+</ul>
+  </template>
+
+  <script>
+    const HERO_IMAGE = "image/claude_code_syllabus/hero/claude-code-shopping-cart-course-hero.png";
+    const IMAGE_MAP = {"課程主專案：購物車系統（Shopping Cart）":"image/claude_code_syllabus/hero/claude-code-shopping-cart-course-hero.png","📦 本章工具一覽（先看清單，再進細節）":"image/claude_code_syllabus/teaching-diagrams/1-overview-kickoff.png","1-1 環境安裝、登入與操作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-1-environment-login-modes.png","1-2 介面導覽：CLI vs VS Code 插件、設定與 CLAUDE.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/1-2-cli-vscode-claude-md.png","1-3 Docker 安裝與 AI 操作資料庫（5 mins）":"image/claude_code_syllabus/teaching-diagrams/1-3-docker-database.png","1-4 Git 常用操作與 gh CLI 協作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-4-git-gh-cli.png","2-1 SDD 規格先行：與 Claude 共同撰寫 spec.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-1-sdd-spec-md.png","2-2 後端生成、TDD 先行與自主修正循環（30 mins）":"image/claude_code_syllabus/teaching-diagrams/2-2-backend-tdd-loop.png","2-3 前端鷹架與 API 串接（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png","2-4 Context 管理、會話控制與真實除錯（35 mins）":"image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png","3-1 agent-browser 技能：自動截圖、錄影與產生 SOP（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png","3-2 用 skill-creator 製作企業資安規範檢查 Skill（25 mins）":"image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png","3-3 開發輔助技能分類導覽（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png","3-4 深入講解 /agent 背景長任務（20 mins）":"image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png","4-1 /review 與 /simplify 內建品質指令（10 mins）":"image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png","4-2 slash commands 完整工作流總覽（17 mins）":"image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png","4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）":"image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png","5-1 Harness Engineering 是什麼（8 mins）":"image/claude_code_syllabus/teaching-diagrams/5-1-harness-engineering.png","5-2 課程實踐 ↔ Harness 類型對應（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-2-course-to-harness-mapping.png","5-3 三大支柱的工程意涵（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-3-three-pillars.png","5-4 你的 Harness 升級路徑（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-4-harness-upgrade-path.png"};
+
+    function normalizeText(value) {
+      return value.replace(/\s+/g, " ").replace(/[`]/g, "").trim();
+    }
+
+    function extractChapterNumber(title, fallbackNumber) {
+      const normalized = normalizeText(title);
+      const match = normalized.match(/^第\s*(\d+)\s*段/);
+      return match ? Number(match[1]) : fallbackNumber;
+    }
+
+    function extractSectionBadge(title, chapterNumber, fallbackIndex) {
+      const normalized = normalizeText(title);
+      const sectionMatch = normalized.match(/^(\d+)-(\d+)/);
+      if (sectionMatch) {
+        return `${sectionMatch[1]}.${sectionMatch[2]}`;
+      }
+      return `${chapterNumber}.${fallbackIndex}`;
+    }
+
+    function shouldSkipNode(chapterTitle, node) {
+      if (!chapterTitle) {
+        return false;
+      }
+
+      const normalizedChapter = normalizeText(chapterTitle);
+      const text = normalizeText(node.textContent || "");
+      if (normalizedChapter.includes("課程主專案：購物車系統") && text.includes("SDD 示範 Prompt")) {
+        return true;
+      }
+      if (normalizedChapter.includes("課程主專案：購物車系統") && node.tagName === "BLOCKQUOTE") {
+        return true;
+      }
+      return false;
+    }
+
+    function createVisualPreview(imagePath, label) {
+      if (!imagePath) {
+        return null;
+      }
+
+      const root = document.createElement("div");
+      root.className = "visual-preview is-open";
+      root.innerHTML = `
+        <div class="visual-preview__expanded">
+          <button class="visual-preview__close" type="button">關閉預覽</button>
+          <button class="visual-preview__frame" type="button">
+            <img src="${imagePath}" alt="${label} 教學圖解">
+          </button>
+        </div>
+        <button class="visual-preview__chip" type="button">
+          <img src="${imagePath}" alt="${label} 縮圖">
+          <span>教學圖</span>
+        </button>
+      `;
+
+      const frameButton = root.querySelector(".visual-preview__frame");
+      const chipButton = root.querySelector(".visual-preview__chip");
+      const closeButton = root.querySelector(".visual-preview__close");
+
+      closeButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        root.classList.remove("is-open");
+      });
+
+      function openPreview() {
+        root.classList.add("is-open");
+        openLightbox(imagePath, label);
+      }
+
+      frameButton.addEventListener("click", openPreview);
+      chipButton.addEventListener("click", openPreview);
+      return root;
+    }
+
+    function createSectionCard(sectionData, sectionNumber, chapterTitle) {
+      const shell = document.createElement("section");
+      shell.className = "section-shell";
+      shell.dataset.sectionLabel = normalizeText(sectionData.title);
+
+      const header = document.createElement("div");
+      header.innerHTML = `
+        <div class="section-topline">
+          <span class="section-badge">${sectionNumber}</span>
+          <small>${chapterTitle}</small>
+        </div>
+        <div class="section-header">
+          <div class="section-heading">
+            <h3>${sectionData.title}</h3>
+            <p>整合課綱說明、操作步驟、架構與命令內容。</p>
+          </div>
+          <button class="section-toggle" type="button" aria-expanded="true"><span>收折章節</span></button>
+        </div>
+      `;
+      shell.appendChild(header);
+
+      const imagePath = IMAGE_MAP[normalizeText(sectionData.title)];
+      const preview = createVisualPreview(imagePath, normalizeText(sectionData.title));
+      if (preview) {
+        shell.appendChild(preview);
+      }
+
+      const content = document.createElement("div");
+      content.className = "section-content is-open";
+      content.innerHTML = `<div class="section-content__inner"></div>`;
+      const inner = content.firstElementChild;
+      sectionData.nodes.forEach((node) => inner.appendChild(node));
+      shell.appendChild(content);
+
+      const toggleButton = shell.querySelector(".section-toggle");
+      toggleButton.addEventListener("click", () => {
+        const expanded = toggleButton.getAttribute("aria-expanded") === "true";
+        toggleButton.setAttribute("aria-expanded", String(!expanded));
+        toggleButton.querySelector("span").textContent = expanded ? "展開章節" : "收折章節";
+        content.classList.toggle("is-open", !expanded);
+      });
+
+      return shell;
+    }
+
+    function createSidebarEntry(chapter) {
+      const wrapper = document.createElement("div");
+      const chapterLink = document.createElement("a");
+      chapterLink.className = "sidebar-link";
+      chapterLink.href = `#chapter-${chapter.number}`;
+      chapterLink.textContent = chapter.title;
+      wrapper.appendChild(chapterLink);
+
+      const sublinks = document.createElement("div");
+      sublinks.className = "sidebar-sublinks";
+      chapter.sections.forEach((section) => {
+        const sectionLink = document.createElement("a");
+        sectionLink.className = "sidebar-sublink";
+        sectionLink.href = `#section-${section.badge}`;
+        sectionLink.textContent = normalizeText(section.title);
+        sublinks.appendChild(sectionLink);
+      });
+      wrapper.appendChild(sublinks);
+      return wrapper;
+    }
+
+    function wrapTables(scope) {
+      scope.querySelectorAll("table").forEach((table) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-wrap";
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      });
+    }
+
+    function transformCommandParagraphs(scope) {
+      const keywordPattern = /(claude|npm|node|git|gh|curl|brew|docker|java|python|mvnw|localhost:|PowerShell|Terminal)/i;
+      scope.querySelectorAll("p, blockquote").forEach((element) => {
+        if (element.closest("pre")) {
+          return;
+        }
+        const codeCount = element.querySelectorAll("code").length;
+        if (codeCount === 0) {
+          return;
+        }
+        const text = element.textContent.trim();
+        if (codeCount >= 2 || (codeCount >= 1 && keywordPattern.test(text))) {
+          const pre = document.createElement("pre");
+          pre.className = "command-block";
+          pre.textContent = text;
+          element.replaceWith(pre);
+        }
+      });
+    }
+
+    function openLightbox(src, label) {
+      const lightbox = document.getElementById("lightbox");
+      document.getElementById("lightbox-image").src = src;
+      document.getElementById("lightbox-image").alt = label + " 教學圖解";
+      document.getElementById("lightbox-title").textContent = label;
+      lightbox.classList.add("is-open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById("lightbox");
+      lightbox.classList.remove("is-open");
+      lightbox.setAttribute("aria-hidden", "true");
+    }
+
+    function buildLessonLayout() {
+      const rawTemplate = document.getElementById("raw-syllabus");
+      const staging = document.createElement("div");
+      staging.innerHTML = rawTemplate.innerHTML.trim();
+      wrapTables(staging);
+      transformCommandParagraphs(staging);
+
+      const introRoot = document.getElementById("intro-root");
+      const lessonRoot = document.getElementById("lesson-root");
+      const sidebarNav = document.getElementById("sidebar-nav");
+      const heroVisualSlot = document.getElementById("hero-visual-slot");
+
+      const children = Array.from(staging.children);
+      const introNodes = [];
+      const chapters = [];
+      let currentChapter = null;
+      let currentSection = null;
+
+      children.forEach((node) => {
+        const tag = node.tagName;
+        if (tag === "H1") {
+          return;
+        }
+
+        if (tag === "H2") {
+          currentChapter = {
+            title: node.textContent.trim(),
+            number: 0,
+            sections: [],
+            introNodes: []
+          };
+          currentSection = null;
+          chapters.push(currentChapter);
+          return;
+        }
+
+        if (!currentChapter) {
+          introNodes.push(node);
+          return;
+        }
+
+        if (tag === "H3") {
+          currentSection = {
+            title: node.textContent.trim(),
+            nodes: []
+          };
+          currentChapter.sections.push(currentSection);
+          return;
+        }
+
+        if (shouldSkipNode(currentChapter.title, node)) {
+          return;
+        }
+
+        if (currentSection) {
+          currentSection.nodes.push(node);
+        } else {
+          currentChapter.introNodes.push(node);
+        }
+      });
+
+      introNodes.forEach((node) => introRoot.appendChild(node));
+      const heroPreview = createVisualPreview(HERO_IMAGE, "課程主視覺");
+      if (heroPreview) {
+        heroVisualSlot.appendChild(heroPreview);
+      }
+
+      chapters.forEach((chapter, chapterIndex) => {
+        chapter.number = extractChapterNumber(chapter.title, chapterIndex + 1);
+        const chapterShell = document.createElement("section");
+        chapterShell.className = "chapter-shell";
+        chapterShell.id = `chapter-${chapter.number}`;
+
+        const head = document.createElement("div");
+        head.className = "chapter-head";
+        head.innerHTML = `
+          <div>
+            <span class="eyebrow">Chapter ${chapter.number}</span>
+            <h2>${chapter.title}</h2>
+          </div>
+          <p>點開章節即可閱讀完整內容；所有對應圖片都可重新展開大圖檢視。</p>
+        `;
+        chapterShell.appendChild(head);
+
+        const sectionContainer = document.createElement("div");
+        sectionContainer.className = "chapter-sections";
+
+        if (chapter.sections.length === 0) {
+          chapter.sections.push({
+            title: chapter.title,
+            nodes: chapter.introNodes
+          });
+          chapter.introNodes = [];
+        }
+
+        if (chapter.introNodes.length > 0) {
+          const introBadge = `${chapter.number}.0`;
+          const introSection = createSectionCard({
+            title: chapter.title + "｜章節導讀",
+            nodes: chapter.introNodes
+          }, introBadge, chapter.title);
+          introSection.id = `section-${introBadge}`;
+          sectionContainer.appendChild(introSection);
+        }
+
+        chapter.sections.forEach((section, sectionIndex) => {
+          section.badge = extractSectionBadge(section.title, chapter.number, sectionIndex + 1);
+          const card = createSectionCard(section, section.badge, chapter.title);
+          card.id = `section-${section.badge}`;
+          sectionContainer.appendChild(card);
+
+        });
+
+        sidebarNav.appendChild(createSidebarEntry(chapter));
+
+        chapterShell.appendChild(sectionContainer);
+        lessonRoot.appendChild(chapterShell);
+      });
+    }
+
+    function setupSidebarState() {
+      const sidebar = document.getElementById("chapter-sidebar");
+      const toggle = document.getElementById("sidebar-toggle");
+      const sidebarLinks = Array.from(document.querySelectorAll(".sidebar-link, .sidebar-sublink"));
+      const observedTargets = Array.from(document.querySelectorAll(".chapter-shell, .section-shell"));
+
+      toggle.addEventListener("click", () => {
+        const expanded = toggle.getAttribute("aria-expanded") === "true";
+        toggle.setAttribute("aria-expanded", String(!expanded));
+        toggle.textContent = expanded ? "展開章節目錄" : "收起章節目錄";
+        sidebar.classList.toggle("is-open", !expanded);
+      });
+
+      sidebarLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          if (window.innerWidth <= 980) {
+            sidebar.classList.remove("is-open");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.textContent = "展開章節目錄";
+          }
+        });
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+
+        const targetId = visible.target.id;
+        sidebarLinks.forEach((link) => {
+          link.classList.toggle("is-active", link.getAttribute("href") === `#${targetId}`);
+        });
+      }, { rootMargin: "-15% 0px -65% 0px", threshold: [0.15, 0.4, 0.7] });
+
+      observedTargets.forEach((target) => observer.observe(target));
+    }
+
+    function setupSidebarCollapse() {
+      const sidebar = document.getElementById("chapter-sidebar");
+      const collapseBtn = document.getElementById("sidebar-collapse-btn");
+      const expandTab = document.getElementById("sidebar-expand-tab");
+
+      function collapse() {
+        sidebar.classList.add("is-collapsed");
+        expandTab.classList.add("is-visible");
+        collapseBtn.setAttribute("aria-expanded", "false");
+        try { localStorage.setItem("sidebarCollapsed", "1"); } catch (_) {}
+      }
+
+      function expand() {
+        sidebar.classList.remove("is-collapsed");
+        expandTab.classList.remove("is-visible");
+        collapseBtn.setAttribute("aria-expanded", "true");
+        try { localStorage.setItem("sidebarCollapsed", "0"); } catch (_) {}
+      }
+
+      collapseBtn.addEventListener("click", collapse);
+      expandTab.addEventListener("click", expand);
+
+      try {
+        if (localStorage.getItem("sidebarCollapsed") === "1") { collapse(); }
+      } catch (_) {}
+    }
+
+    buildLessonLayout();
+    setupSidebarState();
+    setupSidebarCollapse();
+
+    const lightbox = document.getElementById("lightbox");
+    const closeButton = document.getElementById("lightbox-close");
+    closeButton.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) {
+        closeLightbox();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && lightbox.classList.contains("is-open")) {
+        closeLightbox();
+      }
+    });
+  </script>
+</body>
+</html>

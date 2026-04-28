@@ -1,0 +1,57 @@
+{
+  "sourceTweet": "https://x.com/imaxichuhai/status/2032397341701906735",
+  "sourceArticle": "https://x.com/i/article/2032391190646296576",
+  "extractedAt": "2026-03-14T01:42:05.654Z",
+  "title": "Claude Skills 喂饭级教程，99%的人不会用Skill",
+  "previewText": "很多人都不知道如何正确使用 Claude，每次打开 Claude 都要重新输入一遍指令，比如",
+  "images": [
+    {
+      "mediaId": "2032397279236345857",
+      "url": "https://pbs.twimg.com/media/HDSGjq9aUAEv89w.jpg",
+      "file": "cover.jpg",
+      "kind": "cover"
+    },
+    {
+      "mediaId": "2032396597943029760",
+      "url": "https://pbs.twimg.com/media/HDSF8A8bUAAYnhw.jpg",
+      "file": "image-1.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032395553271955456",
+      "url": "https://pbs.twimg.com/media/HDSE_NPbwAADU8F.jpg",
+      "file": "image-2.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032395631365603328",
+      "url": "https://pbs.twimg.com/media/HDSFDwKaQAAbQHa.jpg",
+      "file": "image-3.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032396492204564480",
+      "url": "https://pbs.twimg.com/media/HDSF13CaYAA_88X.jpg",
+      "file": "image-4.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032393237504385024",
+      "url": "https://pbs.twimg.com/media/HDSC4aVa4AARfKh.png",
+      "file": "image-5.png",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032396247840264192",
+      "url": "https://pbs.twimg.com/media/HDSFnotbEAAo_7G.jpg",
+      "file": "image-6.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2032395693546143744",
+      "url": "https://pbs.twimg.com/media/HDSFHXzaAAAEbsd.jpg",
+      "file": "image-7.jpg",
+      "kind": "body"
+    }
+  ]
+}

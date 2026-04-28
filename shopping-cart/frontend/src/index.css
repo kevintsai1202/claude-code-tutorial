@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-elevated: #1a1a1a;
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC',
+    'PingFang TC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+@layer utilities {
+  /* 以 CSS 變數為基礎的設計 Token，避免 Tailwind 安全色 */
+  .text-muted {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .text-subtle {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .bg-surface {
+    background-color: var(--bg-surface);
+  }
+  .bg-elevated {
+    background-color: var(--bg-elevated);
+  }
+  .border-subtle {
+    border-color: var(--border);
+  }
+  /* 圓角 Token */
+  .rounded-token-sm {
+    border-radius: var(--radius-sm);
+  }
+  .rounded-token-md {
+    border-radius: var(--radius-md);
+  }
+  .rounded-token-lg {
+    border-radius: var(--radius-lg);
+  }
+  .rounded-token-full {
+    border-radius: var(--radius-full);
+  }
+}

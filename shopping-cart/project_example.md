@@ -8,6 +8,20 @@
 
 ---
 
+## 技術棧（與課程同步）
+
+| 層級 | 技術 | 課程章節 |
+|---|---|---|
+| 後端 | Node.js 20 + Express | 2-2 |
+| 資料庫 | PostgreSQL 16（Docker Compose 啟動） | 1-3 |
+| 前端 | React 18 + Vite + TypeScript | 2-3 |
+| 後端測試 | Vitest + Supertest | 2-2 |
+| 前端 E2E | Playwright MCP（開發中驗證） | 2-3、2-4 |
+| 自動截圖錄影 | agent-browser（產 SOP / 教學影片） | 3-1 |
+| 紀律技能 | superpowers 套組（writing-plans / TDD / verification） | 3-3、4-3 |
+
+---
+
 ## 系統範圍（刻意精簡）
 
 ✅ **包含**
@@ -91,7 +105,7 @@ Product（商品）
 
 Cart（購物車）
 ├── id
-├── sessionId       ← 未登入用 session；登入用 userId
+├── sessionId       ← 未登入用 session；由後端產生
 └── items[]         ← CartItem 清單
 
 CartItem（購物車明細）
@@ -150,7 +164,8 @@ POST   /api/cart/checkout         ← 送出結帳資料 → 清空購物車
 
 ## 測試資料規劃
 
-> 測試資料由 `/agent` 背景任務產生（對應第 3 段示範）
+> 測試資料由 `/agent` 背景任務產生（對應 **3-4** 示範）。
+> 前端開發階段先用 `mockProducts.ts` 跑起 UI（對應 **2-3** 假資料先行），等後端就緒再切換到真 API。
 
 ### seed-products.json（30 筆商品）
 ```json

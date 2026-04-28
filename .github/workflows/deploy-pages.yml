@@ -1,12 +1,14 @@
-name: Deploy Blog To GitHub Pages
+name: Deploy Teaching Website & Blog To GitHub Pages
 
 on:
   push:
     branches:
       - master
     paths:
+      - "claude_code_teaching_website.html"
+      - "image/**"
       - "blog/**"
-      - ".github/workflows/deploy-blog-pages.yml"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -28,13 +30,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Build site
+        run: |
+          mkdir -p _site
+          # 教學網站部署到根目錄
+          cp claude_code_teaching_website.html _site/index.html
+          # 教學圖片
+          if [ -d image ]; then
+            cp -r image _site/image
+          fi
+          # Blog 部署到 /blog/ 子目錄（保留原有內容）
+          if [ -d blog ]; then
+            cp -r blog _site/blog
+          fi
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload blog artifact
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: blog
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment

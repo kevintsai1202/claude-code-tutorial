@@ -1,0 +1,33 @@
+{
+  "sourceTweet": "https://x.com/hooeem/status/2031755971265974632",
+  "sourceArticle": "https://x.com/i/article/2031700361832992768",
+  "extractedAt": "2026-03-14T01:30:03.560Z",
+  "title": "I want to learn how to use Claude Skills (full course)",
+  "previewText": "I have combined every resource I have found to create a full course on Claude Skills. In less than 10 minutes you'll have built and deployed your first custom skill. After reading this article you",
+  "images": [
+    {
+      "mediaId": "2031754880516251648",
+      "url": "https://pbs.twimg.com/media/HDI-TJPWYAA0azq.jpg",
+      "file": "cover.jpg",
+      "kind": "cover"
+    },
+    {
+      "mediaId": "2031749436590759936",
+      "url": "https://pbs.twimg.com/media/HDI5WRCXoAA6Fpr.jpg",
+      "file": "image-1.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2031750176424292352",
+      "url": "https://pbs.twimg.com/media/HDI6BVIbcAAOy0Z.jpg",
+      "file": "image-2.jpg",
+      "kind": "body"
+    },
+    {
+      "mediaId": "2031749552340963328",
+      "url": "https://pbs.twimg.com/media/HDI5dAPXkAAyFvj.jpg",
+      "file": "image-3.jpg",
+      "kind": "body"
+    }
+  ]
+}

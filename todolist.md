@@ -1,0 +1,54 @@
+# Claude Code 課綱教學網站待辦
+
+## 任務清單
+
+| ID | 任務 | 狀態 | 備註 |
+|---|---|---|---|
+| TW-01 | 盤點 `claude_code_syllabus.md`、章節圖片與互動需求 | 完成 | 圖片來源為 `image/claude_code_syllabus/teaching-diagrams` |
+| TW-02 | 更新 `spec.md` 與 `api.md` 使其對齊互動教學網頁交付 | 完成 | 明確記錄章節收折、圖片彈窗、程式區塊樣式 |
+| TW-03 | 實作靜態教學網頁與章節互動效果 | 完成 | 已產出 `claude_code_teaching_website.html` 與 PowerShell 產生器 |
+| TW-04 | 本機驗證頁面結構與互動行為 | 完成 | 已完成結構驗證；完整瀏覽器 smoke test 受本機 Node/CSPRNG 與 provider 限制影響 |
+| TW-05 | 補上側邊欄章節導覽與行動版章節清單 | 完成 | 已加入固定側欄、章節小節連結與行動版切換按鈕 |
+| TW-06 | 提升整體色彩反差與程式區塊可讀性 | 完成 | 已加深文字、卡片邊線、inline code 與深色 code block 對比 |
+| TW-07 | 強化 code block 內層文字反差 | 完成 | 已覆寫 `pre code` 與 `.command-block code` 顏色、字重、字級與陰影 |
+| TW-08 | 修正章節與小節編號來源 | 完成 | 已改為從標題數字解析，不使用陣列索引 |
+| TW-09 | 重整首頁首屏版面分區 | 完成 | 第一區塊僅保留課程名稱/描述/目標，圖片與快速入口已獨立到下一區塊 |
+| TW-10 | 移除首頁圖片區塊重複連結並統一圖片互動 | 完成 | 已移除快速超連結，主視覺圖片改用與章節圖相同的放大/收折模式 |
+| TW-11 | 移除課程主專案區塊中的 SDD 示範 Prompt | 完成 | 已在渲染流程排除提示文字與其引用內容 |
+| DOC-01 | 盤點 `claude_code_syllabus.md` 與 `shopping-cart` 文件中的後端技術棧衝突 | 完成 | 已確認主要衝突為 Spring Boot、PostgreSQL、JUnit、Maven 與 Java 範例 |
+| DOC-02 | 更新 `spec.md` 與 `api.md`，定義 Node.js 文件轉向範圍 | 完成 | 已將本輪任務明確改為文件重構 |
+| DOC-03 | 將課綱與 `shopping-cart` 文件的後端主線改為 Node.js | 完成 | 已同步更新課綱、spec、api、講義、實作計畫、作品說明與 CLAUDE.md |
+| DOC-04 | 將資料庫口徑改回 PostgreSQL，並強化 AI 控制 Docker 安裝資料庫教學 | 完成 | 後端維持 Node.js，資料儲存已改為 PostgreSQL + Docker Compose，1-3 節改為 Docker 主示範 |
+| IMG-01 | 更新 4-3 superpowers 流程圖以對齊新版鐵律 | 完成 | 已覆蓋 `image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png`，課綱引用路徑維持不變 |
+
+## 當前任務
+- SHOP-01：CartContext 的 `addToCart` / `updateQuantity` 待使用者實作（`shopping-cart/frontend/src/context/CartContext.tsx`）
+
+## 購物車前端任務（2026-04-28）
+
+| ID | 任務 | 狀態 | 備註 |
+| --- | --- | --- | --- |
+| SHOP-01 | 實作 CartContext addToCart / updateQuantity | **待使用者實作** | 見 CartContext.tsx TODO 注解 |
+| SHOP-02 | 前端骨架建置（React 18 + Vite + TypeScript） | 完成 | `shopping-cart/frontend/` |
+| SHOP-03 | 設計系統（Tailwind + CSS Token + 深色 Premium 主題） | 完成 | Emerald Accent #10b981 |
+| SHOP-04 | 30 筆 Mock 商品資料（3C/服飾/食品各 10 筆） | 完成 | `src/data/mockProducts.ts` |
+| SHOP-05 | UI 元件（Navbar/ProductCard/CartDrawer/QuantityInput） | 完成 | 含 data-testid |
+| SHOP-06 | 頁面（ProductList/ProductDetail/Checkout） | 完成 | 含表單驗證/骨架屏/成功畫面 |
+| SHOP-07 | TypeScript + Vite 生產建置驗證 | 完成 | 0 errors, build 2.63s |
+
+## 完成紀錄
+- `2026-04-28`：完成課綱圖解生成與回填驗證。
+- `2026-04-28`：切換為互動教學網頁任務，已同步更新規格與待辦。
+- `2026-04-28`：完成 PowerShell 版教學網頁產生器與 HTML 交付，並完成結構驗證。
+- `2026-04-28`：完成側邊欄章節導覽與行動版章節清單補強。
+- `2026-04-28`：完成色彩反差與程式區塊可讀性補強。
+- `2026-04-28`：完成 code block 內層文字反差強化。
+- `2026-04-28`：完成章節與小節編號改為依標題數字解析。
+- `2026-04-28`：完成首頁首屏改為文字區與圖片區分離。
+- `2026-04-28`：完成首頁圖片區移除重複連結並統一圖片互動。
+- `2026-04-28`：完成課程主專案區塊移除 SDD 示範 Prompt。
+- `2026-04-28`：完成 `claude_code_syllabus.md` 與 `shopping-cart` 文件的後端主線改為 Node.js + Express + SQLite，並同步測試與指令口徑。
+- `2026-04-28`：完成資料庫主線改回 PostgreSQL，並將第 1-3 節改為用 AI 控制 Docker 安裝與啟動資料庫。
+- `2026-04-28`：完成新版 4-3 superpowers 流程圖回填，保留原檔名供課綱與教學網站共用。
+- `2026-04-28`：在 3-3 技能分類導覽表新增 `ui-ux-pro-max` 說明，並補充與 `reactcomponents` 的定位差異說明。
+- `2026-04-28`：將 3-2 Hooks 段落改為「送 PR 前強制資安掃描」實戰，包含 settings.json 結構與製作 Hook 的示範 Prompt。
