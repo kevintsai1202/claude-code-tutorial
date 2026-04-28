@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）｜互動教學網頁</title>
+  <title>Claude Code：全端專案實作與 AI 開發工作流｜互動教學網頁</title>
   <style>
     :root {
       --bg: #f6f0e5;
@@ -44,7 +44,8 @@
     }
 
     .page-layout {
-      display: flex;
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
       gap: 24px;
       align-items: start;
       padding: 24px 0 48px;
@@ -53,73 +54,9 @@
     .sidebar {
       position: sticky;
       top: 18px;
-      flex-shrink: 0;
-      width: 290px;
       display: grid;
       gap: 14px;
       align-self: start;
-      overflow: hidden;
-      transition: width 300ms cubic-bezier(.4,0,.2,1), opacity 260ms ease;
-    }
-
-    .sidebar.is-collapsed {
-      width: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .sidebar-collapse-btn {
-      width: 100%;
-      padding: 9px 14px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(20,56,111,0.08);
-      color: var(--navy);
-      font: inherit;
-      font-size: 0.9rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background var(--duration);
-    }
-    .sidebar-collapse-btn:hover,
-    .sidebar-collapse-btn:focus-visible {
-      outline: none;
-      background: rgba(20,56,111,0.18);
-    }
-
-    .sidebar-expand-tab {
-      position: fixed;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 30;
-      background: var(--navy);
-      color: #fff;
-      border: none;
-      border-radius: 0 14px 14px 0;
-      padding: 18px 9px;
-      cursor: pointer;
-      font: inherit;
-      font-size: 0.84rem;
-      font-weight: 600;
-      writing-mode: vertical-rl;
-      letter-spacing: 0.06em;
-      box-shadow: 3px 0 18px rgba(0,0,0,0.2);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 260ms ease, background var(--duration);
-    }
-    .sidebar-expand-tab.is-visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .sidebar-expand-tab:hover,
-    .sidebar-expand-tab:focus-visible {
-      outline: none;
-      background: #1a4a8c;
     }
 
     .sidebar-card {
@@ -206,7 +143,6 @@
 
     .main-column {
       min-width: 0;
-      flex: 1;
     }
 
     .hero {
@@ -719,19 +655,11 @@
 
     @media (max-width: 980px) {
       .page-layout {
-        flex-direction: column;
+        grid-template-columns: 1fr;
       }
 
       .sidebar {
         position: static;
-        width: 100% !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }
-
-      .sidebar-collapse-btn,
-      .sidebar-expand-tab {
-        display: none !important;
       }
 
       .sidebar-toggle {
@@ -799,16 +727,12 @@
         <div class="sidebar-card">
           <h2>章節導覽</h2>
           <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
-          <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" type="button" aria-label="收起側邊欄">
-            ◀ 收起側邊欄
-          </button>
         </div>
         <div class="sidebar-card">
           <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
           <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
         </div>
       </aside>
-      <button class="sidebar-expand-tab" id="sidebar-expand-tab" type="button" aria-label="展開側邊欄">章節導覽 ▶</button>
 
       <div class="main-column">
         <header class="hero">
@@ -816,7 +740,7 @@
             <div class="hero-grid">
               <div class="hero-copy">
                 <span class="eyebrow">Interactive Teaching Website</span>
-                <h1>Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）</h1>
+                <h1>Claude Code：全端專案實作與 AI 開發工作流</h1>
                 <p>講師將帶領學員以一個真實的全端專案為主線，完整展示如何把 Claude Code 放進日常開發流程。課程聚焦在版本控制、文件驅動、SDD/TDD 開發紀律、Skill 設計、背景 Agent、多模式操作與高效率除錯，讓學員學會一套可以直接搬進工作的做法。</p>
                 <div class="hero-points">
                   <div class="hero-point">
@@ -859,77 +783,6 @@
         </section>
 
         <main class="chapter-list" id="lesson-root"></main>
-
-        <section class="intro-card" id="course-summary" style="margin-top:32px;margin-bottom:48px;">
-          <h2 style="margin:0 0 18px;font-size:1.6rem;">課程總結</h2>
-
-          <blockquote>
-            <p>這堂課的核心<strong>不是</strong>「AI 幫你寫更多 code」，而是「<strong>你如何設計一條更穩定的開發工作流</strong>」——讓 Claude 變成可預測、可治理、可長期維護的工程夥伴，而不是看心情產出的副駕駛。</p>
-          </blockquote>
-
-          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">你在這 4 小時學會的四種能力</h3>
-          <div class="table-wrap"><table>
-            <thead><tr><th>能力</th><th>核心招式</th><th>來自的段落</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>共識能力</strong></td>
-                <td>用 SDD 寫 <code>spec.md</code> 與 <code>CLAUDE.md</code>，把「你與 Claude 的共識契約」寫進磁碟，避免每次重新解釋</td>
-                <td>1-2、2-1</td>
-              </tr>
-              <tr>
-                <td><strong>紀律能力</strong></td>
-                <td>TDD 三循環（Red → Green → Refactor）+ Auto Mode 自主迴圈 + <strong>superpowers Iron Laws</strong>（沒測試不寫程式、沒驗證不宣稱完成、沒找到根因不動程式），讓測試成為 Claude 不會偏離的軌道</td>
-                <td>2-2、4-3</td>
-              </tr>
-              <tr>
-                <td><strong>治理能力</strong></td>
-                <td>Context 主動管理（<code>/clear</code> <code>/compact</code> <code>/context</code> <code>/rewind</code>）+ 權限模式選擇（Auto vs Bypass），決定 Claude 的「記憶」與「動作授權」</td>
-                <td>1-1、1-2、2-4、4-2</td>
-              </tr>
-              <tr>
-                <td><strong>延伸能力</strong></td>
-                <td>Skill 把規則固化、<code>/agent</code> 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業</td>
-                <td>3-1～3-4</td>
-              </tr>
-            </tbody>
-          </table></div>
-
-          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">三個關鍵心智轉變</h3>
-          <ol style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;">
-            <li style="margin-bottom:8px;"><strong>從「下指令」到「設定環境」</strong>：寫 <code>CLAUDE.md</code> &gt; 重複下 prompt；建 Skill &gt; 一次性教學；定義 Hooks &gt; 事後補救。</li>
-            <li style="margin-bottom:8px;"><strong>從「被動清理 context」到「主動管理 context」</strong>：在階段邊界 <code>/compact</code>、無關任務前 <code>/clear</code>、走偏方向 <code>/rewind</code>，而不是等 Claude 變慢才反應。</li>
-            <li><strong>從「全部自己做」到「分流任務」</strong>：主線用 Plan / Edit 模式精修核心邏輯；長噪音任務丟 <code>/agent</code>；可重複流程做成 Skill；想自治就上 Auto Mode（在分類器把關下）。</li>
-          </ol>
-
-          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">明天上班就能做的三件事</h3>
-          <ul style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;">
-            <li style="margin-bottom:8px;">🟢 <strong>30 分鐘</strong>：在你手上的專案根目錄建立 <code>CLAUDE.md</code>，寫清架構規範、禁止行為、技術棧版本、常用指令——Claude 從此不會忘。</li>
-            <li style="margin-bottom:8px;">🟡 <strong>下一次卡住時</strong>：先按 <code>/context</code> 看 context 被誰吃了，再決定要 <code>/compact</code> 還是 <code>/clear</code>，而不是直接重開 session。</li>
-            <li>🔴 <strong>下一次 Claude 走錯方向</strong>：按 <code>Esc Esc</code> → 選 <strong>Restore code only</strong>，保留對話分析脈絡，只退回檔案重做——比手動 <code>git checkout</code> 快十倍。</li>
-          </ul>
-
-          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">收束到 Harness Engineering</h3>
-          <p style="margin:0 0 14px;color:#0f2441;">你在第 5 段學到：上面這些做法不是零散技巧，而是<strong>圍繞 Agent 的執行與治理層</strong>的具體實踐。<code>CLAUDE.md</code> 是靜態上下文層、TDD 迴圈是錯誤恢復層、Hooks 是架構約束層、<code>/review</code> + <code>/simplify</code> 是熵管理層、Plan Mode 是 Human-in-the-Loop 閘門——你不是在「用 AI 寫程式」，你是在<strong>設計一套讓 AI 持續產出高品質程式碼的系統</strong>。</p>
-          <blockquote>
-            <p><strong>這就是 Harness Engineering——你一直在做的事，現在有了名字。</strong></p>
-          </blockquote>
-
-          <h3 style="margin:24px 0 10px;font-size:1.1rem;color:var(--navy);">課後行動清單</h3>
-          <ul style="margin:0 0 16px;padding-left:1.2rem;color:#0f2441;list-style:none;">
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 為當前專案建立 <code>CLAUDE.md</code>（含技術棧、禁止行為、常用指令）</li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 把一個重複流程做成 Skill（資安檢查 / Code review / 文件生成擇一）</li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 為一個長噪音任務（如資料生成、log 分析）開一個 <code>/agent</code> 試水</li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 在 PR 流程加入 <code>/review</code> + <code>/simplify</code> 的固定收尾</li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 練習 <code>/rewind</code> 的五個選項，特別是 <strong>Restore code only</strong></li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 評估你的方案是否能用 Auto Mode（Team / Enterprise / API + Sonnet 4.6 以上）</li>
-            <li style="margin-bottom:8px;"><input type="checkbox" disabled style="margin-right:6px;"> 安裝 <code>superpowers</code> plugin，至少跑過一次 <code>writing-plans</code> + <code>test-driven-development</code> + <code>verification-before-completion</code> 完整管線</li>
-            <li><input type="checkbox" disabled style="margin-right:6px;"> 把三條 Iron Laws 寫進團隊 <code>CLAUDE.md</code>，把紀律從「個人習慣」升級成「團隊契約」</li>
-          </ul>
-
-          <blockquote style="margin-top:24px;">
-            <p><strong>最後提醒</strong>：Claude 會持續變強，但能拉開差距的不是「會用哪個指令」，而是「<strong>有沒有把工作流設計成可長期維護的 Harness</strong>」。這堂課給你的不是 100 個技巧，而是一套可以持續演化的心智模型。</p>
-          </blockquote>
-        </section>
       </div>
     </div>
   </div>
@@ -945,7 +798,7 @@
   </div>
 
   <template id="raw-syllabus">
-<h1 id="claude-code-ai-4">Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）</h1>
+<h1 id="claude-code-ai">Claude Code：全端專案實作與 AI 開發工作流</h1>
 <p><strong>課程定位</strong>：講師將帶領學員以一個真實的全端專案為主線，完整展示如何把 Claude Code 放進日常開發流程。課程聚焦在版本控制、文件驅動、SDD/TDD 開發紀律、Skill 設計、背景 Agent、多模式操作與高效率除錯，讓學員學會一套可以直接搬進工作的做法。</p>
 <hr />
 <h2 id="shopping-cart">🛒 課程主專案：購物車系統（Shopping Cart）</h2>
@@ -997,7 +850,7 @@
 <tr>
 <td>2</td>
 <td><strong>Node.js v20+</strong></td>
-<td>Claude Code CLI 安裝前提 + 前端 React/Vite 開發</td>
+<td>前端 React/Vite 開發（CLI 本身不需要 Node.js）</td>
 <td>1-1</td>
 <td>⭐ 必裝</td>
 </tr>
@@ -1011,7 +864,7 @@
 <tr>
 <td>4</td>
 <td><strong>Docker Desktop</strong></td>
-<td>跑 PostgreSQL（後端資料庫）</td>
+<td>用 AI 控制 Docker 安裝與啟動 PostgreSQL</td>
 <td>1-3</td>
 <td>⭐ 必裝</td>
 </tr>
@@ -1029,6 +882,13 @@
 <td>1-4</td>
 <td>⭐ 必裝</td>
 </tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <p><strong>終端機環境</strong>（不需安裝，但要知道用哪個）：</p>
@@ -1036,7 +896,7 @@
 <li><strong>Windows</strong>：PowerShell 7+ 或 Windows Terminal</li>
 <li><strong>macOS</strong>：Terminal.app 或 iTerm2</li>
 </ul>
-<h4 id="postgresql-viewer">🗂 PostgreSQL 檢視工具快速參考（雙平台對照）</h4>
+<h4 id="postgresql">🗂 PostgreSQL 檢視工具快速參考（雙平台對照）</h4>
 <table>
 <thead>
 <tr>
@@ -1048,7 +908,7 @@
 <tbody>
 <tr>
 <td><strong>Windows</strong></td>
-<td>安裝 <a href="https://dbeaver.io/">DBeaver</a> 或 TablePlus</td>
+<td>安裝<a href="https://dbeaver.io/">DBeaver</a> 或 TablePlus</td>
 <td>能連上 <code>localhost:5432</code> 的 <code>shoppingcart</code></td>
 </tr>
 <tr>
@@ -1060,35 +920,37 @@
 </table>
 <p><strong>為什麼資料庫選 PostgreSQL</strong>：更貼近真實專案，能自然帶到 schema、constraint、migration 與連線管理等實務議題。</p>
 <p><strong>為什麼強調 Docker</strong>：學員不需手動安裝 PostgreSQL，本課示範如何直接用自然語言讓 Claude 生成 <code>docker-compose.yml</code>、啟動容器、驗證 healthy、回填後端設定。</p>
-<blockquote>
-<p>🟢 <strong>建議課前先把 1～6 全部裝完</strong>，課程進行時就能聚焦在操作示範與 Prompt 設計，不會被環境問題打斷。</p>
-</blockquote>
 <h3 id="mins">1-1 環境安裝、登入與操作模式（20 mins）</h3>
 <ul>
-<li><p><strong>Claude Code 安裝與登入</strong>（雙平台對照）：</p>
+<li><p><strong>Claude Code 安裝與登入</strong>（雙平台對照，<strong>Native Install 為官方推薦</strong>）：</p>
 <table>
 <thead>
 <tr>
 <th>平台</th>
-<th>安裝指令</th>
-<th>備註</th>
+<th>推薦安裝指令</th>
+<th>其他方式</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Windows</strong></td>
-<td><code>npm install -g @anthropic-ai/claude-code</code></td>
-<td>需先裝 Node.js v20+，PowerShell 7+ 執行</td>
+<td><code>irm https://claude.ai/install.ps1 \| iex</code></td>
+<td><code>winget install Anthropic.ClaudeCode</code> / npm（需 Node.js v20+）</td>
 </tr>
 <tr>
 <td><strong>macOS</strong></td>
-<td><code>brew install claude-code</code> 或 <code>npm install -g @anthropic-ai/claude-code</code></td>
-<td>brew 為主流選項；Apple Silicon / Intel 通用</td>
+<td><code>curl -fsSL https://claude.ai/install.sh \| bash</code></td>
+<td><code>brew install --cask claude-code</code> / npm（需 Node.js v20+）</td>
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p>⚠️ <strong>Windows 注意</strong>：Native Install 需先安裝 <a href="https://git-scm.com/downloads/win">Git for Windows</a>（Claude Code 內部使用 Git Bash 執行命令）。</p>
+<p>💡 <strong>自動更新</strong>：Native Install 與 WinGet 安裝的版本會在背景自動更新，Homebrew / npm 需手動執行升級。</p>
+<p>🔧 <strong>npm 備用安裝</strong>：若偏好 npm 管理工具版本，執行 <code>npm install -g @anthropic-ai/claude-code</code>（需 Node.js v20+）。</p>
+</blockquote>
 <ul>
-<li>安裝後共用：<code>claude doctor</code> 健檢 → <code>claude</code> 啟動 → <code>/login</code> 登入 OAuth。</li>
+<li>安裝後共用：<code>claude --version</code> 確認版本 → <code>claude doctor</code> 健檢 → <code>claude</code> 啟動並依瀏覽器提示登入。</li>
 <li>介紹 <code>/login</code>、模型切換與基本指令：<code>@</code> 參照檔案、<code>/help</code>、<code>/init</code>。</li>
 </ul>
 </li>
@@ -1544,7 +1406,7 @@ claude --allow-dangerously-skip-permissions --permission-mode plan
 <tbody>
 <tr>
 <td><strong>Windows</strong></td>
-<td>下載 <a href="https://www.docker.com/products/docker-desktop">Docker Desktop for Windows</a> 並安裝（需 WSL 2 後端）</td>
+<td>下載<a href="https://www.docker.com/products/docker-desktop">Docker Desktop for Windows</a> 並安裝（需 WSL 2 後端）</td>
 <td>PowerShell：<code>docker version</code></td>
 </tr>
 <tr>
@@ -1558,8 +1420,10 @@ claude --allow-dangerously-skip-permissions --permission-mode plan
 <p>安裝後皆須<strong>啟動 Docker Desktop 應用程式</strong>，再回到終端機驗證。</p>
 </blockquote>
 </li>
-<li><p><strong>用 Claude Code 操作 Docker</strong>：不需背 Docker 指令，直接用自然語言叫 Claude 產出 <code>docker-compose.yml</code>、啟動 PostgreSQL、檢查容器狀態，並同步回填 Node.js 連線設定。</p></li>
-<li><p><strong>本課主線依賴 Docker 啟資料庫</strong>：後端採 <code>Node.js + Express + PostgreSQL</code>，資料庫統一由 Docker Compose 啟動，讓學員練習「用 AI 控制基礎設施」。</p></li>
+<li><p><strong>用 Claude Code 操作 Docker</strong>：不需背 Docker 指令，直接用自然語言叫 Claude 產出 <code>docker-compose.yml</code>、啟動 PostgreSQL、檢查容器狀態，並同步回填 Node.js 連線設定。</p>
+</li>
+<li><p><strong>本課主線依賴 Docker 啟資料庫</strong>：後端採 <code>Node.js + Express + PostgreSQL</code>，資料庫統一由 Docker Compose 啟動，讓學員練習「用 AI 控制基礎設施」。</p>
+</li>
 <li><p><strong>本節示範 Prompt（主軸）</strong>：</p>
 <ul>
 <li>「請幫我建立 <code>docker-compose.yml</code>，包含 PostgreSQL 16，資料庫名稱 <code>shoppingcart</code>、帳號 <code>admin</code>、密碼 <code>secret</code>，並附上 healthcheck。」</li>
@@ -1588,12 +1452,12 @@ claude --allow-dangerously-skip-permissions --permission-mode plan
 <tbody>
 <tr>
 <td><strong>Git</strong></td>
-<td>下載 <a href="https://git-scm.com/download/win">Git for Windows</a> → 預設安裝（勾「Git Bash Here」與「Use Git from CMD」）</td>
+<td>下載<a href="https://git-scm.com/download/win">Git for Windows</a> → 預設安裝（勾「Git Bash Here」與「Use Git from CMD」）</td>
 <td><code>brew install git</code> 或 <code>xcode-select --install</code>（macOS 內建 Xcode CLT 已含 Git）</td>
 </tr>
 <tr>
 <td><strong>GitHub CLI（gh）</strong></td>
-<td>下載 <a href="https://github.com/cli/cli/releases">gh_*_windows_amd64.msi</a> → 執行 .msi 預設安裝</td>
+<td>下載<a href="https://github.com/cli/cli/releases">gh_*_windows_amd64.msi</a> → 執行 .msi 預設安裝</td>
 <td><code>brew install gh</code></td>
 </tr>
 </tbody>
@@ -1681,8 +1545,9 @@ gh auth status
 </ul>
 </li>
 <li><p><strong>Claude Code 的 TDD 做法</strong>：</p>
+</li>
+<li><p>Prompt 範本：「請先針對 <code>cartService.ts</code> 的購物車邏輯撰寫 <code>Vitest</code> 測試，<strong>不要實作</strong>，等我確認後再開始。測試場景包含：(1) 加入新商品 → 新增一筆 CartItem；(2) 加入相同商品 → 已有的 CartItem 數量 +1，不重複新增；(3) 數量改為 0 → 自動移除；(4) 合計計算正確；(5) 結帳後購物車清空。」</p>
 <ul>
-<li>Prompt 範本：「請先針對 <code>cartService.ts</code> 的購物車邏輯撰寫 <code>Vitest</code> 測試，<strong>不要實作</strong>，等我確認後再開始。測試場景包含：(1) 加入新商品 → 新增一筆 CartItem；(2) 加入相同商品 → 已有的 CartItem 數量 +1，不重複新增；(3) 數量改為 0 → 自動移除；(4) 合計計算正確；(5) 結帳後購物車清空。」</li>
 <li>確認測試意圖後，下指令開始實作 → 執行 <code>npm test</code> → 看到 RED。</li>
 <li>示範 Claude 讀錯誤 → 修正程式 → 再次執行直到全部 GREEN 的完整閉環。</li>
 <li>搭配 Auto Mode：讓 Claude 自主跑完「測試 → 修正 → 再測試」迴圈，不需每步確認。
@@ -1695,9 +1560,8 @@ gh auth status
 </ul>
 </li>
 <li><p><strong>根據 spec.md 生成後端骨架</strong>：</p>
-<ul>
-<li>建立 <code>Express</code> 專案、<code>productsRepo.ts</code> / <code>cartRepo.ts</code>、<code>cartService.ts</code>、<code>products.routes.ts</code> / <code>cart.routes.ts</code> 與 DTO / schema 驗證。</li>
-</ul>
+</li>
+<li><p>建立 <code>Express</code> 專案、<code>productsRepo.ts</code> / <code>cartRepo.ts</code>、<code>cartService.ts</code>、<code>products.routes.ts</code> / <code>cart.routes.ts</code> 與 DTO / schema 驗證。</p>
 </li>
 </ul>
 <h3 id="api-15-mins">2-3 前端鷹架與 API 串接（15 mins）</h3>
@@ -1710,10 +1574,10 @@ gh auth status
 </ul>
 </li>
 <li><p><strong>前後端整合</strong>：</p>
-<ul>
-<li>將假資料改為串接 Node.js API（<code>GET /api/products</code>、<code>POST /api/cart/items</code>）。</li>
-<li>示範同時 <code>@src/server/routes/cart.routes.ts @cartApi.ts</code>，讓 Claude 一次理解串接上下文。</li>
-</ul>
+</li>
+<li><p>將假資料改為串接 Node.js API（<code>GET /api/products</code>、<code>POST /api/cart/items</code>）。</p>
+</li>
+<li><p>示範同時 <code>@src/server/routes/cart.routes.ts @cartApi.ts</code>，讓 Claude 一次理解串接上下文。</p>
 </li>
 </ul>
 <h3 id="context-35-mins">2-4 Context 管理、會話控制與真實除錯（35 mins）</h3>
@@ -1875,7 +1739,7 @@ gh auth status
 <tr>
 <td><strong>數量修改後合計未刷新</strong></td>
 <td>拉 <code>-</code> <code>+</code> 後小計沒變</td>
-<td>Claude 走錯方向 → <code>Esc Esc</code> → <strong>Restore code only</strong>（保留對話脈絡）→ 重新引導</td>
+<td>Claude 走錯方向 →<code>Esc Esc</code> → <strong>Restore code only</strong>（保留對話脈絡）→ 重新引導</td>
 <td>對話中已分析過 5 種可能性，砍掉太可惜，只退回檔案讓 Claude 換方向重做</td>
 </tr>
 </tbody>
@@ -1889,8 +1753,8 @@ gh auth status
 <blockquote>
 <p><strong>本節定位</strong>：Vitest 驗單元邏輯、Supertest 驗 API 端點，但「使用者點按鈕 → 購物車 badge 即時更新」這類端到端行為只有 Playwright 才能驗到。本節教兩件事：(1) 在專案中安裝並設定 <code>@playwright/test</code>；(2) 開啟 Playwright MCP 讓 Claude 自主控制瀏覽器執行驗證。</p>
 </blockquote>
-<h4 id="playwright-roles">Playwright 在課程中的兩種角色</h4>
-<div class="table-wrap"><table>
+<h4 id="playwright">Playwright 在課程中的兩種角色</h4>
+<table>
 <thead>
 <tr>
 <th>角色</th>
@@ -1913,8 +1777,8 @@ gh auth status
 <td>讓 Claude 開瀏覽器、截圖、點按鈕、確認 badge 數字</td>
 </tr>
 </tbody>
-</table></div>
-<h4 id="playwright-install">安裝</h4>
+</table>
+<h4 id="section-1">安裝</h4>
 <pre><code class="language-bash"># E2E 測試（@playwright/test）
 npm init playwright@latest
 # 精靈依序選：TypeScript → 測試目錄輸入 e2e → 下載瀏覽器選 Yes
@@ -1922,7 +1786,7 @@ npm init playwright@latest
 # Playwright MCP（讓 Claude 自主操作瀏覽器）
 claude mcp add playwright npx @playwright/mcp@latest
 </code></pre>
-<h4 id="playwright-e2e-test">購物車核心 E2E 測試（示範撰寫）</h4>
+<h4 id="e2e">購物車核心 E2E 測試（示範撰寫）</h4>
 <ul>
 <li><strong>Prompt 範本</strong>：「請根據 <code>@spec.md</code> 為購物車寫 Playwright E2E 測試，存到 <code>e2e/cart.spec.ts</code>，場景包含：(1) 首頁顯示商品列表；(2) 點「加入購物車」→ badge 數字 +1；(3) 開購物車抽屜 → 確認品項與數量；(4) 數量改為 0 → 品項自動移除；(5) 點結帳 → 購物車清空。<strong>不要實作</strong>，等我確認場景後再開始。」</li>
 </ul>
@@ -1935,7 +1799,7 @@ test('加入商品後 badge 即時更新', async ({ page }) =&gt; {
   await expect(page.getByTestId('cart-badge')).toHaveText('1');
 });
 </code></pre>
-<h4 id="playwright-run">執行測試</h4>
+<h4 id="section-2">執行測試</h4>
 <pre><code class="language-bash"># 啟動前後端（測試需要真實伺服器）
 npm run server &amp;
 cd frontend &amp;&amp; npm run dev &amp;
@@ -1952,13 +1816,13 @@ npx playwright test e2e/cart.spec.ts
 # 產出 HTML 報告
 npx playwright show-report
 </code></pre>
-<h4 id="playwright-mcp-usage">Playwright MCP 使用方式</h4>
+<h4 id="playwright-mcp">Playwright MCP 使用方式</h4>
 <ul>
 <li>執行 <code>claude mcp add playwright npx @playwright/mcp@latest</code> 後重啟 Claude Code，側邊欄 MCP 狀態顯示 <code>playwright ✓</code> 即完成。</li>
 <li><strong>Prompt 範本</strong>：「請用 Playwright MCP 開瀏覽器到 <code>http://localhost:5173</code>，點第一個商品的加入購物車按鈕，截圖確認 badge 數字是否變為 1。」</li>
 <li>Claude 會自主控制瀏覽器、截圖回傳、說明結果——這就是 <strong>Verification Harness 的視覺層</strong>。</li>
 </ul>
-<h4 id="playwright-automode">E2E 測試與 Auto Mode 的搭配</h4>
+<h4 id="e2e-auto-mode">E2E 測試與 Auto Mode 的搭配</h4>
 <ul>
 <li>修完 bug 後，可讓 Claude 在 Auto Mode 下自主跑 <code>npx playwright test</code> → 讀取輸出 → 判斷是否通過 → 必要時自動修正。</li>
 <li>與 2-2 的 Vitest TDD 迴圈合用：「單元通過 + E2E 通過」才算真正的 GREEN。</li>
@@ -1966,9 +1830,9 @@ npx playwright show-report
 <hr />
 <h2 id="skill-agent75-mins">第 3 段：自動化、Skill 與背景 Agent（75 mins）</h2>
 <p><strong>目標</strong>：讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、將規則無程式化為 Skill，以及把耗時長任務交給背景 Agent。</p>
-<h3 id="agent-browser-sop15-mins">3-1 agent-browser：用 CLI 自動操作瀏覽器並產生 SOP（15 mins）</h3>
+<h3 id="agent-browser-cli-sop15-mins">3-1 agent-browser：用 CLI 自動操作瀏覽器並產生 SOP（15 mins）</h3>
 <blockquote>
-<p><strong>定位</strong>：<code>agent-browser</code> 是 Vercel Labs 開源的 CLI 工具，專為 AI Agent 設計。它採用<strong>無障礙樹（Accessibility Tree）</strong>而非原始 DOM，大幅降低 token 消耗，讓 Claude 可以用自然語言驅動完整的瀏覽器操作，並自動整理成 Markdown SOP 文件。</p>
+<p><strong>定位</strong>：<code>agent-browser</code> 是 Vercel Labs 開源的 CLI 工具，專為 AI Agent 設計。它採用**無障礙樹（Accessibility Tree）**而非原始 DOM，大幅降低 token 消耗，讓 Claude 可以用自然語言驅動完整的瀏覽器操作，並自動整理成 Markdown SOP 文件。</p>
 </blockquote>
 <h4 id="agent-browser-vs-playwright-mcp">工具選擇：agent-browser vs Playwright MCP</h4>
 <table>
@@ -1983,7 +1847,7 @@ npx playwright show-report
 <tr>
 <td>安裝方式</td>
 <td><code>npm install -g agent-browser</code></td>
-<td><code>claude mcp add playwright</code></td>
+<td><code>.claude/settings.json</code> MCP 設定</td>
 </tr>
 <tr>
 <td>元素定位</td>
@@ -1991,19 +1855,19 @@ npx playwright show-report
 <td>Accessibility Tree</td>
 </tr>
 <tr>
-<td>截圖</td>
-<td>✅ 每步可截圖</td>
-<td>✅ <code>browser_screenshot</code></td>
+<td>執行方式</td>
+<td>獨立 CLI，任何終端機可跑</td>
+<td>在 Claude Code 對話中呼叫</td>
 </tr>
 <tr>
-<td><strong>持久化 Profile</strong></td>
-<td>✅ <code>--profile</code> 保存登入狀態</td>
-<td>❌ 每次 session 需重新登入</td>
-</tr>
-<tr>
-<td><strong>輸出格式</strong></td>
+<td>輸出格式</td>
 <td><code>--json</code> 直接供 Agent 解析</td>
 <td>工具回傳結構化結果</td>
+</tr>
+<tr>
+<td>持久化 Profile</td>
+<td>✅ <code>--profile</code> 保存登入狀態</td>
+<td>❌ 每次 session 需重新登入</td>
 </tr>
 <tr>
 <td>適合場景</td>
@@ -2012,7 +1876,7 @@ npx playwright show-report
 </tr>
 </tbody>
 </table>
-<h4 id="section-1">安裝</h4>
+<h4 id="section-3">安裝</h4>
 <pre><code class="language-bash"># 安裝 CLI（Node.js 20+ 前提）
 npm install -g agent-browser
 
@@ -2022,7 +1886,7 @@ agent-browser install
 <blockquote>
 <p>兩平台（Windows / macOS）指令相同，均需 Node.js 20+。</p>
 </blockquote>
-<h4 id="agent-browser-workflow">核心工作流程</h4>
+<h4 id="section-4">核心工作流程</h4>
 <p>每次瀏覽器自動化遵循固定模式：</p>
 <pre><code class="language-bash"># 1. 開啟頁面
 agent-browser open https://localhost:5173
@@ -2030,13 +1894,13 @@ agent-browser open https://localhost:5173
 # 2. 取得可互動元素清單（含 @ref）
 agent-browser snapshot -i
 # 輸出範例：
-# @e1 [button] "加入購物車"
-# @e2 [input] placeholder="收件人姓名"
-# @e3 [button] "確認結帳"
+# @e1 [button] &quot;加入購物車&quot;
+# @e2 [input] placeholder=&quot;收件人姓名&quot;
+# @e3 [button] &quot;確認結帳&quot;
 
 # 3. 用 @ref 操作元素
 agent-browser click @e1
-agent-browser fill @e2 "王小明"
+agent-browser fill @e2 &quot;王小明&quot;
 agent-browser press Enter
 
 # 4. 頁面變化後重新 snapshot（@ref 會失效）
@@ -2056,10 +1920,10 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <ol>
 <li><code>agent-browser open http://localhost:5173</code></li>
 <li><code>agent-browser snapshot -i --json</code> → 解析 <code>@ref</code> 對應關係</li>
-<li>每個關鍵步驟 <code>agent-browser click @eN</code> / <code>agent-browser fill @eN "..."</code> + <code>agent-browser screenshot --annotate</code></li>
+<li>每個關鍵步驟 <code>agent-browser click @eN</code> / <code>agent-browser fill @eN &quot;...&quot;</code> + <code>agent-browser screenshot --annotate</code></li>
 <li>整理操作記錄，產出含截圖說明的 <code>checkout-sop.md</code></li>
 </ol>
-<h4 id="sop-example">SOP 產出範例（checkout-sop.md 結構）</h4>
+<h4 id="sop-checkout-sop.md">SOP 產出範例（checkout-sop.md 結構）</h4>
 <pre><code class="language-markdown"># 購物車結帳 SOP
 
 ## 步驟 1：加入商品
@@ -2071,8 +1935,9 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 指令：`agent-browser click @e3`（購物車圖示）
 說明：開啟側邊抽屜，確認品項與數量
 截圖：![步驟2](screenshots/step2.png)
+...
 </code></pre>
-<h4 id="section-2">企業應用場景</h4>
+<h4 id="section-5">企業應用場景</h4>
 <table>
 <thead>
 <tr>
@@ -2115,13 +1980,41 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 </ul>
 </li>
 <li><p><strong>實機展示</strong>：</p>
-<ul>
-<li>讓 Claude 協助產出 <code>security-check.skill.md</code>（購物車電商版）：檢查項目包含 session ID 是否可被偽造、<code>totalAmount</code> 是否防止客戶端傳入、<code>/checkout</code> 是否有收件資料驗證。用此 Skill 立即掃描 <code>src/server/routes/cart.routes.ts</code> 與 <code>src/server/services/cartService.ts</code>，預計發現 <code>🔴</code> 高風險項目後現場修正。</li>
-</ul>
 </li>
-<li><p><strong>Hooks 概念（搭配說明）</strong>：</p>
+<li><p>讓 Claude 協助產出 <code>security-check.skill.md</code>（購物車電商版）：檢查項目包含 session ID 是否可被偽造、<code>totalAmount</code> 是否防止客戶端傳入、<code>/checkout</code> 是否有收件資料驗證。用此 Skill 立即掃描 <code>src/server/routes/cart.routes.ts</code> 與 <code>src/server/services/cartService.ts</code>，預計發現 <code>🔴</code> 高風險項目後現場修正。</p>
+</li>
+<li><p><strong>Hooks 實戰：送 PR 前強制資安掃描</strong>：</p>
 <ul>
-<li>介紹 <code>PreToolUse</code> / <code>PostToolUse</code> hook 的應用場景，例如：寫入檔案前自動觸發資安檢查。</li>
+<li><p><strong>觸發情境</strong>：工程師執行 <code>gh pr create</code> 時，<code>PreToolUse</code> hook 自動攔截，先跑資安掃描腳本；若有 🔴 高風險項目，以非零 exit code 封鎖 PR 建立，讓資安問題無法流入主線。</p>
+</li>
+<li><p><strong><code>.claude/settings.json</code> 設定結構</strong>：</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;node scripts/security-check.js&quot;
+          }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<blockquote>
+<p>Hook 以 stdin 接收工具輸入（JSON 格式），<code>security-check.js</code> 解析後判斷是否為 <code>gh pr create</code>；若不是則直接 exit 0 放行，若是則執行掃描。</p>
+</blockquote>
+</li>
+<li><p><strong>製作 Hook 的示範 Prompt</strong>：</p>
+<blockquote>
+<p>💬「請在 <code>.claude/settings.json</code> 的 <code>PreToolUse</code> hook 新增一條規則：攔截所有 Bash 工具呼叫中包含 <code>gh pr create</code> 的指令，執行 <code>scripts/security-check.js</code>。該腳本需從 stdin 讀取工具輸入 JSON，確認指令含 <code>gh pr create</code> 後掃描 <code>src/server/routes/cart.routes.ts</code> 與 <code>src/server/services/cartService.ts</code>，套用下列資安規則：（1）禁止硬編碼 API 金鑰或密碼；（2）<code>totalAmount</code> 不可直接由客戶端傳入；（3）<code>/checkout</code> 路由必須有身份驗證 middleware。若有任何 🔴 風險則列出清單並以 exit code 1 中止；否則印出 ✅ 通過，允許繼續建立 PR。請同時產出 <code>scripts/security-check.js</code> 的完整程式碼。」</p>
+</blockquote>
+</li>
+<li><p><strong>教學重點</strong>：hooks 的本質是「把人工習慣寫成系統強制」——不再依賴工程師記得跑檢查，而是在工具執行層自動攔截，無法被跳過。<code>PreToolUse</code> 回傳非零 exit code 時，Claude 會中止該工具呼叫並顯示 hook 輸出，學員可直接看到被攔截的效果。</p>
+</li>
 </ul>
 </li>
 </ul>
@@ -2201,6 +2094,11 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <td>效能分析與優化建議</td>
 </tr>
 <tr>
+<td>前端</td>
+<td><code>ui-ux-pro-max</code></td>
+<td>精品 UI/UX 設計紀律：確立視覺主角、大膽餘白系統、WCAG 無障礙對比，系統性杜絕 AI 生成感</td>
+</tr>
+<tr>
 <td>測試</td>
 <td><code>webapp-testing</code> + Playwright MCP</td>
 <td>UI 自動化驗證、E2E 測試、瀏覽器自動化控制</td>
@@ -2220,6 +2118,7 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <ul>
 <li><strong>判斷原則</strong>：何時「叫 Skill」vs 何時「直接下 prompt」——Skill 適合有固定流程、需重複使用的任務。</li>
 <li><strong><code>superpowers</code> 系列定位</strong>：這是一整套「強制紀律」技能，第 4 段 4-3 會集中講完整管線（spec → TDD → e2e → PR）。先在這裡知道有這套，等下一段就能組合使用。</li>
+<li><strong><code>ui-ux-pro-max</code> 補充</strong>：與 <code>reactcomponents</code>（產出元件）不同，<code>ui-ux-pro-max</code> 的核心是「設計紀律」——觸發後 Claude 會先批評現狀三個問題，再依**主角優先（每個 section 只一個主角）→ 刪除優先（迷惑時先刪再說）→ 餘白系統（section 間距 ≥ 112 px）→ WCAG 對比（Lighthouse Accessibility 100%）**的鐵律提出改善方案。適合在設計稿評審、Landing Page 或購物車前端視覺 review 時呼叫，避免輸出「全元素等重、過度裝飾」的 AI 生成感頁面。</li>
 </ul>
 <h3 id="agent-20-mins">3-4 深入講解 <code>/agent</code> 背景長任務（20 mins）</h3>
 <ul>
@@ -2229,8 +2128,9 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 </ul>
 </li>
 <li><p><strong>不干擾主線的工作法</strong>：</p>
+</li>
+<li><p>示範 Prompt：「/agent：請按照 @spec.md 的 Product 資料模型，生成 30 筆符合台灣電商風格的商品假資料（3C / 服飾 / 食品各 10 筆），name 與 description 要像真實電商文案，輸出到 <code>src/server/seeds/seed-products.json</code>，並產出 <code>seedProducts.ts</code> 在啟動時自動載入，完成後回報筆數。」</p>
 <ul>
-<li>示範 Prompt：「/agent：請按照 @spec.md 的 Product 資料模型，生成 30 筆符合台灣電商風格的商品假資料（3C / 服飾 / 食品各 10 筆），name 與 description 要像真實電商文案，輸出到 <code>src/server/seeds/seed-products.json</code>，並產出 <code>seedProducts.ts</code> 在啟動時自動載入，完成後回報筆數。」</li>
 <li>Agent 在背景執行時，主線繼續改結帳頁面 UI，互不干擾。</li>
 <li>說明如何定義任務邊界（不得修改 <code>CartService</code>）、預期輸出格式與回報格式。</li>
 </ul>
@@ -2256,7 +2156,10 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <ul>
 <li>觸發時機：完成一段功能後、提交 PR 前。</li>
 <li>三個審查維度：<strong>正確性</strong>（邏輯 bug、邊界條件）、<strong>安全性</strong>（輸入驗證、注入風險）、<strong>可讀性</strong>（命名、結構）。</li>
-<li>進階用法：<code>/review @src/server/services/cartService.ts</code> 針對特定檔案審查；課程示範 Claude 找出「<code>addItem()</code> 未處理 <code>quantity &lt;= 0</code> 輸入」與「金額驗算邏輯沒有統一由伺服器端封裝」兩個問題。</li>
+</ul>
+</li>
+<li><p>進階用法：<code>/review @src/server/services/cartService.ts</code> 針對特定檔案審查；課程示範 Claude 找出「<code>addItem()</code> 未處理 <code>quantity &lt;= 0</code> 輸入」與「金額驗算邏輯沒有統一由伺服器端封裝」兩個問題。</p>
+<ul>
 <li>展示：Claude 給出 review 結果後，如何用 follow-up prompt 追問細節或直接要求修正。</li>
 </ul>
 </li>
@@ -2328,11 +2231,11 @@ Esc Esc → Restore code only（保留對話脈絡當參考）
 <p><strong>本節定位</strong>：前面教的是「Claude 能做什麼」，這節教「<strong>怎麼強迫 Claude 守紀律</strong>」。<code>superpowers</code> 是 Claude Code 生態系中的第三方 Skill 套件，把開發紀律寫成一整套<strong>強制執行的 Skill</strong>——不是建議、不是參考，是 Iron Law。</p>
 <p><strong>與課程主軸的對應</strong>：你的 SDD <code>spec.md</code>、TDD <code>CartService</code>、Playwright e2e 在前面已示範完整流程；本節把這個流程<strong>升級成可重複、可審計、不會偷懶的紀律管線</strong>。</p>
 </blockquote>
-<h4 id="superpowers-install">安裝</h4>
+<h4 id="section-6">安裝</h4>
 <pre><code class="language-bash">claude plugin install superpowers
 </code></pre>
 <p>安裝後技能會出現在可用 Skill 清單中，依名稱呼叫即可（例：<code>superpowers:test-driven-development</code>）。</p>
-<h4 id="section-3">為什麼需要紀律技能</h4>
+<h4 id="section-7">為什麼需要紀律技能</h4>
 <p>AI 寫程式最大的風險不是「寫錯」，而是「<strong>自信地寫錯然後說已經完成</strong>」。常見失控模式：</p>
 <ul>
 <li>沒寫測試就改程式，跑了一次「看起來對」就宣稱完成</li>
@@ -2370,7 +2273,7 @@ Esc Esc → Restore code only（保留對話脈絡當參考）
 <td><strong>規格</strong></td>
 <td>寫 <code>spec.md</code></td>
 <td><code>writing-plans</code></td>
-<td>把 spec 拆成 <strong>2-5 分鐘 bite-sized tasks</strong>，存到 <code>docs/superpowers/plans/YYYY-MM-DD-*.md</code></td>
+<td>把 spec 拆成<strong>2-5 分鐘 bite-sized tasks</strong>，存到 <code>docs/superpowers/plans/YYYY-MM-DD-*.md</code></td>
 </tr>
 <tr>
 <td><strong>執行</strong></td>
@@ -2410,7 +2313,7 @@ Esc Esc → Restore code only（保留對話脈絡當參考）
 </tr>
 </tbody>
 </table>
-<h4 id="section-4">完整流程圖（背下這條鏈就贏了）</h4>
+<h4 id="section-8">完整流程圖（背下這條鏈就贏了）</h4>
 <pre><code>brainstorming           writing-plans              executing-plans
     ↓                        ↓                          ↓
 （發散收斂）  →  （拆 bite-sized tasks）  →  （一 task 一 commit）
@@ -2436,7 +2339,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 <li>Claude 不再亂宣稱完成——每個段落結束都會跑指令貼輸出</li>
 <li>Plan 文件本身就是審計軌跡，等於 spec → 實作的可追溯記錄</li>
 </ol>
-<h4 id="section-5">關鍵觀念</h4>
+<h4 id="section-9">關鍵觀念</h4>
 <ul>
 <li><code>superpowers</code> 不取代 <code>/review</code> <code>/simplify</code>，而是<strong>讓它們真正被執行</strong>——前者是觸發紀律的開關，後者是紀律執行後的精修。</li>
 <li>對企業團隊特別有價值：<strong>Iron Laws 是可審計的契約</strong>，當 Claude 違反規則時你可以指著 SKILL.md 說「你違反了 Iron Law 1」，遠比「你怎麼又這樣做」有效。</li>
@@ -2469,43 +2372,43 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 <tr>
 <td><strong>Context Harness</strong></td>
 <td>上下文 Harness</td>
-<td>Agent <strong>看到什麼</strong>？</td>
+<td>Agent<strong>看到什麼</strong>？</td>
 <td>Claude <code>CLAUDE.md</code> / <code>AGENTS.md</code>、Cursor Rules、RAG 檢索增強、<code>@import</code></td>
 </tr>
 <tr>
 <td><strong>Tool Harness</strong></td>
 <td>工具 Harness</td>
-<td>Agent <strong>能用什麼工具</strong>？</td>
+<td>Agent<strong>能用什麼工具</strong>？</td>
 <td>MCP server、OpenAI function calling、LangChain Tools、自訂 slash commands、權限白名單</td>
 </tr>
 <tr>
 <td><strong>Control Flow Harness</strong></td>
 <td>控制流 Harness</td>
-<td>Agent <strong>怎麼決策與執行</strong>？</td>
+<td>Agent<strong>怎麼決策與執行</strong>？</td>
 <td>Plan Mode、Auto Mode、Hooks（PreToolUse / PostToolUse）、LangGraph、ReAct pattern</td>
 </tr>
 <tr>
 <td><strong>Verification Harness</strong></td>
 <td>驗證 Harness</td>
-<td>Agent <strong>做對沒</strong>？</td>
+<td>Agent<strong>做對沒</strong>？</td>
 <td>TDD 迴圈、CI/CD、<code>/review</code>、<code>/simplify</code>、Devin auto-test、SWE-bench eval</td>
 </tr>
 <tr>
 <td><strong>State Harness</strong>（aka Memory Harness）</td>
 <td>狀態 / 記憶 Harness</td>
-<td>Agent <strong>記得什麼</strong>？</td>
+<td>Agent<strong>記得什麼</strong>？</td>
 <td><code>/compact</code>、<code>/rewind</code>、<code>/resume</code>、MemGPT、ChromaDB、OpenAI Assistant Memory</td>
 </tr>
 <tr>
 <td><strong>Observability Harness</strong></td>
 <td>可觀測性 Harness</td>
-<td>Agent <strong>在做什麼</strong>？</td>
+<td>Agent<strong>在做什麼</strong>？</td>
 <td><code>/context</code>、<code>/cost</code>、<code>/stats</code>、LangSmith、Helicone、Phoenix tracing</td>
 </tr>
 <tr>
 <td><strong>Safety Harness</strong>（aka Guardrails）</td>
 <td>安全 Harness</td>
-<td>Agent <strong>不能做什麼</strong>？</td>
+<td>Agent<strong>不能做什麼</strong>？</td>
 <td>權限模式（Auto / Bypass）、classifier 分類器、沙盒隔離、NeMo Guardrails、LlamaGuard、Constitutional AI</td>
 </tr>
 </tbody>
@@ -2644,6 +2547,76 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 </ul>
 </li>
 </ul>
+<hr />
+<h2 id="section-10">課程總結</h2>
+<h3 id="section-11">一句話收束</h3>
+<blockquote>
+<p>這堂課的核心<strong>不是</strong>「AI 幫你寫更多 code」，而是「<strong>你如何設計一條更穩定的開發工作流</strong>」——讓 Claude 變成可預測、可治理、可長期維護的工程夥伴，而不是看心情產出的副駕駛。</p>
+</blockquote>
+<h3 id="section-12">你在這 4 小時學會的四種能力</h3>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>核心招式</th>
+<th>來自的段落</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>共識能力</strong></td>
+<td>用 SDD 寫 <code>spec.md</code> 與 <code>CLAUDE.md</code>，把「你與 Claude 的共識契約」寫進磁碟，避免每次重新解釋</td>
+<td>1-2、2-1</td>
+</tr>
+<tr>
+<td><strong>紀律能力</strong></td>
+<td>TDD 三循環（Red → Green → Refactor）+ Auto Mode 自主迴圈 +<strong>superpowers Iron Laws</strong>（沒測試不寫程式、沒驗證不宣稱完成、沒找到根因不動程式），讓測試成為 Claude 不會偏離的軌道</td>
+<td>2-2、4-3</td>
+</tr>
+<tr>
+<td><strong>治理能力</strong></td>
+<td>Context 主動管理（<code>/clear</code> <code>/compact</code> <code>/context</code> <code>/rewind</code>）+ 權限模式選擇（Auto vs Bypass），決定 Claude 的「記憶」與「動作授權」</td>
+<td>1-1、1-2、2-4、4-2</td>
+</tr>
+<tr>
+<td><strong>延伸能力</strong></td>
+<td>Skill 把規則固化、<code>/agent</code> 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業</td>
+<td>3-1～3-4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="section-13">三個關鍵心智轉變</h3>
+<ol>
+<li><strong>從「下指令」到「設定環境」</strong>：寫 <code>CLAUDE.md</code> &gt; 重複下 prompt；建 Skill &gt; 一次性教學；定義 Hooks &gt; 事後補救。</li>
+<li><strong>從「被動清理 context」到「主動管理 context」</strong>：在階段邊界 <code>/compact</code>、無關任務前 <code>/clear</code>、走偏方向 <code>/rewind</code>，而不是等 Claude 變慢才反應。</li>
+<li><strong>從「全部自己做」到「分流任務」</strong>：主線用 Plan / Edit 模式精修核心邏輯；長噪音任務丟 <code>/agent</code>；可重複流程做成 Skill；想自治就上 Auto Mode（在分類器把關下）。</li>
+</ol>
+<h3 id="section-14">明天上班就能做的三件事</h3>
+<ul>
+<li>🟢 <strong>30 分鐘</strong>：在你手上的專案根目錄建立 <code>CLAUDE.md</code>，寫清架構規範、禁止行為、技術棧版本、常用指令——Claude 從此不會忘。</li>
+<li>🟡 <strong>下一次卡住時</strong>：先按 <code>/context</code> 看 context 被誰吃了，再決定要 <code>/compact</code> 還是 <code>/clear</code>，而不是直接重開 session。</li>
+<li>🔴 <strong>下一次 Claude 走錯方向</strong>：按 <code>Esc Esc</code> → 選 <strong>Restore code only</strong>，保留對話分析脈絡，只退回檔案重做——比手動 <code>git checkout</code> 快十倍。</li>
+</ul>
+<h3 id="harness-engineering-1">收束到 Harness Engineering</h3>
+<p>你在第 5 段學到：上面這些做法不是零散技巧，而是<strong>圍繞 Agent 的執行與治理層</strong>的具體實踐。<code>CLAUDE.md</code> 是靜態上下文層、TDD 迴圈是錯誤恢復層、Hooks 是架構約束層、<code>/review</code> + <code>/simplify</code> 是熵管理層、Plan Mode 是 Human-in-the-Loop 閘門——你不是在「用 AI 寫程式」，你是在<strong>設計一套讓 AI 持續產出高品質程式碼的系統</strong>。</p>
+<blockquote>
+<p><strong>這就是 Harness Engineering——你一直在做的事，現在有了名字。</strong></p>
+</blockquote>
+<h3 id="section-15">課後行動清單</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 為當前專案建立 <code>CLAUDE.md</code>（含技術棧、禁止行為、常用指令）</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 把一個重複流程做成 Skill（資安檢查 / Code review / 文件生成擇一）</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 為一個長噪音任務（如資料生成、log 分析）開一個 <code>/agent</code> 試水</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 在 PR 流程加入 <code>/review</code> + <code>/simplify</code> 的固定收尾</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 練習 <code>/rewind</code> 的五個選項，特別是 <strong>Restore code only</strong></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 評估你的方案是否能用 Auto Mode（Team / Enterprise / API + Sonnet 4.6 以上）</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 安裝 <code>superpowers</code> plugin，至少跑過一次 <code>writing-plans</code> + <code>test-driven-development</code> + <code>verification-before-completion</code> 完整管線</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 把三條 Iron Laws 寫進團隊 <code>CLAUDE.md</code>，把紀律從「個人習慣」升級成「團隊契約」</li>
+</ul>
+<hr />
+<blockquote>
+<p><strong>最後提醒</strong>：Claude 會持續變強，但能拉開差距的不是「會用哪個指令」，而是「<strong>有沒有把工作流設計成可長期維護的 Harness</strong>」。這堂課給你的不是 100 個技巧，而是一套可以持續演化的心智模型。</p>
+</blockquote>
   </template>
 
   <script>
@@ -2994,36 +2967,8 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
       observedTargets.forEach((target) => observer.observe(target));
     }
 
-    function setupSidebarCollapse() {
-      const sidebar = document.getElementById("chapter-sidebar");
-      const collapseBtn = document.getElementById("sidebar-collapse-btn");
-      const expandTab = document.getElementById("sidebar-expand-tab");
-
-      function collapse() {
-        sidebar.classList.add("is-collapsed");
-        expandTab.classList.add("is-visible");
-        collapseBtn.setAttribute("aria-expanded", "false");
-        try { localStorage.setItem("sidebarCollapsed", "1"); } catch (_) {}
-      }
-
-      function expand() {
-        sidebar.classList.remove("is-collapsed");
-        expandTab.classList.remove("is-visible");
-        collapseBtn.setAttribute("aria-expanded", "true");
-        try { localStorage.setItem("sidebarCollapsed", "0"); } catch (_) {}
-      }
-
-      collapseBtn.addEventListener("click", collapse);
-      expandTab.addEventListener("click", expand);
-
-      try {
-        if (localStorage.getItem("sidebarCollapsed") === "1") { collapse(); }
-      } catch (_) {}
-    }
-
     buildLessonLayout();
     setupSidebarState();
-    setupSidebarCollapse();
 
     const lightbox = document.getElementById("lightbox");
     const closeButton = document.getElementById("lightbox-close");

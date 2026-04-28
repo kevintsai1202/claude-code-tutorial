@@ -1,4 +1,4 @@
-# Claude Code：全端專案實作與 AI 開發工作流（4 小時線上錄影課大綱）
+# Claude Code：全端專案實作與 AI 開發工作流
 
 **課程定位**：講師將帶領學員以一個真實的全端專案為主線，完整展示如何把 Claude Code 放進日常開發流程。課程聚焦在版本控制、文件驅動、SDD/TDD 開發紀律、Skill 設計、背景 Agent、多模式操作與高效率除錯，讓學員學會一套可以直接搬進工作的做法。
 
@@ -42,7 +42,7 @@
 | # | 工具                                 | 用途                                            | 安裝段落 | 必要性  |
 | - | ------------------------------------ | ----------------------------------------------- | -------- | ------- |
 | 1 | **Claude Code（CLI）**         | 主角；終端機 AI 編程工具                        | 1-1      | ⭐ 必裝 |
-| 2 | **Node.js v20+**               | Claude Code CLI 安裝前提 + 前端 React/Vite 開發 | 1-1      | ⭐ 必裝 |
+| 2 | **Node.js v20+**               | 前端 React/Vite 開發（CLI 本身不需要 Node.js）  | 1-1      | ⭐ 必裝 |
 | 3 | **VS Code + Claude Code 插件** | 圖形化操作介面（與 CLI 二選一或並用）           | 1-2      | 🔵 推薦 |
 | 4 | **Docker Desktop**             | 用 AI 控制 Docker 安裝與啟動 PostgreSQL         | 1-3      | ⭐ 必裝 |
 | 5 | **Git**                        | 版本控制                                        | 1-4      | ⭐ 必裝 |
@@ -69,15 +69,20 @@
 
 ![1-1 教學圖](image/claude_code_syllabus/teaching-diagrams/1-1-environment-login-modes.png)
 
-* **Claude Code 安裝與登入**（雙平台對照）：
+* **Claude Code 安裝與登入**（雙平台對照，**Native Install 為官方推薦**）：
 
-  | 平台              | 安裝指令                                                                     | 備註                                        |
-  | ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------- |
-  | **Windows** | `npm install -g @anthropic-ai/claude-code`                                 | 需先裝 Node.js v20+，PowerShell 7+ 執行     |
-  | **macOS**   | `brew install claude-code` 或 `npm install -g @anthropic-ai/claude-code` | brew 為主流選項；Apple Silicon / Intel 通用 |
+  | 平台              | 推薦安裝指令                                        | 其他方式                                                            |
+  | ----------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+  | **Windows** | `irm https://claude.ai/install.ps1 \| iex`        | `winget install Anthropic.ClaudeCode` / npm（需 Node.js v20+）     |
+  | **macOS**   | `curl -fsSL https://claude.ai/install.sh \| bash` | `brew install --cask claude-code` / npm（需 Node.js v20+）         |
 
+  > ⚠️ **Windows 注意**：Native Install 需先安裝 [Git for Windows](https://git-scm.com/downloads/win)（Claude Code 內部使用 Git Bash 執行命令）。
+  >
+  > 💡 **自動更新**：Native Install 與 WinGet 安裝的版本會在背景自動更新，Homebrew / npm 需手動執行升級。
+  >
+  > 🔧 **npm 備用安裝**：若偏好 npm 管理工具版本，執行 `npm install -g @anthropic-ai/claude-code`（需 Node.js v20+）。
 
-  * 安裝後共用：`claude doctor` 健檢 → `claude` 啟動 → `/login` 登入 OAuth。
+  * 安裝後共用：`claude --version` 確認版本 → `claude doctor` 健檢 → `claude` 啟動並依瀏覽器提示登入。
   * 介紹 `/login`、模型切換與基本指令：`@` 參照檔案、`/help`、`/init`。
 * **訂閱方案與費用**：
 

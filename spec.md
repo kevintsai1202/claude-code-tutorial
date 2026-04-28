@@ -7,6 +7,7 @@
 - 課程中的後端測試、啟動指令、資料初始化、API 串接範例、Skill 掃描案例與 Review 範例，都需同步改成 Node.js 生態。
 - 第 `1-3` 節需明確改成：用自然語言指揮 Claude 產出 `docker-compose.yml`、啟動 PostgreSQL 容器、驗證 healthy 狀態、再回填後端連線設定。
 - 課綱章節圖若因內容更新而重生，需保留既有檔名與引用路徑，優先覆蓋對應圖檔，避免 `claude_code_syllabus.md` 與教學網站失聯。
+- **[2026-04-28] CLI 安裝方式同步官方最新文件**：主推 Native Install 腳本（非 npm），Windows 改用 `irm https://claude.ai/install.ps1 | iex`，macOS/Linux 改用 `curl -fsSL https://claude.ai/install.sh | bash`；Homebrew 語法改為 `brew install --cask claude-code`（加 `--cask`）；新增 WinGet 選項。Node.js 不再是 Claude Code CLI 的安裝前提，僅前端開發仍需。
 
 ## 2. 資料模型
 - `CourseBackendProfile`

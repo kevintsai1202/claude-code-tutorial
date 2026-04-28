@@ -20,8 +20,11 @@
 | DOC-03 | 將課綱與 `shopping-cart` 文件的後端主線改為 Node.js | 完成 | 已同步更新課綱、spec、api、講義、實作計畫、作品說明與 CLAUDE.md |
 | DOC-04 | 將資料庫口徑改回 PostgreSQL，並強化 AI 控制 Docker 安裝資料庫教學 | 完成 | 後端維持 Node.js，資料儲存已改為 PostgreSQL + Docker Compose，1-3 節改為 Docker 主示範 |
 | IMG-01 | 更新 4-3 superpowers 流程圖以對齊新版鐵律 | 完成 | 已覆蓋 `image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png`，課綱引用路徑維持不變 |
+| INST-01 | 同步官方最新 CLI 安裝方式（Native Install 為主、Homebrew --cask、WinGet） | 完成 | 課綱 1-1 節與工具表、HTML、docx 已同步更新 |
+| INST-02 | 移除課綱標題括號內文字「（4 小時線上錄影課大綱）」 | 完成 | 標題已精簡，HTML 與 docx 同步重新生成 |
 
 ## 當前任務
+
 - SHOP-01：CartContext 的 `addToCart` / `updateQuantity` 待使用者實作（`shopping-cart/frontend/src/context/CartContext.tsx`）
 
 ## 購物車前端任務（2026-04-28）
@@ -52,3 +55,5 @@
 - `2026-04-28`：完成新版 4-3 superpowers 流程圖回填，保留原檔名供課綱與教學網站共用。
 - `2026-04-28`：在 3-3 技能分類導覽表新增 `ui-ux-pro-max` 說明，並補充與 `reactcomponents` 的定位差異說明。
 - `2026-04-28`：將 3-2 Hooks 段落改為「送 PR 前強制資安掃描」實戰，包含 settings.json 結構與製作 Hook 的示範 Prompt。
+- `2026-04-28`：同步官方最新 CLI 安裝方式（Native Install 為推薦主流、Homebrew 加 --cask、WinGet 新增），並更新 Node.js 前提說明；HTML 與 docx 同步重新生成。
+- `2026-04-28`：移除課綱標題括號內文字「（4 小時線上錄影課大綱）」，HTML 與 docx 同步重新生成。
