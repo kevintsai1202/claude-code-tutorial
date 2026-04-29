@@ -169,6 +169,22 @@
     padding: 4px 10px; background: var(--accent-soft); border-radius: 6px;
   }
   .ch-time { font-size: 12px; color: var(--ink-mute); font-family: "JetBrains Mono", monospace; }
+  .ch-back {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    padding: 6px 12px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .ch-back:hover { background: var(--bg-card); border-color: var(--accent-soft); }
   h2.ch-title { font-size: 36px; font-weight: 900; line-height: 1.15; letter-spacing: -0.01em; margin: 8px 0 14px; }
   .ch-goal { font-size: 17px; color: var(--ink-soft); max-width: 720px; text-wrap: pretty; margin-bottom: 36px; }
   .ch-goal::before { content: "目標 · "; color: var(--accent); font-weight: 700; }
@@ -1017,6 +1033,7 @@
         <div class="ch-head">
           <span class="ch-num">SECTION 01</span>
           <span class="ch-time">⏱ 60 mins</span>
+          <a class="ch-back" href="claude_code_teaching_website.html#chapter-1">📖 看完整講義 第 1 段</a>
         </div>
         <h2 class="ch-title">Git、GitHub 與 Claude Code 起手式</h2>
         <p class="ch-goal">先建立正確的開發起手式，讓學員理解 Claude Code 不是取代版本控制，而是強化版本控制與專案治理。</p>
@@ -1127,6 +1144,7 @@
         <div class="ch-head">
           <span class="ch-num">SECTION 02</span>
           <span class="ch-time">⏱ 105 mins</span>
+          <a class="ch-back" href="claude_code_teaching_website.html#chapter-2">📖 看完整講義 第 2 段</a>
         </div>
         <h2 class="ch-title">全端主線實作 · SDD → TDD → E2E</h2>
         <p class="ch-goal">從規格先行（SDD）出發，用全端購物車專案實作完整展示 Claude Code 如何參與設計、撰寫、測試、修正與整合，而不是只做片段生成。</p>
@@ -1323,22 +1341,23 @@
       <section id="s3" class="chapter" data-screen-label="03 自動化與 Skill">
         <div class="ch-head">
           <span class="ch-num">SECTION 03</span>
-          <span class="ch-time">⏱ 75 mins</span>
+          <span class="ch-time">⏱ 85 mins</span>
+          <a class="ch-back" href="claude_code_teaching_website.html#chapter-3">📖 看完整講義 第 3 段</a>
         </div>
         <h2 class="ch-title">自動化、Skill 與背景 Agent</h2>
         <p class="ch-goal">讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、把規則無程式化為 Skill、以及把耗時長任務交給背景 Agent。</p>
 
-        <h3 class="sub"><span class="sub-num">3·1</span>agent-browser · 自動操作瀏覽器產生 SOP</h3>
+        <h3 class="sub" id="s3-1"><span class="sub-num">3·1</span>agent-browser · 自動操作瀏覽器產生 SOP</h3>
         <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png">
           <img src="image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png" alt="agent-browser SOP" />
         </div>
 
-        <h3 class="sub"><span class="sub-num">3·2</span>skill-creator · 企業資安規範 Skill 與 Hooks</h3>
+        <h3 class="sub" id="s3-2"><span class="sub-num">3·2</span>skill-creator · 企業資安規範 Skill 與 Hooks</h3>
         <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png">
           <img src="image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png" alt="skill-creator 資安" />
         </div>
 
-        <h3 class="sub"><span class="sub-num">3·3</span>開發輔助 Skill 速查 · 滑鼠移上去看用法</h3>
+        <h3 class="sub" id="s3-3"><span class="sub-num">3·3</span>開發輔助 Skill 速查 · 滑鼠移上去看用法</h3>
 
         <!-- DEMO 3: SLASH COMMANDS / SKILLS CHEATSHEET -->
         <div class="demo">
@@ -1369,7 +1388,7 @@
           </div>
         </div>
 
-        <h3 class="sub"><span class="sub-num">3·4</span>/agent · 背景長任務與 Git Worktrees</h3>
+        <h3 class="sub" id="s3-4"><span class="sub-num">3·4</span>/agent · 背景長任務與 Git Worktrees</h3>
         <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png">
           <img src="image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png" alt="背景 Agent" />
         </div>
@@ -1382,21 +1401,22 @@
         <div class="ch-head">
           <span class="ch-num">SECTION 04</span>
           <span class="ch-time">⏱ 39 mins</span>
+          <a class="ch-back" href="claude_code_teaching_website.html#chapter-4">📖 看完整講義 第 4 段</a>
         </div>
         <h2 class="ch-title">Review、程式優化與 superpowers 收尾</h2>
         <p class="ch-goal">建立一套寫完程式後的自我審查與優化流程，讓 Claude Code 變成可長期維護的工程夥伴。</p>
 
-        <h3 class="sub"><span class="sub-num">4·1</span>/review × /simplify · 內建品質指令</h3>
+        <h3 class="sub" id="s4-1"><span class="sub-num">4·1</span>/review × /simplify · 內建品質指令</h3>
         <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png">
           <img src="image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png" alt="/review /simplify" />
         </div>
 
-        <h3 class="sub"><span class="sub-num">4·2</span>Slash Commands 完整工作流</h3>
+        <h3 class="sub" id="s4-2"><span class="sub-num">4·2</span>Slash Commands 完整工作流</h3>
         <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png">
           <img src="image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png" alt="slash commands 工作流" />
         </div>
 
-        <h3 class="sub"><span class="sub-num">4·3</span>superpowers · spec → TDD → e2e 完整管線</h3>
+        <h3 class="sub" id="s4-3"><span class="sub-num">4·3</span>superpowers · spec → TDD → e2e 完整管線</h3>
         <p>AI 寫程式最大的風險不是「寫錯」，而是「<strong>自信地寫錯然後說已經完成</strong>」。<code>superpowers</code> 用 <strong>Iron Laws</strong>（鐵律）把開發紀律寫成<strong>強制執行的 Skill</strong>——不是建議、不是參考。</p>
 
         <!-- DEMO 9: IRON LAWS FLIP CARDS -->
@@ -1422,6 +1442,7 @@
         <div class="ch-head">
           <span class="ch-num">SECTION 05</span>
           <span class="ch-time">⏱ 23 mins</span>
+          <a class="ch-back" href="claude_code_teaching_website.html#chapter-5">📖 看完整講義 第 5 段</a>
         </div>
         <h2 class="ch-title">Harness Engineering · 你一直在做的事，現在有了名字</h2>
         <p class="ch-goal">學員在前四段已接觸 CLAUDE.md、Hooks、/agent、Git Worktrees、TDD 迴圈、/review 與 /simplify——本節幫助他們理解這些實踐共同構成一套 Harness。</p>

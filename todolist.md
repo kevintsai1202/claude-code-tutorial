@@ -27,6 +27,8 @@
 | EDU-02 | 補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent）並用 3 大類分組（確定性執行/LLM 判斷/Subagent 驗證） | 完成 | 寫入 3-2 概念入門節，HTML 與 docx 重生成 |
 | WEB-12 | 主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側 eyebrow / h2 / 描述段，避免文字與圖片並列雜亂 | 完成 | PS1 移除 `.hero-media-copy` 樣式與對應 HTML，shell 改 single column |
 | WEB-13 | 整合互動教學網頁為雙網站並存模式：interactive.html / tutorial.v4.js 放根目錄與主講義同層、共用 image/，主網站 hero 與 sidebar 各加跳轉 CTA，互動網頁加返回連結；deploy-pages.yml 同步部署 | 完成 | GitHub Pages 部署同時提供 `/`、`/interactive.html`、`/claude_code_teaching_website.html` 三條入口 |
+| WEB-14 | 修復側邊欄 wrapper + collapser 收折結構（c6aa79e 直接改 HTML 沒同步 PS1，重生時被洗掉） | 完成 | PS1 補上 .sidebar-wrapper / .sidebar-collapser 樣式、HTML 結構與 collapser JS（含 localStorage 持久化）|
+| WEB-15 | 雙網站錨點關聯：互動網站補 7 個 subsection ID、5 個 chapter 加「看完整講義」連結；PS1 為有對應的小節自動注入「🎮 互動體驗版」連結 | 完成 | 講義 badge → 互動 anchor 對應表（INTERACTIVE_MAP），3-2 純概念無對應、3-3/3-4/3-5 對應互動的 s3-2/s3-3/s3-4 |
 
 ## 當前任務
 
@@ -67,3 +69,5 @@
 - `2026-04-29`：補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent），歸納為 3 大類（確定性執行/LLM 判斷/Subagent 驗證），加上 5 種型式的最小 JSON 範例與共通欄位說明。
 - `2026-04-29`：主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側標題與描述文字，避免與右側圖片並列造成視覺雜亂。
 - `2026-04-29`：整合互動教學網頁為雙網站並存模式：`interactive.html` + `tutorial.v4.js` 放根目錄與主講義同層、共用 `image/`；主網站 hero 區與 sidebar 各加跳轉 CTA，互動網頁回程加「返回完整講義」連結；`deploy-pages.yml` 加 paths trigger 與 cp 指令，部署後 `/`、`/interactive.html`、`/claude_code_teaching_website.html` 三條入口皆可用。
+- `2026-04-29`：修復側邊欄 wrapper + collapser 收折結構（c6aa79e 直接改 HTML 沒同步到 PS1，導致重生 HTML 後收折按鈕消失），改寫進 PS1 單一源並補上 localStorage 持久化。
+- `2026-04-29`：建立雙網站錨點關聯。互動網站補 7 個 subsection ID（s3-1~s3-4、s4-1~s4-3）、5 個 chapter 加「📖 看完整講義」返回連結；PS1 加 `INTERACTIVE_MAP` 為有互動對應的小節自動注入「🎮 互動體驗版」連結；3-2（Agent Skills 與 Hooks 概念入門）為純概念，互動無對應，刻意不注入。
