@@ -37,9 +37,9 @@ $imageMap = [ordered]@{
   "2-3 前端鷹架與 API 串接（15 mins）" = "image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png"
   "2-4 Context 管理、會話控制與真實除錯（35 mins）" = "image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png"
   "3-1 agent-browser 技能：自動截圖、錄影與產生 SOP（15 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png"
-  "3-2 用 skill-creator 製作企業資安規範檢查 Skill（25 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png"
-  "3-3 開發輔助技能分類導覽（15 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png"
-  "3-4 深入講解 /agent 背景長任務（20 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png"
+  "3-3 用 skill-creator 製作企業資安規範檢查 Skill（25 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png"
+  "3-4 開發輔助技能分類導覽（15 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png"
+  "3-5 深入講解 /agent 背景長任務（20 mins）" = "image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png"
   "4-1 /review 與 /simplify 內建品質指令（10 mins）" = "image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png"
   "4-2 slash commands 完整工作流總覽（17 mins）" = "image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png"
   "4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）" = "image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png"
@@ -280,29 +280,8 @@ $template = @'
     }
 
     .hero-media-shell {
-      display: grid;
-      grid-template-columns: 0.38fr 0.62fr;
-      gap: 18px;
-      align-items: stretch;
+      display: block;
       padding: 24px;
-    }
-
-    .hero-media-copy {
-      display: grid;
-      align-content: start;
-      gap: 14px;
-    }
-
-    .hero-media-copy h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      line-height: 1.18;
-    }
-
-    .hero-media-copy p {
-      margin: 0;
-      color: rgba(248,250,252,0.86);
-      font-size: 0.98rem;
     }
 
     .hero-visual-slot .visual-preview {
@@ -737,10 +716,6 @@ $template = @'
         min-height: 300px;
       }
 
-      .hero-media-shell {
-        grid-template-columns: 1fr;
-      }
-
       .chapter-head,
       .section-header,
       .section-topline {
@@ -822,11 +797,6 @@ $template = @'
 
           <section class="hero-media-card" aria-label="課程主視覺">
             <div class="hero-media-shell">
-              <div class="hero-media-copy">
-                <span class="eyebrow">Course Visual</span>
-                <h2>課程主視覺</h2>
-                <p>主視覺圖片獨立展示，避免壓縮首頁文字區塊；圖片可像章節圖一樣放大檢視、關閉縮成小圖示，再次點擊重新展開。</p>
-              </div>
               <div class="hero-visual-slot" id="hero-visual-slot">
               </div>
             </div>

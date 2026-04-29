@@ -424,4 +424,4 @@ shopping-cart/
 - **時間配置**：M1=60 / M2=45 / M3=50 / M4=75 / M5=62 = **292 min**，留 10 min 給 Q&A 與課末總結，總長 302 min。
 - **訂閱方案差異**：Auto Mode 僅 Team / Enterprise / API + Sonnet 4.6 以上可用，Pro / Max 學員以 `--permission-mode acceptEdits` 替代，**M2 開課前先說明**避免現場卡關。
 - **Docker 必須課前先裝**：M1 只有 5 min 給 Docker，現場安裝會嚴重壓縮其他環節，務必課前公告。
-- **superpowers 安裝**：`claude plugin install superpowers`，建議 M4 結尾或 M5 前的休息時間預先安裝。
+- **superpowers 安裝（兩步驟）**：先 `/plugin marketplace add obra/superpowers-marketplace`，再 `/plugin install superpowers@superpowers-marketplace`；建議 M4 結尾或 M5 前的休息時間預先安裝。

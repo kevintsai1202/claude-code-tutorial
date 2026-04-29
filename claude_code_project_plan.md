@@ -359,7 +359,7 @@ Step 7: Claude 讀錯誤訊息 → 修正 → 全 GREEN
 **容易卡的點**：
 
 * 學員會問「superpowers 跟 `/review` `/simplify` 有什麼不同？」——回答：**superpowers 不取代它們，而是讓它們真正被執行**
-* 學員會問「怎麼安裝？」——`claude plugin install superpowers`
+* 學員會問「怎麼安裝？」——必須兩步驟：先 `/plugin marketplace add obra/superpowers-marketplace`，再 `/plugin install superpowers@superpowers-marketplace`；省略第一步會找不到 plugin。
 
 ---
 
@@ -463,7 +463,7 @@ Step 7: Claude 讀錯誤訊息 → 修正 → 全 GREEN
 * [ ] 安裝 Claude Code、登入 Team / Enterprise / API 方案（為了 Auto Mode 示範）
   * Windows：`npm install -g @anthropic-ai/claude-code`（需 Node.js v18+）
   * macOS：`brew install claude-code` 或 `npm install -g @anthropic-ai/claude-code`
-* [ ] 安裝 superpowers plugin：`claude plugin install superpowers`（**跨平台共用**）
+* [ ] 安裝 superpowers plugin（**跨平台共用，須兩步驟**）：先 `/plugin marketplace add obra/superpowers-marketplace`，再 `/plugin install superpowers@superpowers-marketplace`
 * [ ] 安裝 agent-browser：`curl -fsSL https://cli.inference.sh | sh && infsh login`（**跨平台共用**，Windows 用 PowerShell 7+ 或 Git Bash）
 * [ ] 準備 Docker Desktop 已啟動
   * Windows：[Docker Desktop for Windows](https://www.docker.com/products/docker-desktop)（需 WSL 2）

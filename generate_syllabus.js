@@ -858,7 +858,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR`),
       h3('關鍵觀念'),
       bullet([new TextRun('superpowers '), bold('不取代'), new TextRun(' /review /simplify，而是 '), bold('讓它們真正被執行'), new TextRun('——前者是觸發紀律的開關，後者是紀律執行後的精修。')]),
       bullet([bold('企業價值：'), new TextRun(' Iron Laws 是可審計的契約——當 Claude 違反規則時你可以指著 SKILL.md 說「你違反了 Iron Law 1」，遠比「你怎麼又這樣做」有效。')]),
-      bullet([bold('安裝：'), code('claude plugin install superpowers'), new TextRun('，安裝後技能會出現在可用 Skill 清單中。')]),
+      bullet([bold('安裝（兩步驟）：'), new TextRun('先 '), code('/plugin marketplace add obra/superpowers-marketplace'), new TextRun(' 註冊 marketplace，再 '), code('/plugin install superpowers@superpowers-marketplace'), new TextRun(' 安裝 plugin；安裝後可用 '), code('/help'), new TextRun(' 驗證 superpowers 系列指令是否出現。')]),
 
       separator(),
 

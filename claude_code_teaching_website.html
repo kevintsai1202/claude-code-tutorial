@@ -45,74 +45,18 @@
 
     .page-layout {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-columns: 290px minmax(0, 1fr);
       gap: 24px;
       align-items: start;
       padding: 24px 0 48px;
     }
 
-    /* wrapper 負責 sticky，sidebar 負責 overflow:hidden，按鈕在 wrapper 內與 sidebar 同層 */
-    .sidebar-wrapper {
-      display: flex;
-      align-items: flex-start;
+    .sidebar {
       position: sticky;
       top: 18px;
-      align-self: start;
-    }
-
-    .sidebar {
       display: grid;
       gap: 14px;
-      width: 290px;
-      min-width: 0;
-      overflow: hidden;
-      transition: width var(--duration);
-      flex-shrink: 0;
-    }
-
-    .sidebar.is-collapsed {
-      width: 0;
-    }
-
-    .sidebar-card {
-      min-width: 290px; /* 防止收折時內容自行縮排 */
-    }
-
-    .sidebar-collapser {
-      flex-shrink: 0;
-      align-self: flex-start;
-      margin-top: 14px;
-      width: 18px;
-      height: 56px;
-      padding: 0;
-      border: 1px solid var(--line);
-      border-left: none;
-      border-radius: 0 10px 10px 0;
-      background: var(--surface-strong);
-      box-shadow: 3px 2px 8px rgba(0,0,0,0.07);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background var(--duration);
-    }
-
-    .sidebar-collapser:hover {
-      background: rgba(20,56,111,0.09);
-    }
-
-    .sidebar-collapser-icon {
-      display: block;
-      font-style: normal;
-      font-size: 0.85rem;
-      color: var(--navy);
-      line-height: 1;
-      transition: transform var(--duration);
-      margin-left: -1px;
-    }
-
-    .sidebar.is-collapsed + .sidebar-collapser .sidebar-collapser-icon {
-      transform: rotate(180deg);
+      align-self: start;
     }
 
     .sidebar-card {
@@ -280,29 +224,8 @@
     }
 
     .hero-media-shell {
-      display: grid;
-      grid-template-columns: 0.38fr 0.62fr;
-      gap: 18px;
-      align-items: stretch;
+      display: block;
       padding: 24px;
-    }
-
-    .hero-media-copy {
-      display: grid;
-      align-content: start;
-      gap: 14px;
-    }
-
-    .hero-media-copy h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      line-height: 1.18;
-    }
-
-    .hero-media-copy p {
-      margin: 0;
-      color: rgba(248,250,252,0.86);
-      font-size: 0.98rem;
     }
 
     .hero-visual-slot .visual-preview {
@@ -714,22 +637,8 @@
         grid-template-columns: 1fr;
       }
 
-      .sidebar-wrapper {
-        position: static;
-        display: block;
-      }
-
       .sidebar {
-        width: auto !important;
-        overflow: visible;
-      }
-
-      .sidebar-card {
-        min-width: 0;
-      }
-
-      .sidebar-collapser {
-        display: none;
+        position: static;
       }
 
       .sidebar-toggle {
@@ -749,10 +658,6 @@
 
       .hero-visual-slot .visual-preview {
         min-height: 300px;
-      }
-
-      .hero-media-shell {
-        grid-template-columns: 1fr;
       }
 
       .chapter-head,
@@ -788,519 +693,21 @@
         transition: none !important;
       }
     }
-
-/* === DEMO BLOCKS === */
-/* demo-block 外層容器 */
-.demo-block { margin: 28px 0; }
-
-/* ==== DEMO 1: PERMISSION MODES ==== */
-.demo {
-  margin: 28px 0;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--surface-strong);
-}
-.demo-bar {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; border-bottom: 1px solid var(--line);
-  background: rgba(246,240,229,0.7); font-size: 13px;
-}
-.demo-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--orange); color: #fff; padding: 3px 9px; border-radius: 5px;
-  font-size: 11px; font-weight: 700; letter-spacing: .04em;
-}
-.demo-tag::before { content: "✦"; }
-.demo-title { font-weight: 600; color: var(--ink); }
-.demo-body { padding: 22px; }
-
-.pm-tabs {
-  display: flex; gap: 4px; padding: 4px;
-  background: rgba(246,240,229,0.7); border-radius: 10px;
-  margin-bottom: 18px; flex-wrap: wrap;
-}
-.pm-tab {
-  flex: 1; min-width: 100px; padding: 10px 14px; border: none; background: transparent;
-  cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 13px;
-  color: var(--muted); transition: all .15s; font-family: inherit;
-}
-.pm-tab.active {
-  background: var(--surface-strong); color: var(--ink);
-  box-shadow: 0 2px 8px -3px rgba(0,0,0,.1);
-}
-.pm-stage { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
-@media (max-width: 700px) { .pm-stage { grid-template-columns: 1fr; } }
-.pm-explain {
-  padding: 18px; border-radius: 10px;
-  border-left: 4px solid var(--orange);
-  background: rgba(246,240,229,0.7);
-}
-.pm-explain h4 { margin-top: 0; font-size: 16px; }
-.pm-explain .pm-cli {
-  font-family: "JetBrains Mono", monospace;
-  background: #1f1a16; color: #f0c884;
-  padding: 8px 12px; border-radius: 6px;
-  font-size: 12px; margin: 10px 0; display: inline-block;
-}
-.pm-explain .pm-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
-.pm-flow {
-  background: #1f1a16; color: #f0e6d8; border-radius: 10px;
-  padding: 14px 16px; font-family: "JetBrains Mono", monospace;
-  font-size: 12px; min-height: 240px;
-}
-.pm-flow .pm-step { padding: 6px 0; opacity: 0; animation: pmFadeIn .4s forwards; }
-.pm-flow .pm-step:nth-child(1) { animation-delay: .05s; }
-.pm-flow .pm-step:nth-child(2) { animation-delay: .25s; }
-.pm-flow .pm-step:nth-child(3) { animation-delay: .45s; }
-.pm-flow .pm-step:nth-child(4) { animation-delay: .65s; }
-.pm-flow .pm-step:nth-child(5) { animation-delay: .85s; }
-@keyframes pmFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* ==== DEMO 2: CLI SIMULATOR ==== */
-/* .demo / .demo-bar / .demo-tag / .demo-title / .demo-body 已在 D1 CSS 定義，此處不重複 */
-
-.cli-sim {
-  background: #1f1a16; color: #f0e6d8;
-  border-radius: 10px;
-  font-family: "JetBrains Mono", monospace; font-size: 13.5px; line-height: 1.7;
-  padding: 16px 20px; min-height: 320px; max-height: 480px; overflow-y: auto;
-}
-.cli-line { white-space: pre-wrap; word-break: break-all; }
-.cli-prompt { color: #d97757; }
-.cli-dim    { color: #8a7f70; }
-.cli-ok     { color: #88b59a; }
-.cli-err    { color: #e07a6a; }
-.cli-hi     { color: #f0c884; }
-.cli-input-row {
-  display: flex; align-items: center; gap: 8px; padding: 12px 20px;
-  background: #181412; border-top: 1px solid #2a2520;
-  font-family: "JetBrains Mono", monospace;
-}
-.cli-input-row .cli-prompt { font-size: 14px; }
-.cli-input {
-  flex: 1; background: transparent; border: none; outline: none;
-  color: #f0e6d8; font-family: inherit; font-size: 13.5px;
-}
-.cli-input::placeholder { color: #5a534a; }
-.cli-suggest {
-  padding: 8px 20px;
-  background: rgba(246,240,229,0.7);
-  border-top: 1px solid var(--line);
-  display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;
-}
-.cli-suggest span { font-size: 11px; color: var(--muted); margin-right: 4px; }
-.cli-chip {
-  padding: 3px 9px;
-  background: var(--surface-strong);
-  border: 1px solid rgba(13,34,64,0.28);
-  border-radius: 4px; cursor: pointer;
-  font-family: "JetBrains Mono", monospace; font-size: 11.5px;
-  color: var(--muted); transition: all .15s;
-}
-.cli-chip:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
-
-/* ============================================ */
-/* DEMO 4: TDD ANIMATION                        */
-/* ============================================ */
-.tdd-stage { display: grid; grid-template-columns: 200px 1fr; gap: 18px; }
-@media (max-width: 700px) { .tdd-stage { grid-template-columns: 1fr; }}
-.tdd-cycle {
-  position: relative; aspect-ratio: 1; max-width: 200px;
-  display: grid; place-items: center;
-}
-.tdd-ring {
-  width: 100%; height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(#c94f3c 0 33.33%, #6f8c5a 33.33% 66.66%, #5a6f8c 66.66% 100%);
-  -webkit-mask: radial-gradient(circle, transparent 50%, black 52%);
-          mask: radial-gradient(circle, transparent 50%, black 52%);
-  opacity: 0.25;
-  transition: opacity .3s;
-}
-.tdd-cycle.active .tdd-ring { opacity: 1; }
-.tdd-center {
-  position: absolute; inset: 25%;
-  background: var(--surface-strong); border: 2px solid var(--ink);
-  border-radius: 50%; display: grid; place-items: center;
-  text-align: center; padding: 8px;
-  font-weight: 700; font-size: 13px;
-}
-.tdd-marker {
-  position: absolute; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--ink); border: 3px solid var(--surface-strong);
-  transition: all .8s cubic-bezier(.5,.1,.5,1);
-  transform-origin: center;
-}
-.tdd-panel {
-  background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 16px 18px;
-  font-family: "JetBrains Mono", monospace; font-size: 12.5px; min-height: 260px;
-  line-height: 1.7;
-}
-.tdd-controls { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.tdd-btn {
-  padding: 8px 16px; border: 1px solid var(--line); background: var(--surface-strong);
-  border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;
-  transition: all .15s; font-family: inherit;
-}
-.tdd-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-.tdd-btn:hover { transform: translateY(-1px); }
-.tdd-step-tag {
-  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
-  font-weight: 700; margin-right: 8px;
-}
-.tdd-step-tag.red   { background: #c94f3c; color: #fff; }
-.tdd-step-tag.green { background: #6f8c5a; color: #fff; }
-.tdd-step-tag.blue  { background: #5a6f8c; color: #fff; }
-
-/* ============================================ */
-/* DEMO 5: CONTEXT VIZ                          */
-/* ============================================ */
-.ctx-bar-wrap {
-  background: #1f1a16; border-radius: 14px; padding: 18px;
-  color: #f0e6d8; font-family: "JetBrains Mono", monospace;
-}
-.ctx-meter {
-  display: flex; height: 28px; border-radius: 6px;
-  overflow: hidden; border: 1px solid #3a342d; margin: 12px 0;
-}
-.ctx-seg {
-  transition: flex-grow .5s; display: grid; place-items: center;
-  font-size: 11px; font-weight: 700; color: #1f1a16;
-}
-.ctx-legend {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px; margin-top: 14px; font-size: 12px;
-}
-.ctx-legend-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-.ctx-swatch { width: 14px; height: 14px; border-radius: 3px; flex: 0 0 14px; }
-.ctx-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.ctx-btn {
-  background: transparent; border: 1px solid #3a342d; color: #f0e6d8;
-  padding: 6px 12px; border-radius: 6px; cursor: pointer;
-  font-family: inherit; font-size: 12px; transition: all .15s;
-}
-.ctx-btn:hover { background: var(--orange); border-color: var(--orange); }
-.ctx-tip { color: #8a7f70; font-size: 11.5px; margin-top: 10px; }
-.ctx-total { font-size: 13px; margin-bottom: 4px; }
-.ctx-total b { color: #f0c884; }
-
-/* ==== DEMO 6: REWIND TIMELINE ==== */
-.rw-track {
-  position: relative; padding: 16px 0 28px;
-}
-.rw-line {
-  position: absolute; left: 6%; right: 6%; top: 32px; height: 3px;
-  background: rgba(13,34,64,0.18); border-radius: 2px;
-}
-.rw-fill {
-  position: absolute; left: 6%; top: 32px; height: 3px;
-  background: var(--orange); transition: width .5s; border-radius: 2px;
-  max-width: 88%;
-}
-.rw-events {
-  display: flex; justify-content: space-between; position: relative; gap: 8px;
-  align-items: flex-start;
-}
-.rw-event {
-  flex: 1; text-align: center; position: relative; cursor: pointer;
-  padding: 56px 4px 8px;
-  background: transparent; border: none; font-family: inherit;
-  display: flex; flex-direction: column; gap: 4px; align-items: center;
-}
-.rw-event::before {
-  content: ""; position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--surface-strong); border: 3px solid rgba(13,34,64,0.18);
-  transition: all .25s;
-  z-index: 2;
-}
-.rw-event.passed::before { background: var(--orange); border-color: var(--orange); }
-.rw-event.current::before { background: var(--ink); border-color: var(--ink); transform: translateX(-50%) scale(1.25); box-shadow: 0 0 0 5px rgba(13,34,64,0.12); }
-.rw-event:hover::before { transform: translateX(-50%) scale(1.15); }
-.rw-event.current:hover::before { transform: translateX(-50%) scale(1.3); }
-.rw-event-label { font-size: 11.5px; font-weight: 600; color: var(--muted); }
-.rw-event-time { font-size: 10px; color: var(--muted); opacity: 0.7; font-family: "JetBrains Mono", monospace; }
-.rw-state { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
-@media (max-width: 700px) { .rw-state { grid-template-columns: 1fr; } }
-.rw-pane {
-  border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-  background: var(--surface-strong);
-}
-.rw-pane-h {
-  padding: 8px 12px; background: rgba(246,240,229,0.7); font-size: 11.5px; font-weight: 700;
-  color: var(--muted); display: flex; justify-content: space-between; align-items: center;
-}
-.rw-pane-b {
-  padding: 12px; font-family: "JetBrains Mono", monospace; font-size: 12px;
-  line-height: 1.6; min-height: 120px; white-space: pre-wrap;
-}
-.rw-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.rw-banner {
-  margin-top: 12px; padding: 12px 14px; border-radius: 10px;
-  font-size: 13px; line-height: 1.6; display: none;
-  animation: rwBannerIn .25s ease-out;
-}
-@keyframes rwBannerIn { from { opacity: 0; transform: translateY(-4px);} to { opacity: 1; transform: none;} }
-.rw-banner.all  { background: #fef5f3; border: 1px solid #f5cdc4; color: #b85a12; }
-.rw-banner.conv { background: #fdf6e6; border: 1px solid #ead9a8; color: #7a5520; }
-.rw-banner.code { background: #f0f5eb; border: 1px solid #c8d9b4; color: #4f6b3e; }
-.rw-action {
-  padding: 7px 14px; border: 1px solid rgba(13,34,64,0.18); border-radius: 8px;
-  background: var(--surface-strong); cursor: pointer; font-size: 12.5px; font-weight: 500;
-  transition: all .15s; font-family: inherit;
-}
-.rw-action:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-/* ==== DEMO 7: BUG DEBUG ==== */
-.bug-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-.bug-tab {
-  padding: 10px 14px; border: 1px solid rgba(13,34,64,0.18); border-radius: 10px;
-  background: var(--surface-strong); cursor: pointer; font-weight: 600; font-size: 13px;
-  transition: all .15s; font-family: inherit; text-align: left;
-  display: flex; flex-direction: column; gap: 2px; flex: 1;
-}
-.bug-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.bug-tab small { font-size: 11px; opacity: 0.7; font-weight: 400; }
-
-.bug-stage {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-}
-@media (max-width: 700px) { .bug-stage { grid-template-columns: 1fr; } }
-
-.bug-pane {
-  border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-  background: var(--surface-strong);
-}
-.bug-pane-h {
-  padding: 8px 12px; background: rgba(246,240,229,0.7); font-size: 11.5px; font-weight: 700;
-  color: var(--muted); border-bottom: 1px solid var(--line);
-}
-.bug-pane-b { padding: 14px; font-size: 13px; }
-.bug-symptom {
-  background: #fef5f3; border: 1px solid #f5cdc4; padding: 12px 14px; border-radius: 8px;
-  color: #b85a12; font-size: 13px; margin-bottom: 12px;
-}
-.bug-fix {
-  background: #f0f5eb; border: 1px solid #c8d9b4; padding: 12px 14px; border-radius: 8px;
-  color: #4f6b3e; font-size: 13px;
-}
-.bug-cmd {
-  font-family: "JetBrains Mono", monospace; background: #1f1a16; color: #f0c884;
-  padding: 8px 12px; border-radius: 6px; font-size: 12.5px;
-  display: inline-block; margin: 4px 4px 4px 0;
-}
-.bug-pane code {
-  background: rgba(246,240,229,0.7); padding: 1px 5px; border-radius: 3px; font-size: 12px;
-}
-
-/* ==== DEMO 8: CONTEXT CHEATSHEET ==== */
-.ctx-cheat-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px;
-}
-.ctx-cc-btn {
-  padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 8px;
-  background: var(--surface-strong); cursor: pointer;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12.5px; font-weight: 600; color: var(--ink); transition: all .15s;
-  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
-}
-.ctx-cc-btn:hover { transform: translateY(-2px); }
-.ctx-cc-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.ctx-cc-btn .cc-imp {
-  font-family: "Noto Sans TC", sans-serif; font-size: 10px;
-  padding: 1px 5px; border-radius: 3px; font-weight: 700;
-}
-.cc-imp.xl { background: #c94f3c; color: #fff; }
-.cc-imp.l  { background: #d96c18; color: #fff; }
-.cc-imp.m  { background: #c79134; color: #fff; }
-.cc-imp.s  { background: #6f8c5a; color: #fff; }
-.ctx-cheat-detail {
-  background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 20px 22px;
-  font-size: 13.5px; line-height: 1.7; min-height: 200px;
-}
-.ctx-cheat-detail h5 {
-  color: #f0c884; font-size: 16px; margin-bottom: 4px;
-  font-family: "JetBrains Mono", monospace;
-}
-.ctx-cheat-detail .cc-sub { color: #8a7f70; font-size: 12px; margin-bottom: 14px; }
-.ctx-cheat-detail .cc-scope { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-.ctx-cheat-detail .cc-scope-item {
-  flex: 1; min-width: 120px; padding: 10px 12px;
-  background: rgba(255,255,255,0.05); border-radius: 6px;
-  border-left: 3px solid #d96c18;
-}
-.ctx-cheat-detail .cc-scope-label {
-  font-size: 10.5px; color: #8a7f70; text-transform: uppercase;
-  margin-bottom: 4px; letter-spacing: 0.05em;
-}
-.ctx-cheat-detail .cc-scope-val { font-size: 12.5px; }
-.ctx-cheat-detail .cc-when {
-  background: rgba(217,108,24,0.12); padding: 10px 14px;
-  border-radius: 6px; margin-top: 10px; font-size: 12.5px;
-}
-
-/* ============================================ */
-/* DEMO 9: SLASH COMMANDS / SKILLS CHEATSHEET   */
-/* ============================================ */
-.slash-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.slash-pill {
-  padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(13,34,64,0.28);
-  background: var(--surface-strong); cursor: pointer; font-size: 12.5px; font-weight: 500;
-  transition: all .15s;
-}
-.slash-pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-.slash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-.slash-card {
-  border: 1px solid var(--line); border-radius: 10px; padding: 14px;
-  background: var(--surface-strong); transition: all .2s; cursor: pointer;
-  display: flex; flex-direction: column; gap: 6px;
-  position: relative;
-}
-.slash-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.slash-impact {
-  font-size: 10px; padding: 2px 8px; border-radius: 4px;
-  border: 1px solid; font-weight: 700; flex-shrink: 0;
-  letter-spacing: 0.04em;
-}
-.slash-card[data-impact="5"] { border-left: 3px solid #c94f3c; }
-.slash-card[data-impact="4"] { border-left: 3px solid #d97757; }
-.slash-card[data-impact="3"] { border-left: 3px solid #c79134; }
-.slash-shortcuts {
-  margin-top: 18px; padding: 14px 16px;
-  background: rgba(246,240,229,0.7); border: 1px dashed rgba(13,34,64,0.28);
-  border-radius: 10px;
-}
-.slash-shortcuts h6 {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-  color: rgba(13,34,64,0.5); margin-bottom: 10px;
-}
-.slash-kbd-row { display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: 12.5px; color: var(--muted); }
-.slash-kbd { display: inline-flex; align-items: center; gap: 4px; }
-.slash-kbd kbd {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  padding: 2px 7px; background: var(--surface-strong); border: 1px solid rgba(13,34,64,0.28);
-  border-bottom-width: 2px; border-radius: 4px; color: var(--ink); font-weight: 600;
-}
-.slash-card:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 6px 20px -10px rgba(0,0,0,.15); }
-.slash-cmd {
-  font-family: "JetBrains Mono", monospace; font-weight: 700;
-  color: #b85a12; font-size: 14px;
-}
-.slash-purpose { font-size: 13px; color: var(--muted); line-height: 1.5; }
-.slash-when {
-  font-size: 11.5px; color: rgba(13,34,64,0.5); margin-top: 4px;
-  padding-top: 8px; border-top: 1px dashed var(--line);
-}
-.slash-when b { color: var(--muted); }
-
-/* ============================================ */
-/* DEMO 10: IRON LAWS FLIP CARDS                */
-/* ============================================ */
-.iron-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-@media (max-width: 800px) { .iron-grid { grid-template-columns: 1fr; } }
-.iron-card {
-  perspective: 1000px;
-  aspect-ratio: 4/5;
-  cursor: pointer;
-}
-.iron-card-inner {
-  position: relative; width: 100%; height: 100%;
-  transition: transform .7s cubic-bezier(.4,.0,.2,1);
-  transform-style: preserve-3d;
-}
-.iron-card.flipped .iron-card-inner { transform: rotateY(180deg); }
-.iron-front, .iron-back {
-  position: absolute; inset: 0; backface-visibility: hidden;
-  border-radius: 14px; padding: 22px; display: flex; flex-direction: column;
-}
-.iron-front {
-  background: var(--ink); color: #f0e6d8; border: 2px solid var(--orange);
-  justify-content: space-between;
-}
-.iron-front .iron-num {
-  font-family: "JetBrains Mono", monospace; font-size: 14px; color: var(--orange);
-  font-weight: 700;
-}
-.iron-front h5 { font-size: 18px; margin-top: 12px; line-height: 1.3; }
-.iron-front .iron-law {
-  font-family: "JetBrains Mono", monospace; font-size: 11.5px;
-  color: #f0c884; line-height: 1.55;
-  padding: 10px; background: rgba(217,108,24,0.15); border-radius: 6px;
-  border-left: 3px solid var(--orange);
-}
-.iron-front .iron-flip-hint {
-  font-size: 11px; color: #8a7f70; text-align: right; margin-top: 8px;
-}
-.iron-back {
-  background: rgba(217,108,24,0.15); transform: rotateY(180deg); color: var(--ink);
-  border: 2px solid var(--orange);
-  justify-content: flex-start;
-}
-.iron-back h6 { font-size: 13px; margin-bottom: 6px; color: #b85a12; }
-.iron-back ul { margin-left: 18px; font-size: 12.5px; }
-.iron-back li { margin-bottom: 8px; line-height: 1.5; }
-.iron-back .iron-skill {
-  margin-top: auto; font-family: "JetBrains Mono", monospace; font-size: 11px;
-  background: var(--ink); color: #f0c884; padding: 6px 10px; border-radius: 5px;
-}
-
-/* ============================================ */
-/* DEMO 11: HARNESS 7 CATEGORIES                */
-/* ============================================ */
-.harness-wheel {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
-.harness-card {
-  padding: 16px; border: 1.5px solid var(--line); border-radius: 12px;
-  background: var(--surface-strong); cursor: pointer; transition: all .2s;
-  text-align: left; font: inherit; color: inherit;
-}
-.harness-card:hover { transform: translateY(-3px); border-color: var(--orange); }
-.harness-card.active { border-color: var(--orange); background: rgba(217,108,24,0.15); }
-.harness-emoji {
-  width: 38px; height: 38px; border-radius: 8px;
-  background: rgba(246,240,229,0.7); display: grid; place-items: center;
-  font-size: 18px; margin-bottom: 10px;
-}
-.harness-card.active .harness-emoji { background: var(--orange); color: #fff; }
-.harness-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-.harness-q { font-size: 12px; color: rgba(13,34,64,0.5); }
-.harness-detail {
-  margin-top: 16px; padding: 18px; background: #1f1a16; color: #f0e6d8;
-  border-radius: 10px; font-size: 13px; line-height: 1.7;
-  display: none;
-}
-.harness-detail.show { display: block; }
-.harness-detail h5 { color: #f0c884; margin-bottom: 8px; font-size: 14px; }
-.harness-detail .hd-impl {
-  margin-top: 10px; padding: 10px 12px; background: rgba(217,108,24,0.12);
-  border-left: 3px solid var(--orange); border-radius: 4px; font-size: 12px;
-}
   </style>
 </head>
 <body>
   <div class="shell">
     <div class="page-layout">
-      <div class="sidebar-wrapper">
-        <aside class="sidebar" id="chapter-sidebar">
-          <div class="sidebar-card">
-            <h2>章節導覽</h2>
-            <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
-          </div>
-          <div class="sidebar-card">
-            <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
-            <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
-          </div>
-        </aside>
-        <button class="sidebar-collapser" id="sidebar-collapser" aria-label="收折側邊欄" title="收折側邊欄">
-          <i class="sidebar-collapser-icon">‹</i>
-        </button>
-      </div>
+      <aside class="sidebar" id="chapter-sidebar">
+        <div class="sidebar-card">
+          <h2>章節導覽</h2>
+          <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
+        </div>
+        <div class="sidebar-card">
+          <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
+          <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
+        </div>
+      </aside>
 
       <div class="main-column">
         <header class="hero">
@@ -1334,11 +741,6 @@
 
           <section class="hero-media-card" aria-label="課程主視覺">
             <div class="hero-media-shell">
-              <div class="hero-media-copy">
-                <span class="eyebrow">Course Visual</span>
-                <h2>課程主視覺</h2>
-                <p>主視覺圖片獨立展示，避免壓縮首頁文字區塊；圖片可像章節圖一樣放大檢視、關閉縮成小圖示，再次點擊重新展開。</p>
-              </div>
               <div class="hero-visual-slot" id="hero-visual-slot">
               </div>
             </div>
@@ -1502,12 +904,12 @@
 <tbody>
 <tr>
 <td><strong>Windows</strong></td>
-<td><code>irm https://claude.ai/install.ps1 | iex</code></td>
+<td><code>irm https://claude.ai/install.ps1 \| iex</code></td>
 <td><code>winget install Anthropic.ClaudeCode</code> / npm（需 Node.js v20+）</td>
 </tr>
 <tr>
 <td><strong>macOS</strong></td>
-<td><code>curl -fsSL https://claude.ai/install.sh | bash</code></td>
+<td><code>curl -fsSL https://claude.ai/install.sh \| bash</code></td>
 <td><code>brew install --cask claude-code</code> / npm（需 Node.js v20+）</td>
 </tr>
 </tbody>
@@ -1651,12 +1053,6 @@
 </tbody>
 </table>
 </li>
-<li><p><strong>下載連結</strong>：</p>
-<ul>
-<li><strong>VS Code</strong>：<a href="https://code.visualstudio.com/download" target="_blank" rel="noopener">https://code.visualstudio.com/download</a>（安裝後在擴充功能搜尋 <code>Claude Code</code> 即可裝上插件）</li>
-<li><strong>Antigravity</strong>：<a href="https://antigravity.google/" target="_blank" rel="noopener">https://antigravity.google/</a>（Google 推出的 AI Agent 原生 IDE，可作為 VS Code 之外的另一種搭配選擇）</li>
-</ul>
-</li>
 <li><p><strong>五種權限／操作模式</strong>（VS Code 插件選單 + CLI 對應）：</p>
 <table>
 <thead>
@@ -1690,7 +1086,7 @@
 <td>自動模式</td>
 <td>Auto mode</td>
 <td><code>--permission-mode auto --enable-auto-mode</code></td>
-<td>由背景 classifier 模型審核每個操作，合法才自動執行，無需手動確認；<strong>所有付費會員（Pro / Max / Team / Enterprise / API）均可使用，需搭配 Sonnet 4.6 或 Opus 4.7</strong></td>
+<td>由背景 classifier 模型審核每個操作，合法才自動執行，無需手動確認；<strong>需 Team / Enterprise / API 方案 + Sonnet 4.6 或 Opus 4.7</strong></td>
 </tr>
 <tr>
 <td>全開模式</td>
@@ -1705,9 +1101,9 @@
 </blockquote>
 <p><strong>Auto Mode 啟用前提</strong>：</p>
 <ul>
-<li><strong>方案需求</strong>：所有付費會員（<strong>Pro / Max / Team / Enterprise / API</strong>）均可使用，個人 Pro / Max 也已開放</li>
+<li><strong>方案限制</strong>：需 <strong>Team / Enterprise / API</strong> 方案（個人 Pro / Max 不可用）</li>
 <li><strong>模型限制</strong>：僅 <strong>Sonnet 4.6 或 Opus 4.7</strong>（不支援 Haiku、claude-3 系列、Bedrock / Vertex / Foundry 等第三方供應商）</li>
-<li><strong>組織層級</strong>：Team 與 Enterprise 仍需由管理員先在 Claude Code admin settings 啟用</li>
+<li><strong>組織層級</strong>：Team 與 Enterprise 需由管理員先在 Claude Code admin settings 啟用</li>
 </ul>
 <p><strong>Auto Mode CLI 啟用方式</strong>：</p>
 <pre><code class="language-bash"># 方法 1：啟用後可用 Shift+Tab 循環切換（推薦）
@@ -1783,56 +1179,7 @@ claude --allow-dangerously-skip-permissions --permission-mode plan
 </ul>
 </li>
 </ul>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">權限模式切換 · Ask / Edit / Plan / Auto / Bypass</span>
-    </div>
-    <div class="demo-body">
-      <div class="pm-tabs" id="pmTabs">
-        <button class="pm-tab active" data-mode="ask">逐步確認</button>
-        <button class="pm-tab" data-mode="edit">自動編輯</button>
-        <button class="pm-tab" data-mode="plan">規劃模式</button>
-        <button class="pm-tab" data-mode="auto">自動模式</button>
-        <button class="pm-tab" data-mode="bypass">全開模式</button>
-      </div>
-      <div class="pm-stage">
-        <div class="pm-explain" id="pmExplain"></div>
-        <div class="pm-flow" id="pmFlow"></div>
-      </div>
-    </div>
-  </div>
-</div>
 <h3 id="cli-vs-vs-code-claude.md15-mins">1-2 介面導覽：CLI vs VS Code 插件、設定與 CLAUDE.md（15 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">假 Claude Code CLI · 試試看輸入指令</span>
-    </div>
-    <div class="demo-body" style="padding: 0;">
-      <div class="cli-sim" id="cliSim"></div>
-      <div class="cli-input-row">
-        <span class="cli-prompt">›</span>
-        <input class="cli-input" id="cliInput"
-               placeholder="輸入 /help 看可用指令，或試試 /init、/model opus、/context"
-               autocomplete="off" />
-      </div>
-      <div class="cli-suggest">
-        <span>快速試：</span>
-        <button class="cli-chip" data-cmd="/help">/help</button>
-        <button class="cli-chip" data-cmd="/init">/init</button>
-        <button class="cli-chip" data-cmd="/model opus">/model opus</button>
-        <button class="cli-chip" data-cmd="/context">/context</button>
-        <button class="cli-chip" data-cmd="/agent seed 30 products">/agent seed 30 products</button>
-        <button class="cli-chip" data-cmd="@spec.md">@spec.md</button>
-        <button class="cli-chip" data-cmd="claude doctor">claude doctor</button>
-        <button class="cli-chip" data-cmd="clear">clear</button>
-      </div>
-    </div>
-  </div>
-</div>
 <blockquote>
 <p><strong>目標</strong>：讓學員在第一次開啟 Claude Code 後就能找到方向——知道介面在哪、設定怎麼改、以及如何把「共識」寫進 CLAUDE.md 讓 Claude 永遠記住。</p>
 </blockquote>
@@ -2160,31 +1507,6 @@ gh auth status
 </li>
 </ul>
 <h3 id="tdd-30-mins">2-2 後端生成、TDD 先行與自主修正循環（30 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">TDD 自主迴圈 · CartService 五個場景</span>
-    </div>
-    <div class="demo-body">
-      <div class="tdd-stage">
-        <div class="tdd-cycle" id="tddCycle">
-          <div class="tdd-ring"></div>
-          <div class="tdd-center" id="tddCenter">準備開始</div>
-          <div class="tdd-marker" id="tddMarker" style="left:50%;top:0;transform:translate(-50%,-50%);"></div>
-        </div>
-        <div class="tdd-panel" id="tddPanel">
-          <span style="color:#8a7f70;">// 點擊「開始」啟動 TDD 自主迴圈</span>
-        </div>
-      </div>
-      <div class="tdd-controls">
-        <button class="tdd-btn primary" id="tddStart">▶ 開始 TDD 迴圈</button>
-        <button class="tdd-btn" id="tddNext" disabled>下一步</button>
-        <button class="tdd-btn" id="tddReset">重置</button>
-      </div>
-    </div>
-  </div>
-</div>
 <ul>
 <li><p><strong>TDD 概念（2 分鐘快講）</strong>：</p>
 <ul>
@@ -2202,7 +1524,7 @@ gh auth status
 <ul>
 <li><strong>啟動方式</strong>：<code>claude --enable-auto-mode</code>，按 Shift+Tab 切到 auto；或直接 <code>claude --permission-mode auto</code>。</li>
 <li><strong>為什麼這裡選 Auto 而非 Bypass</strong>：TDD 迴圈需執行 <code>npm test</code> 與檔案修改，Auto 由分類器把關每個指令（阻擋 <code>curl | bash</code>、強制推送等可疑行為），保留安全層；Bypass 在本機開發環境裸奔，風險過高。</li>
-<li><strong>前提提醒</strong>（呼應 1-1）：所有付費會員（Pro / Max / Team / Enterprise / API）皆可使用，需搭配 Sonnet 4.6 或 Opus 4.7。</li>
+<li><strong>前提提醒</strong>（呼應 1-1）：需 Team / Enterprise / API 方案 + Sonnet 4.6 或 Opus 4.7。</li>
 </ul>
 </li>
 </ul>
@@ -2229,134 +1551,6 @@ gh auth status
 </li>
 </ul>
 <h3 id="context-35-mins">2-4 Context 管理、會話控制與真實除錯（35 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">/context 視覺化 · 看 token 怎麼被吃掉</span>
-    </div>
-    <div class="demo-body">
-      <div class="ctx-bar-wrap">
-        <div class="ctx-total">Context · <b id="ctxUsed">35</b>k / 200k tokens (<span id="ctxPct">17</span>%)</div>
-        <div class="ctx-meter" id="ctxMeter"></div>
-        <div class="ctx-legend" id="ctxLegend"></div>
-        <div class="ctx-actions">
-          <button class="ctx-btn" data-action="add-mcp">＋ 連 3 個 MCP server</button>
-          <button class="ctx-btn" data-action="add-files">＋ 讀 5 個檔案</button>
-          <button class="ctx-btn" data-action="long-chat">＋ 半小時對話</button>
-          <button class="ctx-btn" data-action="compact">/compact 壓縮</button>
-          <button class="ctx-btn" data-action="clear">/clear 清空</button>
-          <button class="ctx-btn" data-action="reset">重置</button>
-        </div>
-        <div class="ctx-tip" id="ctxTip">提示：點上方按鈕觀察各種操作對 context 的影響。MCP 工具定義是隱藏成本——常常佔了 4-8k token 卻沒在用。</div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- DEMO 6: REWIND TIMELINE -->
-<div class="demo-block">
-  <div class="demo-bar">
-    <span class="demo-tag">Demo</span>
-    <span class="demo-title">/rewind 時光機 · 試試各種回退選項</span>
-  </div>
-  <div class="demo-body">
-    <div class="rw-track">
-      <div class="rw-line"></div>
-      <div class="rw-fill" id="rwFill" style="width: 100%;"></div>
-      <div class="rw-events" id="rwEvents">
-        <button class="rw-event passed" data-step="0">
-          <div class="rw-event-label">需求討論</div>
-          <div class="rw-event-time">10:02</div>
-        </button>
-        <button class="rw-event passed" data-step="1">
-          <div class="rw-event-label">寫測試</div>
-          <div class="rw-event-time">10:18</div>
-        </button>
-        <button class="rw-event passed" data-step="2">
-          <div class="rw-event-label">產 Service</div>
-          <div class="rw-event-time">10:34</div>
-        </button>
-        <button class="rw-event passed" data-step="3">
-          <div class="rw-event-label">綠燈</div>
-          <div class="rw-event-time">10:51</div>
-        </button>
-        <button class="rw-event current" data-step="4">
-          <div class="rw-event-label">走錯方向</div>
-          <div class="rw-event-time">11:07</div>
-        </button>
-      </div>
-    </div>
-    <div class="rw-state">
-      <div class="rw-pane">
-        <div class="rw-pane-h"><span>對話</span><span id="rwConvLen">5 條</span></div>
-        <div class="rw-pane-b" id="rwConv"></div>
-      </div>
-      <div class="rw-pane">
-        <div class="rw-pane-h"><span>cartService.ts</span><span id="rwFileVer">v5</span></div>
-        <div class="rw-pane-b" id="rwFile"></div>
-      </div>
-    </div>
-    <div class="rw-actions" id="rwActions">
-      <button class="rw-action" data-rw="all">↺ Restore code &amp; conversation</button>
-      <button class="rw-action" data-rw="conv">↺ Restore conversation only</button>
-      <button class="rw-action" data-rw="code">↺ Restore code only</button>
-      <button class="rw-action" data-rw="reset">重置場景</button>
-    </div>
-    <div class="rw-banner" id="rwBanner"></div>
-  </div>
-</div>
-<!-- DEMO 7: BUG DEBUG -->
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">購物車 Bug 三件組 · 互動式除錯</span>
-    </div>
-    <div class="demo-body">
-      <div class="bug-tabs" id="bugTabs">
-        <button class="bug-tab active" data-bug="cors">
-          <strong>① CORS 錯誤</strong>
-          <small>跨來源請求被擋</small>
-        </button>
-        <button class="bug-tab" data-bug="badge">
-          <strong>② Badge 不即時更新</strong>
-          <small>數字延遲跳</small>
-        </button>
-        <button class="bug-tab" data-bug="total">
-          <strong>③ 數量改後合計沒變</strong>
-          <small>+/- 後小計失效</small>
-        </button>
-      </div>
-      <div class="bug-stage">
-        <div class="bug-pane">
-          <div class="bug-pane-h">症狀 / Console</div>
-          <div class="bug-pane-b" id="bugSymptom"></div>
-        </div>
-        <div class="bug-pane">
-          <div class="bug-pane-h">Context 操作 + 修法</div>
-          <div class="bug-pane-b" id="bugFix"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- DEMO 8: CONTEXT COMMAND CHEATSHEET -->
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">回顧</span>
-      <span class="demo-title">Context 指令總整理 · 點指令看影響範圍</span>
-    </div>
-    <div class="demo-body">
-      <div style="display:grid; grid-template-columns:1fr; gap:14px;">
-        <div class="ctx-cheat-grid" id="ctxCheatGrid"></div>
-        <div class="ctx-cheat-detail" id="ctxCheatDetail">
-          <div style="color:#8a7f70; text-align:center; padding:30px 0;">點上方任一指令 → 看它操作的範圍與影響程度</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 <blockquote>
 <p><strong>本節定位</strong>：除錯之所以困難，不只是「找不到 bug」，更常是「Claude 在錯誤的上下文中打轉」。本節同步教兩件事：(1) 如何主動管理 Context 避免 context rot；(2) 透過購物車三個真實 bug 把 context 指令套用到實戰。</p>
 </blockquote>
@@ -2604,7 +1798,7 @@ npx playwright show-report
 <li>與 2-2 的 Vitest TDD 迴圈合用：「單元通過 + E2E 通過」才算真正的 GREEN。</li>
 </ul>
 <hr />
-<h2 id="skill-agent75-mins">第 3 段：自動化、Skill 與背景 Agent（75 mins）</h2>
+<h2 id="skill-agent85-mins">第 3 段：自動化、Skill 與背景 Agent（85 mins）</h2>
 <p><strong>目標</strong>：讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、將規則無程式化為 Skill，以及把耗時長任務交給背景 Agent。</p>
 <h3 id="agent-browser-cli-sop15-mins">3-1 agent-browser：用 CLI 自動操作瀏覽器並產生 SOP（15 mins）</h3>
 <blockquote>
@@ -2743,7 +1937,260 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <ul>
 <li><strong>意義</strong>：一個 Prompt 可取代手動操作 + 截圖 + 紀錄 + 整理，SOP 文件與程式碼同步維護在 repo 中。</li>
 </ul>
-<h3 id="skill-creator-skill25-mins">3-2 用 <code>skill-creator</code> 製作企業資安規範檢查 Skill（25 mins）</h3>
+<h3 id="agent-skills-hooks-10-mins">3-2 Agent Skills 與 Hooks 概念入門（10 mins）</h3>
+<blockquote>
+<p><strong>定位</strong>：在進入 3-3 的 <code>skill-creator</code> 實作之前，先建立兩個核心概念：<strong>Agent Skills 是「可重用的規則與流程包」</strong>、<strong>Hooks 是「在工具事件邊界強制執行的攔截器」</strong>。3-3 會把兩者組合成「資安規範 Skill + PR 建立前的 Hook 攔截」實戰。</p>
+</blockquote>
+<h4 id="agent-skills">Agent Skills 是什麼？</h4>
+<p>Agent Skills 遵循 <a href="https://agentskills.io">agentskills.io</a> 開放標準，本質是一個帶有 <code>SKILL.md</code> 的資料夾。Claude 會根據 frontmatter 的 <code>description</code> 自動判斷何時啟用，也能用 <code>/skill-name</code> 手動觸發。</p>
+<pre><code class="language-yaml">---
+name: explain-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works.
+---
+
+When explaining code, always include:
+1. Start with an analogy
+2. Draw an ASCII diagram
+3. Walk through the code step-by-step
+</code></pre>
+<p><strong>Skills 與 CLAUDE.md 的差異</strong>：CLAUDE.md 永遠載入 context；Skill 的 body 只在被觸發時才載入，所以「長篇參考資料」放 Skill 比放 CLAUDE.md 划算。</p>
+<p><strong>Skill 存放層級</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>層級</th>
+<th>路徑</th>
+<th>適用範圍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enterprise</td>
+<td>由 managed settings 管理</td>
+<td>全組織</td>
+</tr>
+<tr>
+<td>Personal</td>
+<td><code>~/.claude/skills/&lt;skill-name&gt;/SKILL.md</code></td>
+<td>你所有專案</td>
+</tr>
+<tr>
+<td>Project</td>
+<td><code>.claude/skills/&lt;skill-name&gt;/SKILL.md</code></td>
+<td>此專案</td>
+</tr>
+<tr>
+<td>Plugin</td>
+<td><code>&lt;plugin&gt;/skills/&lt;skill-name&gt;/SKILL.md</code></td>
+<td>啟用該 plugin 的地方</td>
+</tr>
+</tbody>
+</table>
+<p><strong>呼叫權限控制</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>Frontmatter</th>
+<th>你可叫</th>
+<th>Claude 可叫</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>預設</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>disable-model-invocation: true</code></td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>user-invocable: false</code></td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>高副作用流程（<code>/deploy</code>、<code>/commit</code>）建議加 <code>disable-model-invocation: true</code>，避免 Claude 自己決定要部署。</p>
+</blockquote>
+<h4 id="hooks">Hooks 是什麼？</h4>
+<p>Hooks 是把外部 shell 指令掛到 Claude Code 的事件生命週期上的機制，配置在 <code>.claude/settings.json</code>。當特定事件觸發時（例如工具呼叫前），hook 命令會被執行；其 stdout/stderr 與 exit code 決定後續行為（exit 1 會中止工具呼叫）。</p>
+<p><strong>官方 Hook 生命週期圖</strong>（來源：Anthropic Claude Code 官方文件）：</p>
+<div style="text-align:center;margin:16px 0;"><img src="image/claude_code_syllabus/teaching-diagrams/3-2-hooks-lifecycle.svg" alt="Hook lifecycle diagram (Anthropic 官方)" style="max-width:520px;width:100%;background:#F9F9F7;border-radius:8px;padding:12px;"></div>
+<p>關鍵事件分四類：</p>
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>代表事件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>會話生命週期</td>
+<td><code>SessionStart</code>、<code>SessionEnd</code></td>
+<td>注入環境上下文、清理暫存</td>
+</tr>
+<tr>
+<td>使用者輸入</td>
+<td><code>UserPromptSubmit</code>、<code>UserPromptExpansion</code></td>
+<td>改寫提示、紀錄稽核</td>
+</tr>
+<tr>
+<td><strong>工具邊界</strong></td>
+<td><strong><code>PreToolUse</code></strong>、<code>PermissionRequest</code>、<strong><code>PostToolUse</code></strong></td>
+<td><strong>本課重點：在工具執行前攔截或審查</strong></td>
+</tr>
+<tr>
+<td>任務 / Agent</td>
+<td><code>SubagentStart</code>、<code>TaskCompleted</code></td>
+<td>多代理協作的時序鎖</td>
+</tr>
+<tr>
+<td>上下文與壓縮</td>
+<td><code>PreCompact</code>、<code>PostCompact</code></td>
+<td>壓縮前後保留關鍵記憶</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hook 解析流程</strong>（matcher → if → handler）：</p>
+<div style="text-align:center;margin:16px 0;"><img src="image/claude_code_syllabus/teaching-diagrams/3-2-hook-resolution.svg" alt="Hook resolution flow (Anthropic 官方)" style="max-width:520px;width:100%;background:#F9F9F7;border-radius:8px;padding:12px;"></div>
+<p><code>PreToolUse</code> 觸發時，hook 設定先用 <code>matcher</code>（如 <code>&quot;Bash&quot;</code>）比對工具名稱，再以 stdin JSON 讓自訂腳本判斷是否為目標指令（如包含 <code>gh pr create</code>），最後由 exit code 決定放行或中止。</p>
+<p><strong>Hook 處理器的 5 種 <code>type</code>（依用途歸納為 3 大類）</strong>：</p>
+<p>handler 的 <code>type</code> 欄位決定「事件觸發後實際執行什麼」。Anthropic 官方目前提供 5 種 type，依「執行邏輯放在哪」可分成三大類，深度遞增：</p>
+<table>
+<thead>
+<tr>
+<th>大類</th>
+<th>type</th>
+<th>做什麼</th>
+<th>教學記憶</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>① 確定性執行</strong></td>
+<td><code>command</code></td>
+<td>跑 shell 腳本，由 stdin 收事件 JSON、用 exit code 與 stdout 回應</td>
+<td>最常用、最便宜</td>
+</tr>
+<tr>
+<td><strong>① 確定性執行</strong></td>
+<td><code>http</code></td>
+<td>把事件 JSON 以 POST 送到指定 URL，由 response body 回應</td>
+<td>接公司內部稽核服務</td>
+</tr>
+<tr>
+<td><strong>① 確定性執行</strong></td>
+<td><code>mcp_tool</code></td>
+<td>呼叫已連線的 MCP server 上的某個 tool，tool 文字輸出視同 stdout</td>
+<td>重用 MCP 生態（如安全掃描 server）</td>
+</tr>
+<tr>
+<td><strong>② LLM 判斷</strong></td>
+<td><code>prompt</code></td>
+<td>把 prompt + 事件 JSON 丟給單輪 LLM，模型回傳 yes/no JSON 決策</td>
+<td>規則難寫死、需要語意判斷時</td>
+</tr>
+<tr>
+<td><strong>③ Subagent 驗證</strong></td>
+<td><code>agent</code></td>
+<td>產生子代理用 <code>Read</code> / <code>Grep</code> / <code>Glob</code> 等工具多步蒐證後回應（<strong>experimental</strong>）</td>
+<td>需要實際讀程式碼才能下判斷</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>三類深度遞增</strong>：① 規則寫死、② 讓模型快速判斷、③ 讓代理實際查證。<strong>永遠先試 ① command；① 寫不出來才考慮 ② prompt；② 還判斷不出才升級 ③ agent</strong>——上層越高越貴、越慢、越不可預測。</p>
+</blockquote>
+<p><strong>5 種 type 的最小範例</strong>：</p>
+<pre><code class="language-json">// ① command：跑本地腳本（前面 PR 攔截範例）
+{ &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;node scripts/security-check.js&quot; }
+
+// ① http：把事件丟到企業稽核服務
+{ &quot;type&quot;: &quot;http&quot;, &quot;url&quot;: &quot;http://localhost:8080/hooks/pre-tool-use&quot;,
+  &quot;headers&quot;: { &quot;Authorization&quot;: &quot;Bearer $TOKEN&quot; }, &quot;allowedEnvVars&quot;: [&quot;TOKEN&quot;] }
+
+// ① mcp_tool：呼叫已連線 MCP server 的 tool
+{ &quot;type&quot;: &quot;mcp_tool&quot;, &quot;server&quot;: &quot;security-scanner&quot;, &quot;tool&quot;: &quot;scan_diff&quot;,
+  &quot;input&quot;: { &quot;file_path&quot;: &quot;${tool_input.file_path}&quot; } }
+
+// ② prompt：用 LLM 單輪判斷
+{ &quot;type&quot;: &quot;prompt&quot;, &quot;prompt&quot;: &quot;Is this command safe to execute? $ARGUMENTS&quot; }
+
+// ③ agent：派子代理蒐證後回應（experimental）
+{ &quot;type&quot;: &quot;agent&quot;, &quot;prompt&quot;: &quot;Verify deployment target is staging. $ARGUMENTS&quot; }
+</code></pre>
+<blockquote>
+<p><strong>共通欄位</strong>：所有 type 都支援 <code>if</code>（permission rule 篩選，如 <code>&quot;Bash(git *)&quot;</code>）、<code>timeout</code>（command 600s / prompt 30s / agent 60s 預設）、<code>statusMessage</code>（執行時的旋轉提示）、<code>once</code>（每 session 只跑一次）。</p>
+</blockquote>
+<p><strong>最小可運作配置</strong>（<code>.claude/settings.json</code>）：</p>
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;node scripts/security-check.js&quot; }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<h4 id="skill-hook">Skill 與 Hook 的角色分工</h4>
+<table>
+<thead>
+<tr>
+<th>比較面向</th>
+<th>Agent Skills</th>
+<th>Hooks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>性質</td>
+<td>「規則 + 流程」的可重用知識包</td>
+<td>工具事件邊界的攔截器</td>
+</tr>
+<tr>
+<td>觸發者</td>
+<td>你 / Claude（依 frontmatter 控制）</td>
+<td>事件發生時由 Claude Code 自動觸發</td>
+</tr>
+<tr>
+<td>是否可被跳過</td>
+<td>可以（Claude 沒呼叫就不啟用）</td>
+<td><strong>不可以</strong>（事件一發生就執行，無法迴避）</td>
+</tr>
+<tr>
+<td>載入時機</td>
+<td>被觸發時才把 body 載入 context</td>
+<td>每次事件都重新執行 shell 命令</td>
+</tr>
+<tr>
+<td>適合用途</td>
+<td>知識、檢查清單、固定流程、一致風格</td>
+<td>強制紀律、稽核、CI 層級的閘門</td>
+</tr>
+<tr>
+<td>副作用控制</td>
+<td><code>disable-model-invocation</code>、<code>allowed-tools</code></td>
+<td>exit code 直接決定工具是否被執行</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>教學原則</strong>：<strong>Skill 是「Claude 可以用」的工具；Hook 是「Claude 必須遵守」的規則。</strong> 3-3 會把兩者組合：把資安規則寫成 Skill 讓 Claude 主動掃描，再用 PreToolUse Hook 在 <code>gh pr create</code> 時強制再跑一次，避免任何人（含 AI 自己）忘記跑檢查。</p>
+</blockquote>
+<ul>
+<li><strong>意義</strong>：學員建立心智模型後，3-3 起才能真正理解為什麼「同一條資安規則要同時寫成 Skill 與 Hook」——前者讓 Claude 在對話中養成習慣，後者讓系統在工具邊界擋住所有逃逸路徑。</li>
+</ul>
+<h3 id="skill-creator-skill25-mins">3-3 用 <code>skill-creator</code> 製作企業資安規範檢查 Skill（25 mins）</h3>
 <ul>
 <li><p><strong>企業情境設定</strong>：</p>
 <ul>
@@ -2794,36 +2241,7 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 </ul>
 </li>
 </ul>
-<h3 id="mins-3">3-3 開發輔助技能分類導覽（15 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">Slash Commands x Skills 速查表 · 可篩選</span>
-    </div>
-    <div class="demo-body">
-      <div class="slash-filter" id="slashFilter">
-        <button class="slash-pill active" data-cat="all">全部</button>
-        <button class="slash-pill" data-cat="context">Context 管理</button>
-        <button class="slash-pill" data-cat="memory">長期記憶</button>
-        <button class="slash-pill" data-cat="flow">會話控制</button>
-        <button class="slash-pill" data-cat="perf">效能優化</button>
-        <button class="slash-pill" data-cat="observe">監控診斷</button>
-      </div>
-      <div class="slash-grid" id="slashGrid"></div>
-      <div class="slash-shortcuts">
-        <h6>鍵盤快捷鍵</h6>
-        <div class="slash-kbd-row">
-          <span class="slash-kbd"><kbd>Esc</kbd> 中斷回應（輸入 go 繼續）</span>
-          <span class="slash-kbd"><kbd>Esc Esc</kbd> 進入 rewind 模式</span>
-          <span class="slash-kbd"><kbd>Ctrl+S</kbd> 暫存目前對話</span>
-          <span class="slash-kbd"><kbd>Alt+P</kbd> 切換規劃 / 編輯模式</span>
-          <span class="slash-kbd"><kbd>Shift+Tab</kbd> 切權限模式</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<h3 id="mins-3">3-4 開發輔助技能分類導覽（15 mins）</h3>
 <table>
 <thead>
 <tr>
@@ -2925,7 +2343,7 @@ agent-browser screenshot --annotate   # --annotate 標注元素編號
 <li><strong><code>superpowers</code> 系列定位</strong>：這是一整套「強制紀律」技能，第 4 段 4-3 會集中講完整管線（spec → TDD → e2e → PR）。先在這裡知道有這套，等下一段就能組合使用。</li>
 <li><strong><code>ui-ux-pro-max</code> 補充</strong>：與 <code>reactcomponents</code>（產出元件）不同，<code>ui-ux-pro-max</code> 的核心是「設計紀律」——觸發後 Claude 會先批評現狀三個問題，再依**主角優先（每個 section 只一個主角）→ 刪除優先（迷惑時先刪再說）→ 餘白系統（section 間距 ≥ 112 px）→ WCAG 對比（Lighthouse Accessibility 100%）**的鐵律提出改善方案。適合在設計稿評審、Landing Page 或購物車前端視覺 review 時呼叫，避免輸出「全元素等重、過度裝飾」的 AI 生成感頁面。</li>
 </ul>
-<h3 id="agent-20-mins">3-4 深入講解 <code>/agent</code> 背景長任務（20 mins）</h3>
+<h3 id="agent-20-mins">3-5 深入講解 <code>/agent</code> 背景長任務（20 mins）</h3>
 <ul>
 <li><p><strong>適合交給背景 Agent 的工作</strong>：</p>
 <ul>
@@ -3032,25 +2450,28 @@ Esc Esc → Restore code only（保留對話脈絡當參考）
 </li>
 </ul>
 <h3 id="superpowersspec-tdd-e2e-12-mins">4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">三條 Iron Laws · 點卡片翻面看細節</span>
-    </div>
-    <div class="demo-body">
-      <div class="iron-grid" id="ironGrid"></div>
-    </div>
-  </div>
-</div>
 <blockquote>
 <p><strong>本節定位</strong>：前面教的是「Claude 能做什麼」，這節教「<strong>怎麼強迫 Claude 守紀律</strong>」。<code>superpowers</code> 是 Claude Code 生態系中的第三方 Skill 套件，把開發紀律寫成一整套<strong>強制執行的 Skill</strong>——不是建議、不是參考，是 Iron Law。</p>
 <p><strong>與課程主軸的對應</strong>：你的 SDD <code>spec.md</code>、TDD <code>CartService</code>、Playwright e2e 在前面已示範完整流程；本節把這個流程<strong>升級成可重複、可審計、不會偷懶的紀律管線</strong>。</p>
 </blockquote>
-<h4 id="section-6">安裝</h4>
-<pre><code class="language-bash">claude plugin install superpowers
+<h4 id="section-6">安裝（必須兩步驟，順序不可顛倒）</h4>
+<p><code>superpowers</code> 透過 Claude Code 的 plugin 機制散布，採用社群維護的 <strong>plugin marketplace</strong>。安裝前必須先把市場註冊到 Claude Code，才能從市場安裝 plugin。</p>
+<pre><code class="language-bash"># 步驟 1：先把 superpowers-marketplace 註冊到 Claude Code（缺這步 install 會失敗）
+/plugin marketplace add obra/superpowers-marketplace
+
+# 步驟 2：從市場安裝 superpowers plugin
+/plugin install superpowers@superpowers-marketplace
+
+# 步驟 3：以 /help 驗證
+/help
 </code></pre>
+<blockquote>
+<p>在 <code>/help</code> 中應看到 <code>/superpowers:brainstorm</code>、<code>/superpowers:write-plan</code>、<code>/superpowers:execute-plan</code> 等命令列出，代表安裝成功。</p>
+</blockquote>
 <p>安裝後技能會出現在可用 Skill 清單中，依名稱呼叫即可（例：<code>superpowers:test-driven-development</code>）。</p>
+<blockquote>
+<p><strong>教學提示</strong>：所有 plugin 安裝皆遵循同一規則 ——「先 <code>add marketplace</code>，再 <code>install plugin</code>」。日後課程或工作中若遇到任何 plugin（不限 superpowers），都要把 marketplace 註冊放在第一步。</p>
+</blockquote>
 <h4 id="section-7">為什麼需要紀律技能</h4>
 <p>AI 寫程式最大的風險不是「寫錯」，而是「<strong>自信地寫錯然後說已經完成</strong>」。常見失控模式：</p>
 <ul>
@@ -3243,18 +2664,6 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 <p><strong>觀察心法</strong>：完整的 Harness 不是一次到位，<strong>七類由弱到強逐步補齊</strong>——大多數團隊只會卡在 Context 與 Verification 兩類，先補這兩個就能解掉 80% 問題。</p>
 </blockquote>
 <h3 id="harness-5-mins">5-2 課程實踐 ↔ Harness 類型對應（5 mins）</h3>
-<div class="demo-block">
-  <div class="demo">
-    <div class="demo-bar">
-      <span class="demo-tag">Demo</span>
-      <span class="demo-title">Harness 七大類 · 點卡片看課程實踐對應</span>
-    </div>
-    <div class="demo-body">
-      <div class="harness-wheel" id="harnessWheel"></div>
-      <div class="harness-detail" id="harnessDetail"></div>
-    </div>
-  </div>
-</div>
 <blockquote>
 <p><strong>教學設計</strong>：把 5-1 的七種類型套到課程實踐上，讓學員一眼看到「我學的每個招式各屬於哪一類 Harness」，回去就能用 7 類分類法盤點團隊缺口。</p>
 </blockquote>
@@ -3409,7 +2818,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 <tr>
 <td><strong>延伸能力</strong></td>
 <td>Skill 把規則固化、<code>/agent</code> 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業</td>
-<td>3-1～3-4</td>
+<td>3-1～3-5</td>
 </tr>
 </tbody>
 </table>
@@ -3437,8 +2846,8 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> 為一個長噪音任務（如資料生成、log 分析）開一個 <code>/agent</code> 試水</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> 在 PR 流程加入 <code>/review</code> + <code>/simplify</code> 的固定收尾</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> 練習 <code>/rewind</code> 的五個選項，特別是 <strong>Restore code only</strong></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 啟用 Auto Mode（所有付費會員都能用，需切到 Sonnet 4.6 以上）</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 安裝 <code>superpowers</code> plugin，至少跑過一次 <code>writing-plans</code> + <code>test-driven-development</code> + <code>verification-before-completion</code> 完整管線</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 評估你的方案是否能用 Auto Mode（Team / Enterprise / API + Sonnet 4.6 以上）</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> 先 <code>/plugin marketplace add obra/superpowers-marketplace</code>，再 <code>/plugin install superpowers@superpowers-marketplace</code>，至少跑過一次 <code>writing-plans</code> + <code>test-driven-development</code> + <code>verification-before-completion</code> 完整管線</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> 把三條 Iron Laws 寫進團隊 <code>CLAUDE.md</code>，把紀律從「個人習慣」升級成「團隊契約」</li>
 </ul>
 <hr />
@@ -3449,7 +2858,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 
   <script>
     const HERO_IMAGE = "image/claude_code_syllabus/hero/claude-code-shopping-cart-course-hero.png";
-    const IMAGE_MAP = {"課程主專案：購物車系統（Shopping Cart）":"image/claude_code_syllabus/hero/claude-code-shopping-cart-course-hero.png","📦 本章工具一覽（先看清單，再進細節）":"image/claude_code_syllabus/teaching-diagrams/1-overview-kickoff.png","1-1 環境安裝、登入與操作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-1-environment-login-modes.png","1-2 介面導覽：CLI vs VS Code 插件、設定與 CLAUDE.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/1-2-cli-vscode-claude-md.png","1-3 Docker 安裝與 AI 操作資料庫（5 mins）":"image/claude_code_syllabus/teaching-diagrams/1-3-docker-database.png","1-4 Git 常用操作與 gh CLI 協作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-4-git-gh-cli.png","2-1 SDD 規格先行：與 Claude 共同撰寫 spec.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-1-sdd-spec-md.png","2-2 後端生成、TDD 先行與自主修正循環（30 mins）":"image/claude_code_syllabus/teaching-diagrams/2-2-backend-tdd-loop.png","2-3 前端鷹架與 API 串接（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png","2-4 Context 管理、會話控制與真實除錯（35 mins）":"image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png","3-1 agent-browser 技能：自動截圖、錄影與產生 SOP（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png","3-2 用 skill-creator 製作企業資安規範檢查 Skill（25 mins）":"image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png","3-3 開發輔助技能分類導覽（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png","3-4 深入講解 /agent 背景長任務（20 mins）":"image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png","4-1 /review 與 /simplify 內建品質指令（10 mins）":"image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png","4-2 slash commands 完整工作流總覽（17 mins）":"image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png","4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）":"image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png","5-1 Harness Engineering 是什麼（8 mins）":"image/claude_code_syllabus/teaching-diagrams/5-1-harness-engineering.png","5-2 課程實踐 ↔ Harness 類型對應（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-2-course-to-harness-mapping.png","5-3 三大支柱的工程意涵（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-3-three-pillars.png","5-4 你的 Harness 升級路徑（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-4-harness-upgrade-path.png"};
+    const IMAGE_MAP = {"課程主專案：購物車系統（Shopping Cart）":"image/claude_code_syllabus/hero/claude-code-shopping-cart-course-hero.png","📦 本章工具一覽（先看清單，再進細節）":"image/claude_code_syllabus/teaching-diagrams/1-overview-kickoff.png","1-1 環境安裝、登入與操作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-1-environment-login-modes.png","1-2 介面導覽：CLI vs VS Code 插件、設定與 CLAUDE.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/1-2-cli-vscode-claude-md.png","1-3 Docker 安裝與 AI 操作資料庫（5 mins）":"image/claude_code_syllabus/teaching-diagrams/1-3-docker-database.png","1-4 Git 常用操作與 gh CLI 協作模式（20 mins）":"image/claude_code_syllabus/teaching-diagrams/1-4-git-gh-cli.png","2-1 SDD 規格先行：與 Claude 共同撰寫 spec.md（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-1-sdd-spec-md.png","2-2 後端生成、TDD 先行與自主修正循環（30 mins）":"image/claude_code_syllabus/teaching-diagrams/2-2-backend-tdd-loop.png","2-3 前端鷹架與 API 串接（15 mins）":"image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png","2-4 Context 管理、會話控制與真實除錯（35 mins）":"image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png","3-1 agent-browser 技能：自動截圖、錄影與產生 SOP（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png","3-3 用 skill-creator 製作企業資安規範檢查 Skill（25 mins）":"image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png","3-4 開發輔助技能分類導覽（15 mins）":"image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png","3-5 深入講解 /agent 背景長任務（20 mins）":"image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png","4-1 /review 與 /simplify 內建品質指令（10 mins）":"image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png","4-2 slash commands 完整工作流總覽（17 mins）":"image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png","4-3 superpowers：spec → TDD → e2e 完整開發控管管線（12 mins）":"image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png","5-1 Harness Engineering 是什麼（8 mins）":"image/claude_code_syllabus/teaching-diagrams/5-1-harness-engineering.png","5-2 課程實踐 ↔ Harness 類型對應（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-2-course-to-harness-mapping.png","5-3 三大支柱的工程意涵（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-3-three-pillars.png","5-4 你的 Harness 升級路徑（5 mins）":"image/claude_code_syllabus/teaching-diagrams/5-4-harness-upgrade-path.png"};
 
     function normalizeText(value) {
       return value.replace(/\s+/g, " ").replace(/[`]/g, "").trim();
@@ -3758,30 +3167,8 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
     function setupSidebarState() {
       const sidebar = document.getElementById("chapter-sidebar");
       const toggle = document.getElementById("sidebar-toggle");
-      const collapser = document.getElementById("sidebar-collapser");
       const sidebarLinks = Array.from(document.querySelectorAll(".sidebar-link, .sidebar-sublink"));
       const observedTargets = Array.from(document.querySelectorAll(".chapter-shell, .section-shell"));
-
-      /* 桌面版收折按鈕 */
-      if (collapser) {
-        const applyCollapsed = (collapsed) => {
-          sidebar.classList.toggle("is-collapsed", collapsed);
-          collapser.setAttribute("aria-label", collapsed ? "展開側邊欄" : "收折側邊欄");
-          collapser.title = collapsed ? "展開側邊欄" : "收折側邊欄";
-          try { localStorage.setItem("sidebar-collapsed", String(collapsed)); } catch (_) {}
-        };
-
-        collapser.addEventListener("click", () => {
-          applyCollapsed(!sidebar.classList.contains("is-collapsed"));
-        });
-
-        /* 還原上次狀態 */
-        try {
-          if (localStorage.getItem("sidebar-collapsed") === "true") {
-            applyCollapsed(true);
-          }
-        } catch (_) {}
-      }
 
       toggle.addEventListener("click", () => {
         const expanded = toggle.getAttribute("aria-expanded") === "true";
@@ -3833,740 +3220,6 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
         closeLightbox();
       }
     });
-  </script>
-  <script>/* === DEMO SCRIPTS === */
-/* ---- D1: PERMISSION MODES ---- */
-(function () {
-  var PM_DATA = {
-    ask: {
-      name: '逐步確認 · Ask before edits',
-      cli: 'claude  (預設)',
-      meta: '每次編輯前詢問 — 適合探索與學習',
-      flow: [
-        '› 修改 cartService.ts，加入 quantity ≤ 0 的判斷',
-        'Claude: 我想修改 src/server/services/cartService.ts',
-        '       新增第 24-30 行的條件判斷',
-        '       <span style="color:#f0c884">[ 1 ] 接受  [ 2 ] 拒絕  [ 3 ] 看 diff</span>',
-        '› 1',
-        '<span style="color:#88b59a">✓ 已寫入 cartService.ts</span>'
-      ]
-    },
-    edit: {
-      name: '自動編輯 · Edit automatically',
-      cli: 'claude --permission-mode acceptEdits',
-      meta: '自動接受檔案編輯，不需手動確認每次修改',
-      flow: [
-        '› 在 cartRepo.ts 補上 findByCartId 方法',
-        'Claude: 寫入 src/server/repos/cartRepo.ts',
-        '<span style="color:#88b59a">✓ +12 行 / -0 行</span>',
-        'Claude: 寫入 src/server/services/cartService.ts',
-        '<span style="color:#88b59a">✓ +4 行 / -1 行</span>',
-        '<span style="color:#8a7f70">// 不再逐次詢問，但工具呼叫（bash 等）仍會詢問</span>'
-      ]
-    },
-    plan: {
-      name: '規劃模式 · Plan mode',
-      cli: 'claude --permission-mode plan',
-      meta: '只讀不寫：探索程式碼、提出計畫，再切模式執行',
-      flow: [
-        '› 我想新增「結帳前驗證庫存」流程',
-        'Claude: <span style="color:#f0c884">📋 計畫（只讀）</span>',
-        '  1. 在 productRepo 加 findStockById',
-        '  2. 在 checkout flow 插入庫存檢查',
-        '  3. 不足則回 409 + 友善訊息',
-        '  影響：cart.routes.ts / checkoutService.ts',
-        '<span style="color:#8a7f70">// 確認方向 → Shift+Tab 切到 acceptEdits 開工</span>'
-      ]
-    },
-    auto: {
-      name: '自動模式 · Auto mode',
-      cli: 'claude --enable-auto-mode',
-      meta: '由背景 classifier 模型審核每個操作 · 所有付費會員（Pro / Max / Team / Enterprise / API）皆可使用 · 需搭配 Sonnet 4.6 / Opus 4.7',
-      flow: [
-        '› 跑 TDD 直到 cartService 全綠',
-        '<span style="color:#8a7f70">[classifier] ✓ npm test  — 安全</span>',
-        '<span style="color:#e07a6a">FAIL  ✗ adds new item</span>',
-        '<span style="color:#8a7f70">[classifier] ✓ 寫入 cartService.ts — 安全</span>',
-        '<span style="color:#88b59a">PASS  ✓ adds new item</span>',
-        '<span style="color:#e07a6a">[classifier] ✗ curl | bash — 阻擋</span>',
-        '<span style="color:#88b59a">✓ 五個場景全綠 · 共 3 次自主修正</span>'
-      ]
-    },
-    bypass: {
-      name: '全開模式 · Bypass permissions',
-      cli: 'claude --dangerously-skip-permissions',
-      meta: '⚠ 跳過所有權限提示，僅應在隨離容器 / VM 中使用',
-      flow: [
-        '<span style="color:#e07a6a">⚠ 你已停用所有安全檢查</span>',
-        '› 重設整個 db schema',
-        '<span style="color:#88b59a">✓ DROP TABLE cart_items</span>',
-        '<span style="color:#88b59a">✓ DROP TABLE products</span>',
-        '<span style="color:#88b59a">✓ migrate reset</span>',
-        '<span style="color:#8a7f70">// 工具呼叫立即執行，僅 .git/.vscode/.idea 仍提示</span>',
-        '<span style="color:#f0c884">建議：除非沙盒，請優先使用 Auto Mode</span>'
-      ]
-    }
-  };
-
-  var pmTabs = document.getElementById('pmTabs');
-  if (!pmTabs) return;
-  var pmExplain = document.getElementById('pmExplain');
-  if (!pmExplain) return;
-  var pmFlow = document.getElementById('pmFlow');
-  if (!pmFlow) return;
-
-  function renderPm(mode) {
-    var d = PM_DATA[mode];
-    if (!d) return;
-    pmExplain.innerHTML = '<h4>' + d.name + '</h4><div class="pm-cli">$ ' + d.cli + '</div><div class="pm-meta">' + d.meta + '</div>';
-    pmFlow.innerHTML = d.flow.map(function (line) {
-      return '<div class="pm-step">' + line + '</div>';
-    }).join('');
-  }
-
-  pmTabs.addEventListener('click', function (e) {
-    var btn = e.target.closest('.pm-tab');
-    if (!btn) return;
-    pmTabs.querySelectorAll('.pm-tab').forEach(function (b) {
-      b.classList.toggle('active', b === btn);
-    });
-    renderPm(btn.dataset.mode);
-  });
-
-  renderPm('ask');
-})();
-
-/* ---- D2: CLI SIMULATOR ---- */
-(function () {
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
-    });
-  }
-
-  var cliSim = document.getElementById('cliSim');
-  if (!cliSim) return;
-  var cliInput = document.getElementById('cliInput');
-  if (!cliInput) return;
-
-  function cliPrint(html, cls) {
-    cls = cls || '';
-    var div = document.createElement('div');
-    div.className = 'cli-line' + (cls ? ' ' + cls : '');
-    div.innerHTML = html;
-    cliSim.appendChild(div);
-    cliSim.scrollTop = cliSim.scrollHeight;
-  }
-
-  function cliBoot() {
-    cliSim.innerHTML = '';
-    cliPrint('<span class="cli-dim">╭─ Claude Code v2.5.0 ────────────────────────╮</span>');
-    cliPrint('<span class="cli-dim">│</span>  <span class="cli-hi">claude</span> · <span class="cli-ok">sonnet 4.6</span> · 195k context');
-    cliPrint('<span class="cli-dim">│</span>  cwd: <span class="cli-hi">~/projects/shopping-cart</span>');
-    cliPrint('<span class="cli-dim">│</span>  載入 <span class="cli-ok">CLAUDE.md</span> ✓ (4.2k tokens)');
-    cliPrint('<span class="cli-dim">╰─────────────────────────────────────────────╯</span>');
-    cliPrint('');
-    cliPrint('<span class="cli-dim">輸入 /help 看可用指令，或 @path 引入檔案</span>');
-    cliPrint('');
-  }
-  cliBoot();
-
-  var CLI_RESPONSES = {
-    '/help': function () {
-      cliPrint('<span class="cli-hi">可用 slash commands：</span>');
-      cliPrint('  <span class="cli-ok">/init</span>      初始化 CLAUDE.md');
-      cliPrint('  <span class="cli-ok">/model</span>     切換模型 (sonnet / opus / haiku / opusplan)');
-      cliPrint('  <span class="cli-ok">/context</span>   顯示 context 用量');
-      cliPrint('  <span class="cli-ok">/clear</span>     清空對話');
-      cliPrint('  <span class="cli-ok">/compact</span>   壓縮對話歷史成摘要');
-      cliPrint('  <span class="cli-ok">/rewind</span>    回到對話某時間點');
-      cliPrint('  <span class="cli-ok">/resume</span>    恢復先前 session');
-      cliPrint('  <span class="cli-ok">/review</span>    程式碼審查');
-      cliPrint('  <span class="cli-ok">/simplify</span>  重構精簡');
-      cliPrint('  <span class="cli-ok">/agent</span>     交給背景 agent 執行');
-      cliPrint('  <span class="cli-ok">/plan</span>      切換規劃模式');
-    },
-    '/init': function () {
-      cliPrint('<span class="cli-hi">⠋</span> 掃描專案結構...');
-      setTimeout(function () { cliPrint('<span class="cli-hi">⠋</span> 偵測到 Node.js + Express + React + Vite'); }, 200);
-      setTimeout(function () { cliPrint('<span class="cli-hi">⠋</span> 偵測到 docker-compose.yml (PostgreSQL 16)'); }, 400);
-      setTimeout(function () { cliPrint('<span class="cli-hi">⠋</span> 偵測到 vitest.config.ts'); }, 600);
-      setTimeout(function () {
-        cliPrint('<span class="cli-ok">✓ CLAUDE.md 已生成於專案根目錄 (87 行)</span>');
-        cliPrint('<span class="cli-dim">  → 包含技術棧、命名規範、禁止行為、常用指令</span>');
-      }, 800);
-    },
-    '/context': function () {
-      cliPrint('<span class="cli-hi">Context · 98k / 200k tokens (49%)</span>');
-      cliPrint('');
-      cliPrint('  <span style="color:#d97757">█████████</span> 系統 Prompt        14k  (7%)');
-      cliPrint('  <span style="color:#88b59a">██████</span>      CLAUDE.md           4k  (2%)');
-      cliPrint('  <span style="color:#f0c884">████████</span>    MCP 工具定義        9k  (4.5%)');
-      cliPrint('  <span style="color:#5a6f8c">██████████████</span> 對話歷史       42k  (21%)');
-      cliPrint('  <span style="color:#c79134">█████████</span>   讀過的檔案         29k  (14.5%)');
-      cliPrint('');
-      cliPrint('<span class="cli-dim">  剩餘可用：102k tokens</span>');
-      cliPrint('<span class="cli-dim">  MCP 佔 4.5% · 用 /mcp 停用閒置 server</span>');
-    },
-    '/clear':   function () { cliBoot(); },
-    'clear':    function () { cliBoot(); },
-    '/compact': function () {
-      cliPrint('<span class="cli-hi">⠋</span> 壓縮對話歷史中...');
-      setTimeout(function () {
-        cliPrint('<span class="cli-ok">✓ 壓縮完成</span>');
-        cliPrint('<span class="cli-dim">  原 42k → 6.8k tokens (-84%)</span>');
-        cliPrint('<span class="cli-dim">  保留：spec 共識 / TDD 失敗修正 / 當前 CartService 實作</span>');
-      }, 600);
-    },
-    '/rewind': function () {
-      cliPrint('<span class="cli-hi">/rewind</span> · 選擇要回到的時間點：');
-      cliPrint('  <span class="cli-ok">[1]</span> 10:51  cartService 全綠');
-      cliPrint('  <span class="cli-ok">[2]</span> 10:34  產出 cartService.ts');
-      cliPrint('  <span class="cli-ok">[3]</span> 10:18  寫好五個測試');
-      cliPrint('  <span class="cli-ok">[4]</span> 10:02  需求討論完成');
-      cliPrint('<span class="cli-dim">  選擇後可選：Restore code / conversation / both</span>');
-    },
-    '/resume': function () {
-      cliPrint('<span class="cli-hi">最近的 session：</span>');
-      cliPrint('  <span class="cli-ok">●</span> cart-checkout-day1   昨天 18:32   (42 條訊息)');
-      cliPrint('  <span class="cli-ok">●</span> auth-refactor        2 天前       (87 條訊息)');
-      cliPrint('  <span class="cli-ok">●</span> seed-products        3 天前       (12 條訊息)');
-    },
-    '/review': function () {
-      cliPrint('<span class="cli-hi">⠋</span> 審查 src/server/services/cartService.ts...');
-      setTimeout(function () {
-        cliPrint('<span class="cli-err">⚠ 正確性</span>  L24 addItem() 未處理 quantity ≤ 0 的輸入');
-        cliPrint('<span class="cli-err">⚠ 安全性</span>  L41 totalAmount 直接從 req.body 取出');
-        cliPrint('<span class="cli-hi">○ 可讀性</span>  L67 巢狀 if 太深，建議抽 guard clause');
-      }, 700);
-    },
-    '/simplify': function () {
-      cliPrint('<span class="cli-hi">⠋</span> 分析重複片段與可合併條件...');
-      setTimeout(function () {
-        cliPrint('<span class="cli-ok">✓</span> findOrCreate() 與 upsert() 邏輯重複 → 合併為一');
-        cliPrint('<span class="cli-ok">✓</span> 三個 if 可改 early-return guard 風格');
-        cliPrint('<span class="cli-dim">  /simplify 不改邏輯，僅改結構。配合 TDD 確保測試仍通過。</span>');
-      }, 600);
-    },
-    '/plan': function () {
-      cliPrint('<span class="cli-hi">→ 切換到 Plan mode（只讀不寫）</span>');
-      cliPrint('<span class="cli-dim">  Claude 將先提出計畫，等你確認再執行</span>');
-    }
-  };
-
-  function handleCli(raw) {
-    var cmd = raw.trim();
-    if (!cmd) return;
-    cliPrint('<span class="cli-prompt">›</span> ' + escapeHtml(cmd));
-
-    if (cmd.startsWith('/model')) {
-      var m = cmd.split(/\s+/)[1] || '';
-      if (!m) {
-        cliPrint('<span class="cli-hi">當前模型：sonnet · 4.6</span>');
-      } else if (['sonnet', 'opus', 'haiku', 'opusplan', 'sonnet[1m]', 'opus[1m]'].indexOf(m) !== -1) {
-        cliPrint('<span class="cli-ok">✓ 已切換到 ' + m + '</span>');
-      } else {
-        cliPrint('<span class="cli-err">未知別名：' + escapeHtml(m) + '</span>');
-      }
-      return;
-    }
-
-    if (cmd.startsWith('/agent')) {
-      var task = cmd.slice(7).trim() || '描述任務';
-      cliPrint('<span class="cli-hi">⠋</span> 派遣背景 agent → "' + escapeHtml(task) + '"');
-      setTimeout(function () {
-        cliPrint('<span class="cli-dim">  agent 在獨立 worktree 執行 · 你可繼續主線開發</span>');
-      }, 300);
-      setTimeout(function () {
-        cliPrint('<span class="cli-ok">✓ 完成 · 寫入 src/server/seeds/seed-products.json (30 筆)</span>');
-      }, 1500);
-      return;
-    }
-
-    if (cmd.startsWith('@')) {
-      var path = cmd.slice(1).split(/\s+/)[0];
-      cliPrint('<span class="cli-ok">✓ 已引入 ' + escapeHtml(path) + '</span> <span class="cli-dim">(讀入 context)</span>');
-      return;
-    }
-
-    if (cmd === 'claude doctor') {
-      cliPrint('<span class="cli-ok">✓</span> Claude Code v2.5.0');
-      cliPrint('<span class="cli-ok">✓</span> Node.js v20.11.0');
-      cliPrint('<span class="cli-ok">✓</span> OAuth 已登入 · Pro 方案');
-      cliPrint('<span class="cli-ok">✓</span> 網路連線正常');
-      return;
-    }
-
-    if (CLI_RESPONSES[cmd]) { CLI_RESPONSES[cmd](); return; }
-    var firstToken = cmd.split(/\s+/)[0];
-    if (CLI_RESPONSES[firstToken]) { CLI_RESPONSES[firstToken](); return; }
-
-    cliPrint('<span class="cli-hi">⠋</span> Claude 思考中...');
-    setTimeout(function () {
-      var replies = [
-        '我會 (1) 讀 spec.md (2) 寫對應測試 (3) 等你確認後再實作',
-        '建議先 /plan 看計畫；要直接開工請按 Shift+Tab 切到 acceptEdits',
-        '已參考 CLAUDE.md 的命名規範與技術棧版本，準備產出'
-      ];
-      cliPrint('<span class="cli-dim">  ' + replies[Math.floor(Math.random() * replies.length)] + '</span>');
-    }, 600);
-  }
-
-  cliInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      handleCli(cliInput.value);
-      cliInput.value = '';
-    }
-  });
-
-  document.querySelectorAll('.cli-chip').forEach(function (c) {
-    c.addEventListener('click', function () {
-      handleCli(c.dataset.cmd);
-      var el = document.getElementById('cliInput');
-      if (!el) return;
-      el.focus();
-    });
-  });
-})();
-
-/* ---- D4: TDD ANIMATION ---- */
-(function () {
-  var TDD_STEPS = [
-    { phase:'red',   angle:60,  title:'RED · 寫失敗測試',
-      code:'<span class="tdd-step-tag red">RED</span>cartService.test.ts\n<span style="color:#8a7f70;">// 場景 1：加入新商品</span>\ntest("adds new item", () => {\n  const cart = createCart()\n  addItem(cart, { id: 1, qty: 2 })\n  expect(cart.items).toHaveLength(1)\n})\n\n<span style="color:#e07a6a;">$ npm test\n&#x2717; adds new item\n  ReferenceError: addItem is not defined</span>' },
-    { phase:'green', angle:180, title:'GREEN · 讓它通過',
-      code:'<span class="tdd-step-tag green">GREEN</span>cartService.ts\nexport function addItem(cart, item) {\n  cart.items.push(item)\n}\n\n<span style="color:#88b59a;">$ npm test\n&#x2713; adds new item   (4ms)</span>\n<span style="color:#8a7f70;">// 最簡實作</span>' },
-    { phase:'red',   angle:60,  title:'RED · 加入「合併」場景',
-      code:'<span class="tdd-step-tag red">RED</span>新測試\ntest("merges duplicate", () => {\n  addItem(cart, { id: 1, qty: 1 })\n  addItem(cart, { id: 1, qty: 2 })\n  expect(cart.items).toHaveLength(1)\n  expect(cart.items[0].qty).toBe(3)\n})\n\n<span style="color:#e07a6a;">$ npm test\n&#x2717; merges duplicate</span>' },
-    { phase:'green', angle:180, title:'GREEN · 補上合併邏輯',
-      code:'<span class="tdd-step-tag green">GREEN</span>cartService.ts\nexport function addItem(cart, item) {\n  const exist = cart.items.find(x => x.id === item.id)\n  if (exist) exist.qty += item.qty\n  else cart.items.push(item)\n}\n\n<span style="color:#88b59a;">$ npm test\n&#x2713; adds new item\n&#x2713; merges duplicate</span>' },
-    { phase:'blue',  angle:300, title:'REFACTOR · 重構但保持綠燈',
-      code:'<span class="tdd-step-tag blue">REFACTOR</span>cartService.ts\nexport function addItem(cart, item) {\n  const i = cart.items.findIndex(x => x.id === item.id)\n  i >= 0\n    ? cart.items[i].qty += item.qty\n    : cart.items.push(item)\n}\n\n<span style="color:#88b59a;">$ npm test\n&#x2713; adds new item\n&#x2713; merges duplicate</span>' }
-  ];
-
-  var tddIdx    = -1;
-  var tddCenter = document.getElementById('tddCenter');
-  var tddMarker = document.getElementById('tddMarker');
-  var tddPanel  = document.getElementById('tddPanel');
-  var tddCycle  = document.getElementById('tddCycle');
-  var tddNext   = document.getElementById('tddNext');
-  var tddStart  = document.getElementById('tddStart');
-  var tddReset  = document.getElementById('tddReset');
-
-  if (!tddCenter || !tddMarker || !tddPanel || !tddCycle || !tddNext || !tddStart || !tddReset) return;
-
-  function tddRender(idx) {
-    if (idx < 0) {
-      tddCenter.textContent = '準備開始';
-      tddCenter.style.color = '';
-      tddMarker.style.left  = '50%';
-      tddMarker.style.top   = '0%';
-      tddPanel.textContent  = '// 點擊「開始」啟動 TDD 自主迴圈';
-      tddCycle.classList.remove('active');
-      return;
-    }
-    tddCycle.classList.add('active');
-    var s = TDD_STEPS[idx];
-    var a = (s.angle - 90) * Math.PI / 180;
-    var r = 50;
-    tddMarker.style.left = (50 + r * Math.cos(a)) + '%';
-    tddMarker.style.top  = (50 + r * Math.sin(a)) + '%';
-    tddCenter.textContent = s.title.split(' · ')[0];
-    tddCenter.style.color = s.phase === 'red' ? '#c94f3c' : s.phase === 'green' ? '#6f8c5a' : '#5a6f8c';
-    tddPanel.innerHTML = s.code;
-  }
-
-  tddRender(-1);
-
-  tddStart.addEventListener('click', function () {
-    tddIdx = 0; tddRender(0); tddNext.disabled = false;
-    tddStart.textContent = '迴圈進行中…';
-  });
-  tddNext.addEventListener('click', function () {
-    tddIdx = (tddIdx + 1) % TDD_STEPS.length;
-    tddRender(tddIdx);
-  });
-  tddReset.addEventListener('click', function () {
-    tddIdx = -1; tddRender(-1); tddNext.disabled = true;
-    tddStart.textContent = '▶ 開始 TDD 迴圈';
-  });
-})();
-
-/* ---- D5: CONTEXT VISUALIZER ---- */
-(function () {
-  var CTX_INIT = [
-    { key:'system',   label:'系統 Prompt',  val:14, color:'#d97757' },
-    { key:'claudemd', label:'CLAUDE.md',    val: 4, color:'#88b59a' },
-    { key:'mcp',      label:'MCP 工具定義', val: 3, color:'#f0c884' },
-    { key:'chat',     label:'對話歷史',     val: 8, color:'#5a6f8c' },
-    { key:'files',    label:'讀過的檔案',   val: 6, color:'#c79134' }
-  ];
-
-  var CTX = JSON.parse(JSON.stringify(CTX_INIT));
-
-  var ctxMeter   = document.getElementById('ctxMeter');
-  var ctxLegend  = document.getElementById('ctxLegend');
-  var ctxUsed    = document.getElementById('ctxUsed');
-  var ctxPct     = document.getElementById('ctxPct');
-  var ctxTip     = document.getElementById('ctxTip');
-  var ctxActions = document.querySelector('.ctx-actions');
-
-  if (!ctxMeter || !ctxLegend || !ctxUsed || !ctxPct || !ctxTip || !ctxActions) return;
-
-  function findCtx(key) { return CTX.filter(function (x) { return x.key === key; })[0]; }
-
-  function renderCtx() {
-    var total = CTX.reduce(function (s, x) { return s + x.val; }, 0);
-    var segs = CTX.map(function (c) {
-      return '<div class="ctx-seg" style="background:' + c.color + ';flex:' + c.val + ' 1 0;" title="' + c.label + ' ' + c.val + 'k"></div>';
-    });
-    segs.push('<div class="ctx-seg" style="background:#3a342d;flex:' + Math.max(0, 200 - total) + ' 1 0;"></div>');
-    ctxMeter.innerHTML = segs.join('');
-    ctxLegend.innerHTML = CTX.map(function (c) {
-      return '<div class="ctx-legend-row"><span class="ctx-swatch" style="background:' + c.color + '"></span><span>' + c.label + '</span><span style="margin-left:auto;color:#8a7f70;">' + c.val + 'k</span></div>';
-    }).join('');
-    ctxUsed.textContent = total;
-    ctxPct.textContent  = Math.round(total / 200 * 100);
-  }
-
-  renderCtx();
-
-  ctxActions.addEventListener('click', function (e) {
-    var btn = e.target.closest('.ctx-btn');
-    if (!btn) return;
-    var a = btn.dataset.action;
-    if (a === 'add-mcp')   { findCtx('mcp').val   += 6;  ctxTip.textContent = '⚠ 多開 3 個 MCP server，工具定義佔了 9k token。閒置的請用 /mcp 停用。'; }
-    if (a === 'add-files') { findCtx('files').val  += 12; ctxTip.textContent = '讀進 5 個檔案 (+12k)。Claude 不會自動移除已讀檔案，需要 /clear 或 /compact。'; }
-    if (a === 'long-chat') { findCtx('chat').val   += 30; ctxTip.textContent = '半小時對話累積了 +30k。Context rot 開始發生—Claude 變慢、重複問已答過的問題。'; }
-    if (a === 'compact') {
-      var ci = findCtx('chat');  ci.val  = Math.max(2, Math.round(ci.val  * 0.15));
-      var fi = findCtx('files'); fi.val  = Math.max(2, Math.round(fi.val  * 0.4));
-      ctxTip.textContent = '✓ /compact 完成。對話與檔案被壓成摘要，保留關鍵脈絡。CLAUDE.md 不變（從磁碟重新注入）。';
-    }
-    if (a === 'clear') {
-      CTX = JSON.parse(JSON.stringify(CTX_INIT));
-      findCtx('chat').val = 0; findCtx('files').val = 0;
-      ctxTip.textContent = '✓ /clear 完成。對話與讀檔全清空，CLAUDE.md 仍會在下次 session 重新載入。';
-    }
-    if (a === 'reset') {
-      CTX = JSON.parse(JSON.stringify(CTX_INIT));
-      ctxTip.textContent = '已重置初始狀態。';
-    }
-    renderCtx();
-  });
-})();
-
-/* ---- D6: REWIND TIMELINE ---- */
-(function () {
-  var RW_TIMELINE = [
-    { time: '10:02', label: '需求討論',
-      conv: '• 確認 5 個購物車場景\n• 決定合計由 server 算',
-      file: '<span style="color:#8a7f70;">// (尚未產生)</span>' },
-    { time: '10:18', label: '寫測試',
-      conv: '• 五個 Vitest 測試已寫\n• 確認場景覆蓋',
-      file: '<span style="color:#8a7f70;">// 還沒實作</span>\nexport function addItem() {}' },
-    { time: '10:34', label: '產 Service',
-      conv: '• 實作 addItem / merge\n• 處理 qty &lt;= 0',
-      file: 'function addItem(cart, item) {\n  const i = cart.items\n    .findIndex(...)\n  ...\n}' },
-    { time: '10:51', label: '綠燈',
-      conv: '• 五個測試全綠\n• 準備 review',
-      file: 'function addItem(cart, item) {\n  ...\n}\n<span style="color:#88b59a;">// ✓ 5/5 tests pass</span>' },
-    { time: '11:07', label: '走錯方向',
-      conv: '• Claude 提了 Redux 重寫\n• 加了不必要的 middleware\n• 對話分析了 5 種替代方案\n<span style="color:#f0c884;">(分析有價值，想保留)</span>',
-      file: '<span style="color:#e07a6a;">// 已被改成 Redux 版本\n// 弄壞了測試</span>\nfunction cartReducer(state, action){\n  switch(action.type) {\n    ...\n  }\n}' }
-  ];
-
-  var rwConv    = document.getElementById('rwConv');
-  var rwFile    = document.getElementById('rwFile');
-  var rwFill    = document.getElementById('rwFill');
-  var rwConvLen = document.getElementById('rwConvLen');
-  var rwFileVer = document.getElementById('rwFileVer');
-  var rwBanner  = document.getElementById('rwBanner');
-  var rwEvents  = document.getElementById('rwEvents');
-  var rwActions = document.getElementById('rwActions');
-
-  if (!rwConv || !rwFile || !rwFill || !rwEvents || !rwActions) return;
-
-  var rwIdx = 4;
-  var RW_V4_ORIG = { conv: RW_TIMELINE[4].conv, file: RW_TIMELINE[4].file };
-
-  function rwRender() {
-    var t = RW_TIMELINE[rwIdx];
-    rwConv.innerHTML = t.conv;
-    rwFile.innerHTML = t.file;
-    if (rwConvLen) rwConvLen.textContent = (rwIdx + 1) + ' 條';
-    if (rwFileVer) rwFileVer.textContent = 'v' + (rwIdx + 1);
-    rwFill.style.width = ((rwIdx) / (RW_TIMELINE.length - 1) * 100) + '%';
-    rwEvents.querySelectorAll('.rw-event').forEach(function (el, i) {
-      el.classList.toggle('passed',  i < rwIdx);
-      el.classList.toggle('current', i === rwIdx);
-    });
-  }
-
-  function rwShowBanner(html, tone) {
-    if (!rwBanner) return;
-    rwBanner.className = 'rw-banner ' + (tone || '');
-    rwBanner.innerHTML = html;
-    rwBanner.style.display = 'block';
-  }
-
-  rwEvents.addEventListener('click', function (e) {
-    var evt = e.target.closest('.rw-event');
-    if (!evt) return;
-    rwIdx = parseInt(evt.dataset.step, 10);
-    rwRender();
-  });
-
-  rwActions.addEventListener('click', function (e) {
-    var btn = e.target.closest('.rw-action');
-    if (!btn) return;
-    var k = btn.dataset.rw;
-    if (k === 'reset') {
-      RW_TIMELINE[4].conv = RW_V4_ORIG.conv;
-      RW_TIMELINE[4].file = RW_V4_ORIG.file;
-      rwIdx = 4; rwRender();
-      if (rwBanner) rwBanner.style.display = 'none';
-      return;
-    }
-    if (k === 'all') {
-      RW_TIMELINE[4].conv = RW_TIMELINE[3].conv;
-      RW_TIMELINE[4].file = RW_TIMELINE[3].file;
-      rwIdx = 4; rwRender();
-      rwShowBanner('<b>✓ Restore code &amp; conversation</b><br>對話與檔案都回到 10:51 綠燈狀態。推理脈絡會一起消失——最徹底但也最浪費。', 'all');
-      return;
-    }
-    if (k === 'conv') {
-      RW_TIMELINE[4].conv = RW_TIMELINE[3].conv;
-      RW_TIMELINE[4].file = RW_V4_ORIG.file;
-      rwIdx = 4; rwRender();
-      rwShowBanner('<b>✓ Restore conversation only</b><br>對話回到 10:51 綠燈狀態，但 Claude 改壞的檔案保留。', 'conv');
-      return;
-    }
-    if (k === 'code') {
-      RW_TIMELINE[4].file = RW_TIMELINE[3].file;
-      RW_TIMELINE[4].conv = RW_V4_ORIG.conv;
-      rwIdx = 4; rwRender();
-      rwShowBanner('<b>✓ Restore code only（最常用）</b><br>檔案回到 10:51 綠燈狀態，對話保留——讓 Claude 帶著「已知排除的 4 個方向」重新提案。', 'code');
-      return;
-    }
-  });
-
-  rwRender();
-})();
-
-/* ---- D7: BUG DEBUG ---- */
-(function () {
-  var BUGS = {
-    cors: {
-      symptom: '<div class="bug-symptom"><b>瀏覽器 Console：</b><br><code style="color:#c94f3c;">Access to fetch at http://localhost:3000/api/cart blocked by CORS policy</code></div><p>React (5173) 呼叫 Express (3000) API 時被擋下，加入購物車按鈕完全沒反應。</p>',
-      fix: '<p><b>Context 操作策略：</b></p><div class="bug-cmd">/bug</div> 切除錯模式，聚焦 API 端<p style="margin-top:10px;">指引 Claude 加 <code>cors</code> middleware：</p><div class="bug-cmd">@src/server/app.ts</div><div class="bug-cmd">/compact focus on cart API contract</div><div class="bug-fix"><b>修法：</b>app.ts 加 <code>app.use(cors({ origin: "http://localhost:5173" }))</code> + 重啟 server。</div>'
-    },
-    badge: {
-      symptom: '<div class="bug-symptom"><b>使用者回報：</b><br>點「加入購物車」後，右上角 badge 數字沒變，要重新整理才會跳到正確數字。</div><p>後端有正確接到請求——只有前端 badge 沒跟著刷。</p>',
-      fix: '<p><b>Context 操作策略：</b></p><p>兩個檔案就夠，直接同時引入：</p><div class="bug-cmd">@CartContext.tsx @CartBadge.tsx</div><p>Claude 一次看到兩邊就能找到根因。</p><div class="bug-fix"><b>修法：</b>CartContext 的 setState 沒觸發 re-render — useState 用了陣列突變，改回 spread <code>setItems([...items, newItem])</code>。</div>'
-    },
-    total: {
-      symptom: '<div class="bug-symptom"><b>使用者回報：</b><br>購物車裡按 + / − 改數量，品項小計變了，但<b>整體合計沒跟著變</b>。</div><p>Claude 在對話中分析了 5 種可能方向。</p>',
-      fix: '<p><b>Context 操作策略（最高難度）：</b></p><div class="bug-cmd">Esc Esc → Restore code only</div><p>檔案回到改之前，<b>對話保留</b>。Claude 帶著「已知排除的 4 種方向」重新提案。</p><div class="bug-fix"><b>根因：</b>合計用了 <code>cart.total</code>（停留在舊值），應改用 <code>useMemo</code> 從 items 重算。</div>'
-    }
-  };
-
-  var bugTabs    = document.getElementById('bugTabs');
-  var bugSymptom = document.getElementById('bugSymptom');
-  var bugFix     = document.getElementById('bugFix');
-
-  if (!bugTabs || !bugSymptom || !bugFix) return;
-
-  function renderBug(k) {
-    if (!BUGS[k]) return;
-    bugSymptom.innerHTML = BUGS[k].symptom;
-    bugFix.innerHTML     = BUGS[k].fix;
-  }
-
-  bugTabs.addEventListener('click', function (e) {
-    var btn = e.target.closest('.bug-tab');
-    if (!btn) return;
-    bugTabs.querySelectorAll('.bug-tab').forEach(function (b) {
-      b.classList.toggle('active', b === btn);
-    });
-    renderBug(btn.dataset.bug);
-  });
-
-  renderBug('cors');
-})();
-
-/* ---- D8: CONTEXT CHEATSHEET ---- */
-(function () {
-  var CTX_CHEAT = [
-    { cmd: '/clear',          imp: 'xl', label: '完全清除',  sub: '對話歷史 + 讀檔全部歸零',                 scope:[{label:'對話',val:'完全清除'},{label:'程式碼',val:'不變'},{label:'CLAUDE.md',val:'下次 session 重新載入'}], when:'切換到與目前任務完全無關的新工作，或 context rot 已很嚴重。' },
-    { cmd: '/compact',        imp: 'l',  label: '壓縮摘要',  sub: '保留脈絡，大幅縮減 token',                scope:[{label:'對話',val:'壓縮成摘要（約 15%）'},{label:'讀過的檔案',val:'壓縮成摘要（約 40%）'},{label:'CLAUDE.md',val:'不變（磁碟重新注入）'}], when:'完成一個階段但還要繼續，或對話太長 Claude 開始重複問題。' },
-    { cmd: '/compact &lt;指令&gt;', imp: 'l', label: '主題壓縮', sub: '指定保留面向，例：focus on cart API', scope:[{label:'對話',val:'依指令主題壓縮'},{label:'讀過的檔案',val:'依主題保留關鍵部分'},{label:'CLAUDE.md',val:'不變'}], when:'想明確鎖定壓縮重點，例如只保留 API 合約或測試結果。' },
-    { cmd: '/context',        imp: 's',  label: '診斷空間',  sub: '彩色網格顯示 token 分布',                 scope:[{label:'對話',val:'不動（只讀）'},{label:'程式碼',val:'不動（只讀）'},{label:'顯示',val:'系統/MCP/檔案/對話分布'}], when:'覺得回應變慢、品質下降時，先診斷再決定 compact 或 clear。' },
-    { cmd: '/rewind',         imp: 'xl', label: '時光機',    sub: 'Esc Esc 觸發，可分別回退對話/程式碼',     scope:[{label:'對話',val:'可選擇性回滾至某時間點'},{label:'程式碼',val:'可選擇性獨立回滾'},{label:'精準度',val:'最高（三種組合）'}], when:'Claude 走錯方向：用 Restore code only 保留對話推理，只退回壞掉的檔案。' },
-    { cmd: '/resume',         imp: 'l',  label: '跨 session', sub: '從最近 5 個 session 選一個恢復',          scope:[{label:'對話',val:'載入舊 session 歷史'},{label:'程式碼',val:'不變（以當前磁碟為準）'},{label:'記憶',val:'舊 context 裝回工作記憶'}], when:'隔天接續昨天的工作，或想從某個 checkpoint 繼續。' },
-    { cmd: '/fork',           imp: 'm',  label: '分支試驗',  sub: '從當前點分出，不影響主線',                 scope:[{label:'對話',val:'複製一份作為分支'},{label:'程式碼',val:'兩份都保留'},{label:'主線',val:'完全不受影響'}], when:'想比較兩種實作方案，或探索高風險重構。' },
-    { cmd: 'CLAUDE.md',       imp: 'xl', label: '長期記憶',  sub: '每次 session 啟動自動載入',                scope:[{label:'範圍',val:'全域（所有 session）'},{label:'持久性',val:'永久（直到手動修改）'},{label:'適用',val:'架構決策/命名規範/禁止行為'}], when:'把需要 Claude 每次都記住的規則寫進去，例如「合計由 server 計算」。' },
-    { cmd: '@path',           imp: 'm',  label: '單次引入',  sub: '把指定檔案注入當前 context',               scope:[{label:'範圍',val:'當前 session'},{label:'用法',val:'@src/server/app.ts'},{label:'CLAUDE.md',val:'不影響（避免本體膨脹）'}], when:'單次除錯需要參照某個檔案，不想把它寫進 CLAUDE.md。' },
-    { cmd: '/mcp',            imp: 'l',  label: 'MCP 管理', sub: '停用閒置 server 釋放 token',               scope:[{label:'MCP 工具定義',val:'停用後從 context 移除'},{label:'對話',val:'不變'},{label:'節省空間',val:'每個 server 約數 k token'}], when:'/context 顯示 MCP 佔比過高，且你已確認該 server 暫時不用。' }
-  ];
-
-  var IMP_MAP = { xl: '極大', l: '大', m: '中', s: '小' };
-
-  var ctxCheatGrid   = document.getElementById('ctxCheatGrid');
-  var ctxCheatDetail = document.getElementById('ctxCheatDetail');
-
-  if (!ctxCheatGrid || !ctxCheatDetail) return;
-
-  ctxCheatGrid.innerHTML = CTX_CHEAT.map(function (c, i) {
-    return '<button class="ctx-cc-btn" data-idx="' + i + '">' + c.cmd + '<span class="cc-imp ' + c.imp + '">' + IMP_MAP[c.imp] + '影響</span></button>';
-  }).join('');
-
-  function renderCheatDetail(c) {
-    var scopeHtml = c.scope.map(function (s) {
-      return '<div class="cc-scope-item"><div class="cc-scope-label">' + s.label + '</div><div class="cc-scope-val">' + s.val + '</div></div>';
-    }).join('');
-    ctxCheatDetail.innerHTML = '<h5>' + c.cmd + '</h5><div class="cc-sub">' + c.label + '・' + c.sub + '</div><div class="cc-scope">' + scopeHtml + '</div><div class="cc-when"><b>使用時機：</b>' + c.when + '</div>';
-  }
-
-  ctxCheatGrid.addEventListener('click', function (e) {
-    var btn = e.target.closest('.ctx-cc-btn');
-    if (!btn) return;
-    ctxCheatGrid.querySelectorAll('.ctx-cc-btn').forEach(function (b) {
-      b.classList.toggle('active', b === btn);
-    });
-    var idx = parseInt(btn.dataset.idx, 10);
-    renderCheatDetail(CTX_CHEAT[idx]);
-  });
-})();
-
-/* ---- D9: SLASH COMMANDS CHEATSHEET ---- */
-(function () {
-  var SLASH = [
-    { cat:'context', cmd:'/clear',          impact:5, purpose:'完全清空對話歷史，開始全新 session',                            when:'切換到無關的新任務' },
-    { cat:'context', cmd:'/compact',        impact:4, purpose:'壓縮對話歷史成摘要，保留關鍵資訊繼續使用',                      when:'階段完成但需保留脈絡' },
-    { cat:'context', cmd:'/compact &lt;指令&gt;', impact:4, purpose:'帶提示的壓縮：保留你關心的面向（如 cart API contract）', when:'壓縮但要鎖定特定主題' },
-    { cat:'context', cmd:'/context',        impact:1, purpose:'顯示彩色網格，告訴你 context 被什麼佔用',                      when:'覺得變慢時先診斷' },
-    { cat:'memory',  cmd:'CLAUDE.md',       impact:5, purpose:'專案層的 Markdown 共識契約，每次 session 啟動都自動載入',       when:'寫架構決策、命名規範、禁止行為' },
-    { cat:'memory',  cmd:'/memory',         impact:3, purpose:'開啟 memory 編輯器，瀏覽 Claude 記得的所有事',                  when:'想看 Claude 記住了什麼' },
-    { cat:'memory',  cmd:'@path',           impact:2, purpose:'把指定檔/資料夾匯入 context，避開 CLAUDE.md 本體膨脹',          when:'單次需要某個檔案' },
-    { cat:'flow',    cmd:'/resume',         impact:4, purpose:'瀏覽並恢復先前的 session（可選 5 個最近）',                     when:'跨天接續上次的工作' },
-    { cat:'flow',    cmd:'/rewind',         impact:5, purpose:'回到對話某時間點，可分別處理對話與程式碼',                      when:'Claude 走錯方向（Esc Esc 快捷）' },
-    { cat:'flow',    cmd:'/fork',           impact:3, purpose:'從當前點分支出去試另一種作法，不影響主線',                      when:'想比較兩種方案' },
-    { cat:'flow',    cmd:'/rename',         impact:1, purpose:'幫當前 session 取個可讀名稱',                                  when:'下班前命名 + /compact' },
-    { cat:'perf',    cmd:'/model',          impact:2, purpose:'切換 Opus / Sonnet / Haiku（不同情境用不同模型）',              when:'規劃用 Opus、實作用 Sonnet' },
-    { cat:'perf',    cmd:'/effort',         impact:2, purpose:'設定推理深度 low / medium / high / max / auto',                when:'簡單任務不需要 max' },
-    { cat:'perf',    cmd:'/mcp',            impact:4, purpose:'管理 MCP 伺服器連線（停用閒置 server 可釋放 token）',           when:'/context 顯示 MCP 過大' },
-    { cat:'perf',    cmd:'/agents',         impact:3, purpose:'啟用 subagent 用獨立 context 執行任務',                        when:'長任務交背景，主線不卡' },
-    { cat:'perf',    cmd:'/permissions',    impact:2, purpose:'管理 Claude 可自動執行的動作範圍',                              when:'切換 ask / accept / plan' },
-    { cat:'observe', cmd:'/cost',           impact:2, purpose:'查看 token 用量、session 時長、程式碼變更量',                   when:'想知道這次花了多少' },
-    { cat:'observe', cmd:'/status',         impact:1, purpose:'查看帳號、模型、權限資訊',                                     when:'確認當前模型沒切錯' },
-    { cat:'observe', cmd:'/stats',          impact:2, purpose:'用量統計與分析報表',                                           when:'每週/月看自己用得對不對' },
-    { cat:'observe', cmd:'/doctor',         impact:3, purpose:'檢查安裝健康狀態（Node / OAuth / 網路）',                      when:'裝完或出問題時' },
-    { cat:'observe', cmd:'/diff',           impact:2, purpose:'互動式檢視未 commit 的變更',                                   when:'PR 前最後檢查' }
-  ];
-  var IMPACT = {
-    5: { name:'極大影響', color:'#c94f3c' },
-    4: { name:'大影響',   color:'#d97757' },
-    3: { name:'中影響',   color:'#c79134' },
-    2: { name:'小影響',   color:'#88a07a' },
-    1: { name:'低影響',   color:'#7a8aa0' }
-  };
-  var slashGrid   = document.getElementById('slashGrid');
-  var slashFilter = document.getElementById('slashFilter');
-  if (!slashGrid || !slashFilter) return;
-  function renderSlash(cat) {
-    var items = cat === 'all' ? SLASH : SLASH.filter(function(s){ return s.cat === cat; });
-    items.sort(function(a, b){ return b.impact - a.impact; });
-    slashGrid.innerHTML = items.map(function(s) {
-      var imp = IMPACT[s.impact];
-      return '<div class="slash-card" data-impact="' + s.impact + '">'
-        + '<div class="slash-card-top"><div class="slash-cmd">' + s.cmd + '</div>'
-        + '<span class="slash-impact" style="background:' + imp.color + '1f;color:' + imp.color + ';border-color:' + imp.color + '55;">' + imp.name + '</span></div>'
-        + '<div class="slash-purpose">' + s.purpose + '</div>'
-        + '<div class="slash-when"><b>時機：</b>' + s.when + '</div>'
-        + '</div>';
-    }).join('');
-  }
-  slashFilter.addEventListener('click', function(e) {
-    var btn = e.target.closest('.slash-pill');
-    if (!btn) return;
-    slashFilter.querySelectorAll('.slash-pill').forEach(function(p){ p.classList.toggle('active', p === btn); });
-    renderSlash(btn.dataset.cat);
-  });
-  renderSlash('all');
-})();
-
-/* ---- D10: IRON LAWS FLIP CARDS ---- */
-(function () {
-  var IRON = [
-    {
-      num: 'IRON LAW · 01', title: 'TDD 鐵律',
-      law: 'NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST',
-      skill: 'superpowers:test-driven-development',
-      why: '<h6>強制做的事</h6><ul><li>先寫測試 → 跑測試確認失敗 → 才寫實作</li><li>沒看到測試失敗 = 不知道測試在測什麼</li><li>已經寫了？刪掉重來，不准「拿來參考」</li></ul>'
-    },
-    {
-      num: 'IRON LAW · 02', title: '驗證鐵律',
-      law: 'NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE',
-      skill: 'superpowers:verification-before-completion',
-      why: '<h6>強制做的事</h6><ul><li>宣稱「完成」前必須當場執行驗證指令</li><li>必須貼出真實輸出 — 不接受「應該對」「看起來通過」</li><li>禁止使用 should / probably</li></ul>'
-    },
-    {
-      num: 'IRON LAW · 03', title: '除錯鐵律',
-      law: 'NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST',
-      skill: 'superpowers:systematic-debugging',
-      why: '<h6>強制做的事</h6><ul><li>沒有找到根本原因就不准動程式</li><li>禁止「試試看」式除錯</li><li>每個修正都需先確立假設並驗證</li></ul>'
-    }
-  ];
-  var ironGrid = document.getElementById('ironGrid');
-  if (!ironGrid) return;
-  ironGrid.innerHTML = IRON.map(function(i) {
-    return '<div class="iron-card"><div class="iron-card-inner">'
-      + '<div class="iron-front"><div>'
-      + '<div class="iron-num">' + i.num + '</div>'
-      + '<h5>' + i.title + '</h5></div>'
-      + '<div class="iron-law">&#x1F534; ' + i.law + '</div>'
-      + '<div class="iron-flip-hint">點卡片翻面 →</div></div>'
-      + '<div class="iron-back">' + i.why
-      + '<div class="iron-skill">' + i.skill + '</div></div>'
-      + '</div></div>';
-  }).join('');
-  ironGrid.addEventListener('click', function(e) {
-    var c = e.target.closest('.iron-card');
-    if (c) c.classList.toggle('flipped');
-  });
-})();
-
-/* ---- D11: HARNESS 7 CATEGORIES ---- */
-(function () {
-  var HARNESS = [
-    { key:'context', icon:'📖', name:'Context Harness',       q:'Agent 看到什麼？',       detail:'<h5>上下文 Harness · Agent 看到什麼？</h5>把規則、架構、慣例寫進磁碟，讓每次 session 都自動載入。',                             impl:'課程實踐：CLAUDE.md（合計伺服器計算 / 合併不重複）、spec.md、@import、RAG 檢索增強' },
-    { key:'tool',    icon:'🛠', name:'Tool Harness',          q:'Agent 能用什麼工具？',   detail:'<h5>工具 Harness · Agent 能用什麼工具？</h5>定義 Agent 可呼叫的工具邊界 — MCP server、function calling、權限白名單。',          impl:'課程實踐：Playwright MCP（瀏覽器自動化）、firecrawl、自訂 Skill、權限白名單' },
-    { key:'flow',    icon:'🔀', name:'Control Flow Harness',  q:'Agent 怎麼決策與執行？', detail:'<h5>控制流 Harness · Agent 怎麼決策與執行？</h5>決定 Agent 的決策路徑、執行順序、人類審批閘門。',                              impl:'課程實踐：Plan Mode（先看計畫再執行）、Auto Mode、PreToolUse Hook（送 PR 前資安掃描）' },
-    { key:'verify',  icon:'✓',  name:'Verification Harness',  q:'Agent 做對沒？',         detail:'<h5>驗證 Harness · Agent 做對沒？</h5>用測試、CI、review 命令把「宣稱完成」變成「驗證完成」。',                                impl:'課程實踐：TDD Vitest 迴圈、Playwright E2E、/review 三維度、/simplify 重構' },
-    { key:'state',   icon:'🧠', name:'State / Memory Harness',q:'Agent 記得什麼？',       detail:'<h5>狀態 / 記憶 Harness · Agent 記得什麼？</h5>主動管理 Agent 的工作記憶，避免 context rot。',                                  impl:'課程實踐：/clear、/compact、/rewind（時光機）、/resume（跨 session 接續）' },
-    { key:'observe', icon:'👁', name:'Observability Harness', q:'Agent 在做什麼？',       detail:'<h5>可觀測性 Harness · Agent 在做什麼？</h5>把執行過程、token 用量、成本變得可見。',                                            impl:'課程實踐：/context（看 token 怎麼被吃）、/cost、/stats、LangSmith / Phoenix tracing' },
-    { key:'safety',  icon:'🛡', name:'Safety Harness',        q:'Agent 不能做什麼？',     detail:'<h5>安全 Harness · Agent 不能做什麼？</h5>用權限模式、分類器、沙盒劃出絕對不能跨越的邊界。',                                    impl:'課程實踐：Auto Mode 分類器把關、Bypass Mode 沙盒、disableBypassPermissionsMode 管理員設定' }
-  ];
-  var harnessWheel  = document.getElementById('harnessWheel');
-  var harnessDetail = document.getElementById('harnessDetail');
-  if (!harnessWheel || !harnessDetail) return;
-  harnessWheel.innerHTML = HARNESS.map(function(h) {
-    return '<button class="harness-card" data-key="' + h.key + '">'
-      + '<div class="harness-emoji">' + h.icon + '</div>'
-      + '<div class="harness-name">' + h.name + '</div>'
-      + '<div class="harness-q">' + h.q + '</div>'
-      + '</button>';
-  }).join('');
-  harnessWheel.addEventListener('click', function(e) {
-    var card = e.target.closest('.harness-card');
-    if (!card) return;
-    harnessWheel.querySelectorAll('.harness-card').forEach(function(c){ c.classList.toggle('active', c === card); });
-    var h = HARNESS.filter(function(x){ return x.key === card.dataset.key; })[0];
-    harnessDetail.innerHTML = h.detail + '<div class="hd-impl">' + h.impl + '</div>';
-    harnessDetail.classList.add('show');
-  });
-})();
   </script>
 </body>
 </html>

@@ -591,7 +591,7 @@ npx playwright show-report
 
 ---
 
-## 第 3 段：自動化、Skill 與背景 Agent（75 mins）
+## 第 3 段：自動化、Skill 與背景 Agent（85 mins）
 
 **目標**：讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、將規則無程式化為 Skill，以及把耗時長任務交給背景 Agent。
 
@@ -690,9 +690,143 @@ Claude 會依序執行：
 
 * **意義**：一個 Prompt 可取代手動操作 + 截圖 + 紀錄 + 整理，SOP 文件與程式碼同步維護在 repo 中。
 
-### 3-2 用 `skill-creator` 製作企業資安規範檢查 Skill（25 mins）
+### 3-2 Agent Skills 與 Hooks 概念入門（10 mins）
 
-![3-2 教學圖](image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png)
+> **定位**：在進入 3-3 的 `skill-creator` 實作之前，先建立兩個核心概念：**Agent Skills 是「可重用的規則與流程包」**、**Hooks 是「在工具事件邊界強制執行的攔截器」**。3-3 會把兩者組合成「資安規範 Skill + PR 建立前的 Hook 攔截」實戰。
+
+#### Agent Skills 是什麼？
+
+Agent Skills 遵循 [agentskills.io](https://agentskills.io) 開放標準，本質是一個帶有 `SKILL.md` 的資料夾。Claude 會根據 frontmatter 的 `description` 自動判斷何時啟用，也能用 `/skill-name` 手動觸發。
+
+```yaml
+---
+name: explain-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works.
+---
+
+When explaining code, always include:
+1. Start with an analogy
+2. Draw an ASCII diagram
+3. Walk through the code step-by-step
+```
+
+**Skills 與 CLAUDE.md 的差異**：CLAUDE.md 永遠載入 context；Skill 的 body 只在被觸發時才載入，所以「長篇參考資料」放 Skill 比放 CLAUDE.md 划算。
+
+**Skill 存放層級**：
+
+| 層級       | 路徑                                       | 適用範圍              |
+| ---------- | ------------------------------------------ | --------------------- |
+| Enterprise | 由 managed settings 管理                   | 全組織                |
+| Personal   | `~/.claude/skills/<skill-name>/SKILL.md`   | 你所有專案            |
+| Project    | `.claude/skills/<skill-name>/SKILL.md`     | 此專案                |
+| Plugin     | `<plugin>/skills/<skill-name>/SKILL.md`    | 啟用該 plugin 的地方  |
+
+**呼叫權限控制**：
+
+| Frontmatter                      | 你可叫 | Claude 可叫 |
+| -------------------------------- | ------ | ----------- |
+| 預設                             | ✅     | ✅          |
+| `disable-model-invocation: true` | ✅     | ❌          |
+| `user-invocable: false`          | ❌     | ✅          |
+
+> 高副作用流程（`/deploy`、`/commit`）建議加 `disable-model-invocation: true`，避免 Claude 自己決定要部署。
+
+#### Hooks 是什麼？
+
+Hooks 是把外部 shell 指令掛到 Claude Code 的事件生命週期上的機制，配置在 `.claude/settings.json`。當特定事件觸發時（例如工具呼叫前），hook 命令會被執行；其 stdout/stderr 與 exit code 決定後續行為（exit 1 會中止工具呼叫）。
+
+**官方 Hook 生命週期圖**（來源：Anthropic Claude Code 官方文件）：
+
+<div style="text-align:center;margin:16px 0;"><img src="image/claude_code_syllabus/teaching-diagrams/3-2-hooks-lifecycle.svg" alt="Hook lifecycle diagram (Anthropic 官方)" style="max-width:520px;width:100%;background:#F9F9F7;border-radius:8px;padding:12px;"></div>
+
+關鍵事件分四類：
+
+| 類別           | 代表事件                                                      | 用途                                  |
+| -------------- | ------------------------------------------------------------- | ------------------------------------- |
+| 會話生命週期   | `SessionStart`、`SessionEnd`                                  | 注入環境上下文、清理暫存              |
+| 使用者輸入     | `UserPromptSubmit`、`UserPromptExpansion`                     | 改寫提示、紀錄稽核                    |
+| **工具邊界**   | **`PreToolUse`**、`PermissionRequest`、**`PostToolUse`** | **本課重點：在工具執行前攔截或審查** |
+| 任務 / Agent   | `SubagentStart`、`TaskCompleted`                              | 多代理協作的時序鎖                    |
+| 上下文與壓縮   | `PreCompact`、`PostCompact`                                   | 壓縮前後保留關鍵記憶                  |
+
+**Hook 解析流程**（matcher → if → handler）：
+
+<div style="text-align:center;margin:16px 0;"><img src="image/claude_code_syllabus/teaching-diagrams/3-2-hook-resolution.svg" alt="Hook resolution flow (Anthropic 官方)" style="max-width:520px;width:100%;background:#F9F9F7;border-radius:8px;padding:12px;"></div>
+
+`PreToolUse` 觸發時，hook 設定先用 `matcher`（如 `"Bash"`）比對工具名稱，再以 stdin JSON 讓自訂腳本判斷是否為目標指令（如包含 `gh pr create`），最後由 exit code 決定放行或中止。
+
+**Hook 處理器的 5 種 `type`（依用途歸納為 3 大類）**：
+
+handler 的 `type` 欄位決定「事件觸發後實際執行什麼」。Anthropic 官方目前提供 5 種 type，依「執行邏輯放在哪」可分成三大類，深度遞增：
+
+| 大類           | type         | 做什麼                                                                                   | 教學記憶               |
+| -------------- | ------------ | ---------------------------------------------------------------------------------------- | ---------------------- |
+| **① 確定性執行** | `command`    | 跑 shell 腳本，由 stdin 收事件 JSON、用 exit code 與 stdout 回應                        | 最常用、最便宜         |
+| **① 確定性執行** | `http`       | 把事件 JSON 以 POST 送到指定 URL，由 response body 回應                                  | 接公司內部稽核服務     |
+| **① 確定性執行** | `mcp_tool`   | 呼叫已連線的 MCP server 上的某個 tool，tool 文字輸出視同 stdout                          | 重用 MCP 生態（如安全掃描 server） |
+| **② LLM 判斷**   | `prompt`     | 把 prompt + 事件 JSON 丟給單輪 LLM，模型回傳 yes/no JSON 決策                            | 規則難寫死、需要語意判斷時 |
+| **③ Subagent 驗證** | `agent`     | 產生子代理用 `Read` / `Grep` / `Glob` 等工具多步蒐證後回應（**experimental**）          | 需要實際讀程式碼才能下判斷 |
+
+> **三類深度遞增**：① 規則寫死、② 讓模型快速判斷、③ 讓代理實際查證。**永遠先試 ① command；① 寫不出來才考慮 ② prompt；② 還判斷不出才升級 ③ agent**——上層越高越貴、越慢、越不可預測。
+
+**5 種 type 的最小範例**：
+
+```json
+// ① command：跑本地腳本（前面 PR 攔截範例）
+{ "type": "command", "command": "node scripts/security-check.js" }
+
+// ① http：把事件丟到企業稽核服務
+{ "type": "http", "url": "http://localhost:8080/hooks/pre-tool-use",
+  "headers": { "Authorization": "Bearer $TOKEN" }, "allowedEnvVars": ["TOKEN"] }
+
+// ① mcp_tool：呼叫已連線 MCP server 的 tool
+{ "type": "mcp_tool", "server": "security-scanner", "tool": "scan_diff",
+  "input": { "file_path": "${tool_input.file_path}" } }
+
+// ② prompt：用 LLM 單輪判斷
+{ "type": "prompt", "prompt": "Is this command safe to execute? $ARGUMENTS" }
+
+// ③ agent：派子代理蒐證後回應（experimental）
+{ "type": "agent", "prompt": "Verify deployment target is staging. $ARGUMENTS" }
+```
+
+> **共通欄位**：所有 type 都支援 `if`（permission rule 篩選，如 `"Bash(git *)"`）、`timeout`（command 600s / prompt 30s / agent 60s 預設）、`statusMessage`（執行時的旋轉提示）、`once`（每 session 只跑一次）。
+
+**最小可運作配置**（`.claude/settings.json`）：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node scripts/security-check.js" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Skill 與 Hook 的角色分工
+
+| 比較面向       | Agent Skills                              | Hooks                                       |
+| -------------- | ----------------------------------------- | ------------------------------------------- |
+| 性質           | 「規則 + 流程」的可重用知識包             | 工具事件邊界的攔截器                        |
+| 觸發者         | 你 / Claude（依 frontmatter 控制）        | 事件發生時由 Claude Code 自動觸發           |
+| 是否可被跳過   | 可以（Claude 沒呼叫就不啟用）             | **不可以**（事件一發生就執行，無法迴避）  |
+| 載入時機       | 被觸發時才把 body 載入 context            | 每次事件都重新執行 shell 命令               |
+| 適合用途       | 知識、檢查清單、固定流程、一致風格        | 強制紀律、稽核、CI 層級的閘門               |
+| 副作用控制     | `disable-model-invocation`、`allowed-tools` | exit code 直接決定工具是否被執行            |
+
+> **教學原則**：**Skill 是「Claude 可以用」的工具；Hook 是「Claude 必須遵守」的規則。** 3-3 會把兩者組合：把資安規則寫成 Skill 讓 Claude 主動掃描，再用 PreToolUse Hook 在 `gh pr create` 時強制再跑一次，避免任何人（含 AI 自己）忘記跑檢查。
+
+* **意義**：學員建立心智模型後，3-3 起才能真正理解為什麼「同一條資安規則要同時寫成 Skill 與 Hook」——前者讓 Claude 在對話中養成習慣，後者讓系統在工具邊界擋住所有逃逸路徑。
+
+### 3-3 用 `skill-creator` 製作企業資安規範檢查 Skill（25 mins）
+
+![3-3 教學圖](image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png)
 
 * **企業情境設定**：
 
@@ -734,9 +868,9 @@ Claude 會依序執行：
 
   * **教學重點**：hooks 的本質是「把人工習慣寫成系統強制」——不再依賴工程師記得跑檢查，而是在工具執行層自動攔截，無法被跳過。`PreToolUse` 回傳非零 exit code 時，Claude 會中止該工具呼叫並顯示 hook 輸出，學員可直接看到被攔截的效果。
 
-### 3-3 開發輔助技能分類導覽（15 mins）
+### 3-4 開發輔助技能分類導覽（15 mins）
 
-![3-3 教學圖](image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png)
+![3-4 教學圖](image/claude_code_syllabus/teaching-diagrams/3-3-skill-categories.png)
 
 | 類別               | 技能                                                     | 使用時機                                            |
 | ------------------ | -------------------------------------------------------- | --------------------------------------------------- |
@@ -762,9 +896,9 @@ Claude 會依序執行：
 * **`superpowers` 系列定位**：這是一整套「強制紀律」技能，第 4 段 4-3 會集中講完整管線（spec → TDD → e2e → PR）。先在這裡知道有這套，等下一段就能組合使用。
 * **`ui-ux-pro-max` 補充**：與 `reactcomponents`（產出元件）不同，`ui-ux-pro-max` 的核心是「設計紀律」——觸發後 Claude 會先批評現狀三個問題，再依**主角優先（每個 section 只一個主角）→ 刪除優先（迷惑時先刪再說）→ 餘白系統（section 間距 ≥ 112 px）→ WCAG 對比（Lighthouse Accessibility 100%）**的鐵律提出改善方案。適合在設計稿評審、Landing Page 或購物車前端視覺 review 時呼叫，避免輸出「全元素等重、過度裝飾」的 AI 生成感頁面。
 
-### 3-4 深入講解 `/agent` 背景長任務（20 mins）
+### 3-5 深入講解 `/agent` 背景長任務（20 mins）
 
-![3-4 教學圖](image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png)
+![3-5 教學圖](image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png)
 
 * **適合交給背景 Agent 的工作**：
 
@@ -875,13 +1009,26 @@ Claude 會依序執行：
 >
 > **與課程主軸的對應**：你的 SDD `spec.md`、TDD `CartService`、Playwright e2e 在前面已示範完整流程；本節把這個流程**升級成可重複、可審計、不會偷懶的紀律管線**。
 
-#### 安裝
+#### 安裝（必須兩步驟，順序不可顛倒）
+
+`superpowers` 透過 Claude Code 的 plugin 機制散布，採用社群維護的 **plugin marketplace**。安裝前必須先把市場註冊到 Claude Code，才能從市場安裝 plugin。
 
 ```bash
-claude plugin install superpowers
+# 步驟 1：先把 superpowers-marketplace 註冊到 Claude Code（缺這步 install 會失敗）
+/plugin marketplace add obra/superpowers-marketplace
+
+# 步驟 2：從市場安裝 superpowers plugin
+/plugin install superpowers@superpowers-marketplace
+
+# 步驟 3：以 /help 驗證
+/help
 ```
 
+> 在 `/help` 中應看到 `/superpowers:brainstorm`、`/superpowers:write-plan`、`/superpowers:execute-plan` 等命令列出，代表安裝成功。
+
 安裝後技能會出現在可用 Skill 清單中，依名稱呼叫即可（例：`superpowers:test-driven-development`）。
+
+> **教學提示**：所有 plugin 安裝皆遵循同一規則 ——「先 `add marketplace`，再 `install plugin`」。日後課程或工作中若遇到任何 plugin（不限 superpowers），都要把 marketplace 註冊放在第一步。
 
 #### 為什麼需要紀律技能
 
@@ -1054,7 +1201,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 | **共識能力** | 用 SDD 寫 `spec.md` 與 `CLAUDE.md`，把「你與 Claude 的共識契約」寫進磁碟，避免每次重新解釋                                                                                          | 1-2、2-1           |
 | **紀律能力** | TDD 三循環（Red → Green → Refactor）+ Auto Mode 自主迴圈 +**superpowers Iron Laws**（沒測試不寫程式、沒驗證不宣稱完成、沒找到根因不動程式），讓測試成為 Claude 不會偏離的軌道 | 2-2、4-3           |
 | **治理能力** | Context 主動管理（`/clear` `/compact` `/context` `/rewind`）+ 權限模式選擇（Auto vs Bypass），決定 Claude 的「記憶」與「動作授權」                                              | 1-1、1-2、2-4、4-2 |
-| **延伸能力** | Skill 把規則固化、`/agent` 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業                                                                               | 3-1～3-4           |
+| **延伸能力** | Skill 把規則固化、`/agent` 把長任務切出去、Playwright MCP 讓 Claude 自主驗證 UI、Git Worktrees 平行作業                                                                               | 3-1～3-5           |
 
 ### 三個關鍵心智轉變
 
@@ -1082,7 +1229,7 @@ requesting-code-review  →  finishing-a-development-branch  →  PR
 - [ ] 在 PR 流程加入 `/review` + `/simplify` 的固定收尾
 - [ ] 練習 `/rewind` 的五個選項，特別是 **Restore code only**
 - [ ] 評估你的方案是否能用 Auto Mode（Team / Enterprise / API + Sonnet 4.6 以上）
-- [ ] 安裝 `superpowers` plugin，至少跑過一次 `writing-plans` + `test-driven-development` + `verification-before-completion` 完整管線
+- [ ] 先 `/plugin marketplace add obra/superpowers-marketplace`，再 `/plugin install superpowers@superpowers-marketplace`，至少跑過一次 `writing-plans` + `test-driven-development` + `verification-before-completion` 完整管線
 - [ ] 把三條 Iron Laws 寫進團隊 `CLAUDE.md`，把紀律從「個人習慣」升級成「團隊契約」
 
 ---

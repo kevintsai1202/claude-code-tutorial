@@ -22,6 +22,10 @@
 | IMG-01 | 更新 4-3 superpowers 流程圖以對齊新版鐵律 | 完成 | 已覆蓋 `image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png`，課綱引用路徑維持不變 |
 | INST-01 | 同步官方最新 CLI 安裝方式（Native Install 為主、Homebrew --cask、WinGet） | 完成 | 課綱 1-1 節與工具表、HTML、docx 已同步更新 |
 | INST-02 | 移除課綱標題括號內文字「（4 小時線上錄影課大綱）」 | 完成 | 標題已精簡，HTML 與 docx 同步重新生成 |
+| EDU-01 | 在 3-2 之前新增「Agent Skills 與 Hooks 概念入門」節，並順延原 3-2/3-3/3-4 為 3-3/3-4/3-5 | 完成 | 嵌入 Anthropic 官方 hooks-lifecycle.svg、hook-resolution.svg；第 3 段時數 75 → 85 mins |
+| INST-03 | 修正 superpowers 安裝指令為兩步驟（先 add marketplace，再 install plugin） | 完成 | 同步課綱 4-3、project_plan、curriculum、generate_syllabus、portfolio_implementation_plan；HTML 與 docx 重生成 |
+| EDU-02 | 補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent）並用 3 大類分組（確定性執行/LLM 判斷/Subagent 驗證） | 完成 | 寫入 3-2 概念入門節，HTML 與 docx 重生成 |
+| WEB-12 | 主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側 eyebrow / h2 / 描述段，避免文字與圖片並列雜亂 | 完成 | PS1 移除 `.hero-media-copy` 樣式與對應 HTML，shell 改 single column |
 
 ## 當前任務
 
@@ -57,3 +61,7 @@
 - `2026-04-28`：將 3-2 Hooks 段落改為「送 PR 前強制資安掃描」實戰，包含 settings.json 結構與製作 Hook 的示範 Prompt。
 - `2026-04-28`：同步官方最新 CLI 安裝方式（Native Install 為推薦主流、Homebrew 加 --cask、WinGet 新增），並更新 Node.js 前提說明；HTML 與 docx 同步重新生成。
 - `2026-04-28`：移除課綱標題括號內文字「（4 小時線上錄影課大綱）」，HTML 與 docx 同步重新生成。
+- `2026-04-29`：在 3-2 前插入「Agent Skills 與 Hooks 概念入門」（10 mins），原 3-2/3-3/3-4 順延為 3-3/3-4/3-5；嵌入 Anthropic 官方 `hooks-lifecycle.svg` 與 `hook-resolution.svg`；第 3 段時數 75 → 85 mins。
+- `2026-04-29`：修正 superpowers 安裝指令為兩步驟（先 `/plugin marketplace add obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace`），同步 syllabus、project_plan、curriculum、generate_syllabus、portfolio_implementation_plan；HTML 與 docx 重新生成。
+- `2026-04-29`：補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent），歸納為 3 大類（確定性執行/LLM 判斷/Subagent 驗證），加上 5 種型式的最小 JSON 範例與共通欄位說明。
+- `2026-04-29`：主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側標題與描述文字，避免與右側圖片並列造成視覺雜亂。

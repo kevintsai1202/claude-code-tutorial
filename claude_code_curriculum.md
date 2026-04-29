@@ -41,8 +41,8 @@
 
 ### superpowers 開發紀律技能套組
 
-- [x] **superpowers plugin（Anthropic 官方）**
-  - 安裝：`claude plugin install superpowers`
+- [x] **superpowers plugin（obra/superpowers-marketplace 社群維護）**
+  - 安裝（須兩步驟）：`/plugin marketplace add obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace`
   - 8 個關鍵技能：`brainstorming` / `writing-plans` / `executing-plans` / `test-driven-development` / `systematic-debugging` / `verification-before-completion` / `requesting-code-review` / `finishing-a-development-branch`
   - **三條 Iron Laws**（課程記憶錨點）：
     - 🔴 `NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`
