@@ -26,6 +26,7 @@
 | INST-03 | 修正 superpowers 安裝指令為兩步驟（先 add marketplace，再 install plugin） | 完成 | 同步課綱 4-3、project_plan、curriculum、generate_syllabus、portfolio_implementation_plan；HTML 與 docx 重生成 |
 | EDU-02 | 補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent）並用 3 大類分組（確定性執行/LLM 判斷/Subagent 驗證） | 完成 | 寫入 3-2 概念入門節，HTML 與 docx 重生成 |
 | WEB-12 | 主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側 eyebrow / h2 / 描述段，避免文字與圖片並列雜亂 | 完成 | PS1 移除 `.hero-media-copy` 樣式與對應 HTML，shell 改 single column |
+| WEB-13 | 整合互動教學網頁為雙網站並存模式：interactive.html / tutorial.v4.js 放根目錄與主講義同層、共用 image/，主網站 hero 與 sidebar 各加跳轉 CTA，互動網頁加返回連結；deploy-pages.yml 同步部署 | 完成 | GitHub Pages 部署同時提供 `/`、`/interactive.html`、`/claude_code_teaching_website.html` 三條入口 |
 
 ## 當前任務
 
@@ -65,3 +66,4 @@
 - `2026-04-29`：修正 superpowers 安裝指令為兩步驟（先 `/plugin marketplace add obra/superpowers-marketplace` → `/plugin install superpowers@superpowers-marketplace`），同步 syllabus、project_plan、curriculum、generate_syllabus、portfolio_implementation_plan；HTML 與 docx 重新生成。
 - `2026-04-29`：補上 Hook 5 種 type（command/http/mcp_tool/prompt/agent），歸納為 3 大類（確定性執行/LLM 判斷/Subagent 驗證），加上 5 種型式的最小 JSON 範例與共通欄位說明。
 - `2026-04-29`：主視覺區（hero-media-card）精簡為僅顯示圖片，移除左側標題與描述文字，避免與右側圖片並列造成視覺雜亂。
+- `2026-04-29`：整合互動教學網頁為雙網站並存模式：`interactive.html` + `tutorial.v4.js` 放根目錄與主講義同層、共用 `image/`；主網站 hero 區與 sidebar 各加跳轉 CTA，互動網頁回程加「返回完整講義」連結；`deploy-pages.yml` 加 paths trigger 與 cp 指令，部署後 `/`、`/interactive.html`、`/claude_code_teaching_website.html` 三條入口皆可用。

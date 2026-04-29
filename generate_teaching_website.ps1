@@ -284,6 +284,45 @@ $template = @'
       padding: 24px;
     }
 
+    .hero-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: var(--orange);
+      color: #fffdf8;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 12px 30px rgba(217, 108, 24, 0.35);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      background: #e9791f;
+      box-shadow: 0 18px 40px rgba(217, 108, 24, 0.5);
+    }
+
+    .hero-cta .hero-cta-arrow {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .hero-cta-note {
+      font-size: 0.85rem;
+      color: rgba(248,250,252,0.75);
+      align-self: center;
+    }
+
     .hero-visual-slot .visual-preview {
       margin: 0;
       min-height: 520px;
@@ -763,6 +802,15 @@ $template = @'
           <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
           <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
         </div>
+        <div class="sidebar-card">
+          <h3>互動體驗版</h3>
+          <p>另開分頁，跑 CLI 模擬器、TDD 動畫、Context 管理 demo 等可互動內容。</p>
+          <a class="hero-cta" style="margin-top:10px;width:100%;justify-content:center;font-size:0.95rem;padding:11px 18px;" href="interactive.html" target="_blank" rel="noopener">
+            <span aria-hidden="true">🎮</span>
+            <span>開啟互動體驗</span>
+            <span class="hero-cta-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
       </aside>
 
       <div class="main-column">
@@ -773,6 +821,14 @@ $template = @'
                 <span class="eyebrow">Interactive Teaching Website</span>
                 <h1>__TITLE__</h1>
                 <p>__SUBTITLE__</p>
+                <div class="hero-cta-row">
+                  <a class="hero-cta" href="interactive.html" target="_blank" rel="noopener">
+                    <span aria-hidden="true">🎮</span>
+                    <span>進入互動體驗版</span>
+                    <span class="hero-cta-arrow" aria-hidden="true">→</span>
+                  </a>
+                  <span class="hero-cta-note">CLI 模擬器、TDD 動畫、Context 管理示範等課堂互動 demo</span>
+                </div>
                 <div class="hero-points">
                   <div class="hero-point">
                     <strong>課程目標</strong>

@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - "claude_code_teaching_website.html"
+      - "interactive.html"
+      - "tutorial.v4.js"
       - "image/**"
       - "blog/**"
       - ".github/workflows/deploy-pages.yml"
@@ -33,9 +35,17 @@ jobs:
       - name: Build site
         run: |
           mkdir -p _site
-          # 教學網站部署到根目錄
+          # 教學網站（講義型）部署到根目錄為 index.html，並保留原檔名作為別名以相容本地連結
           cp claude_code_teaching_website.html _site/index.html
-          # 教學圖片
+          cp claude_code_teaching_website.html _site/claude_code_teaching_website.html
+          # 互動體驗版部署為 /interactive.html，與其相依的 tutorial.v4.js
+          if [ -f interactive.html ]; then
+            cp interactive.html _site/interactive.html
+          fi
+          if [ -f tutorial.v4.js ]; then
+            cp tutorial.v4.js _site/tutorial.v4.js
+          fi
+          # 教學圖片（兩個 HTML 共用同一份 image/）
           if [ -d image ]; then
             cp -r image _site/image
           fi

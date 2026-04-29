@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code 互動教學 · 全端專案實作與 AI 開發工作流</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f6;
+    --bg-soft: #f3efe7;
+    --bg-card: #ffffff;
+    --ink: #1a1614;
+    --ink-soft: #4a423d;
+    --ink-mute: #8a7f76;
+    --line: #e7e1d6;
+    --line-strong: #d4cabb;
+    --accent: #d97757;
+    --accent-soft: #f3d9cc;
+    --accent-deep: #b8543a;
+    --green: #6f8c5a;
+    --red: #c94f3c;
+    --blue: #5a6f8c;
+    --warn: #c79134;
+    --code-bg: #1f1a16;
+    --code-ink: #f0e6d8;
+    --fs-base: 16px;
+    --radius: 14px;
+  }
+  [data-accent="green"] { --accent: #6f8c5a; --accent-soft: #d8e3cc; --accent-deep: #4f6b3e; }
+  [data-accent="blue"] { --accent: #4a6585; --accent-soft: #cfd9e6; --accent-deep: #324a66; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  body {
+    font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: var(--fs-base);
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .mono { font-family: "JetBrains Mono", "SF Mono", Consolas, monospace; }
+
+  /* ==== LAYOUT ==== */
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  aside.nav {
+    position: sticky; top: 0; align-self: start; height: 100vh;
+    background: var(--bg-soft); border-right: 1px solid var(--line);
+    padding: 28px 22px; overflow-y: auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--accent); color: white;
+    display: grid; place-items: center; font-weight: 900; font-size: 18px;
+    box-shadow: 0 2px 0 var(--accent-deep);
+  }
+  .brand-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+  .brand-name small { display: block; color: var(--ink-mute); font-weight: 400; font-size: 11px; margin-top: 2px;}
+
+  .nav-section { margin-bottom: 18px; }
+  .nav-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); font-weight: 700; padding-left: 8px; margin-bottom: 6px; }
+  .nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-radius: 8px;
+    color: var(--ink-soft); text-decoration: none; font-size: 13.5px;
+    transition: all .15s;
+    position: relative;
+  }
+  .nav a:hover { background: var(--bg-card); color: var(--ink); }
+  .nav a.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .nav a .num {
+    flex: 0 0 22px; height: 22px; border-radius: 6px;
+    background: var(--bg-card); color: var(--ink-mute);
+    display: grid; place-items: center; font-size: 11px; font-weight: 700;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .nav a.active .num { background: rgba(255,255,255,0.25); color: #fff; }
+  .nav a.done::after {
+    content: "✓"; position: absolute; right: 10px; color: var(--green); font-weight: 700;
+  }
+  .nav a.active.done::after { color: #fff; }
+  .progress-mini {
+    margin-top: 14px; padding: 12px 14px; background: var(--bg-card);
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .progress-mini-label { font-size: 11px; color: var(--ink-mute); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); transition: width .4s; }
+
+  main { padding: 0; max-width: 100%; overflow-x: hidden; }
+  .container { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+
+  /* ==== HERO ==== */
+  .hero {
+    padding: 80px 0 60px;
+    background: linear-gradient(180deg, #faf9f6 0%, #f3efe7 100%);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: var(--bg-card); border: 1px solid var(--line-strong);
+    border-radius: 999px; font-size: 12px; color: var(--ink-soft); font-weight: 500;
+    margin-bottom: 20px;
+  }
+  .hero-eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  h1.hero-title {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 900; line-height: 1.1; letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    text-wrap: balance;
+  }
+  h1.hero-title em { font-style: normal; color: var(--accent); }
+  .hero-sub { font-size: 18px; color: var(--ink-soft); max-width: 680px; margin-bottom: 32px; text-wrap: pretty; }
+  .hero-meta { display: flex; gap: 28px; flex-wrap: wrap; font-size: 13px; color: var(--ink-mute); }
+  .hero-meta b { color: var(--ink); font-weight: 700; }
+
+  /* ==== COURSE MAP (5 segments) ==== */
+  .course-map { padding: 60px 0; }
+  .map-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
+    position: relative;
+  }
+  .map-grid::before {
+    content: ""; position: absolute; top: 38px; left: 8%; right: 8%; height: 2px;
+    background: repeating-linear-gradient(90deg, var(--line-strong) 0 6px, transparent 6px 12px);
+    z-index: 0;
+  }
+  .seg-card {
+    position: relative; z-index: 1;
+    background: var(--bg-card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px 16px; cursor: pointer;
+    transition: all .25s cubic-bezier(.2,.8,.2,1);
+    text-align: left; text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .seg-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(217,119,87,.35); }
+  .seg-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg-soft); border: 2px solid var(--line-strong);
+    display: grid; place-items: center; font-weight: 700; font-size: 14px;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--ink-soft);
+  }
+  .seg-card:hover .seg-num { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .seg-title { font-weight: 700; font-size: 15px; line-height: 1.35; }
+  .seg-time { font-size: 11px; color: var(--ink-mute); font-family: "JetBrains Mono", monospace; }
+  .seg-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+  .seg-tag { font-size: 10.5px; padding: 2px 7px; background: var(--bg-soft); border-radius: 4px; color: var(--ink-soft); }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside.nav { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--line);}
+    .map-grid { grid-template-columns: repeat(2, 1fr); }
+    .map-grid::before { display: none; }
+  }
+
+  /* ==== SECTIONS ==== */
+  section.chapter { padding: 64px 0; border-top: 1px solid var(--line); }
+  section.chapter:first-of-type { border-top: none; }
+  .ch-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  .ch-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; color: var(--accent); font-weight: 700;
+    padding: 4px 10px; background: var(--accent-soft); border-radius: 6px;
+  }
+  .ch-time { font-size: 12px; color: var(--ink-mute); font-family: "JetBrains Mono", monospace; }
+  h2.ch-title { font-size: 36px; font-weight: 900; line-height: 1.15; letter-spacing: -0.01em; margin: 8px 0 14px; }
+  .ch-goal { font-size: 17px; color: var(--ink-soft); max-width: 720px; text-wrap: pretty; margin-bottom: 36px; }
+  .ch-goal::before { content: "目標 · "; color: var(--accent); font-weight: 700; }
+
+  h3.sub { font-size: 22px; font-weight: 700; margin: 36px 0 12px; letter-spacing: -0.005em;}
+  h3.sub .sub-num { color: var(--accent); font-family: "JetBrains Mono", monospace; margin-right: 8px; }
+  h4 { font-size: 16px; font-weight: 700; margin: 20px 0 8px; }
+  p { margin-bottom: 12px; color: var(--ink-soft); }
+  p strong { color: var(--ink); }
+  ul, ol { margin: 8px 0 16px 22px; color: var(--ink-soft); }
+  li { margin-bottom: 6px; }
+
+  /* ==== FIGURE / DIAGRAM ==== */
+  .figure {
+    margin: 24px 0; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; background: var(--bg-card); cursor: zoom-in;
+    position: relative;
+  }
+  .figure img { width: 100%; display: block; }
+  .figure::after {
+    content: "點擊放大"; position: absolute; bottom: 10px; right: 10px;
+    background: rgba(0,0,0,.7); color: #fff; padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; opacity: 0; transition: opacity .2s;
+  }
+  .figure:hover::after { opacity: 1; }
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 100;
+    display: none; place-items: center; padding: 40px; cursor: zoom-out;
+  }
+  .lightbox.open { display: grid; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+  /* ==== TABLES ==== */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { background: var(--bg-soft); font-weight: 700; color: var(--ink); font-size: 13px; }
+  td { color: var(--ink-soft); }
+  td code, th code { background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; font-size: 12.5px; color: var(--ink); }
+
+  /* ==== INLINE CODE ==== */
+  p code, li code { background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; font-size: 0.92em; color: var(--accent-deep); border: 1px solid var(--line); }
+
+  /* ==== CODE BLOCK ==== */
+  .code {
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: var(--radius); padding: 18px 20px;
+    font-size: 13.5px; line-height: 1.7; overflow-x: auto;
+    margin: 16px 0;
+    position: relative;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: #2a2520; color: #c9bea8;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-size: 12px; font-family: "JetBrains Mono", monospace;
+    border-bottom: 1px solid #3a342d;
+  }
+  .code-header + .code { border-radius: 0 0 var(--radius) var(--radius); margin-top: 0; }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span { width: 10px; height: 10px; border-radius: 50%; background: #5a534a; }
+  .code .tk-cmt { color: #8a7f70; }
+  .code .tk-str { color: #c9aa6e; }
+  .code .tk-kw  { color: #d97757; font-weight: 600; }
+  .code .tk-fn  { color: #88b59a; }
+  .code .tk-num { color: #d4a87b; }
+  .code .tk-prompt { color: #d97757; user-select: none;}
+  .code .tk-ok  { color: #88b59a; }
+  .code .tk-err { color: #e07a6a; }
+
+  /* ==== INTERACTIVE BLOCK CHROME ==== */
+  .demo {
+    margin: 28px 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .demo-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-bottom: 1px solid var(--line);
+    background: var(--bg-soft); font-size: 13px;
+  }
+  .demo-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: #fff; padding: 3px 9px; border-radius: 5px;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  }
+  .demo-tag::before { content: "✦"; }
+  .demo-title { font-weight: 600; color: var(--ink); }
+  .demo-body { padding: 22px; }
+
+  /* ============================================ */
+  /* DEMO 1: CLI SIMULATOR                        */
+  /* ============================================ */
+  .cli-sim {
+    background: #1f1a16; color: #f0e6d8; border-radius: 10px;
+    font-family: "JetBrains Mono", monospace; font-size: 13.5px; line-height: 1.7;
+    padding: 16px 20px; min-height: 320px; max-height: 480px; overflow-y: auto;
+  }
+  .cli-line { white-space: pre-wrap; word-break: break-all; }
+  .cli-prompt { color: #d97757; }
+  .cli-dim    { color: #8a7f70; }
+  .cli-ok     { color: #88b59a; }
+  .cli-err    { color: #e07a6a; }
+  .cli-hi     { color: #f0c884; }
+  .cli-input-row {
+    display: flex; align-items: center; gap: 8px; padding: 12px 20px;
+    background: #181412; border-top: 1px solid #2a2520;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .cli-input-row .cli-prompt { font-size: 14px; }
+  .cli-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: #f0e6d8; font-family: inherit; font-size: 13.5px;
+  }
+  .cli-input::placeholder { color: #5a534a; }
+  .cli-suggest {
+    padding: 8px 20px; background: var(--bg-soft); border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;
+  }
+  .cli-suggest span { font-size: 11px; color: var(--ink-mute); margin-right: 4px; }
+  .cli-chip {
+    padding: 3px 9px; background: var(--bg-card); border: 1px solid var(--line-strong);
+    border-radius: 4px; cursor: pointer; font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+    color: var(--ink-soft); transition: all .15s;
+  }
+  .cli-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ============================================ */
+  /* DEMO 2: SLASH COMMANDS                       */
+  /* ============================================ */
+  .slash-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .slash-pill {
+    padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line-strong);
+    background: var(--bg-card); cursor: pointer; font-size: 12.5px; font-weight: 500;
+    transition: all .15s;
+  }
+  .slash-pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .slash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .slash-card {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+    background: var(--bg-card); transition: all .2s; cursor: pointer;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+  .slash-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .slash-impact {
+    font-size: 10px; padding: 2px 8px; border-radius: 4px;
+    border: 1px solid; font-weight: 700; flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+  .slash-card[data-impact="5"] { border-left: 3px solid #c94f3c; }
+  .slash-card[data-impact="4"] { border-left: 3px solid #d97757; }
+  .slash-card[data-impact="3"] { border-left: 3px solid #c79134; }
+  .slash-shortcuts {
+    margin-top: 18px; padding: 14px 16px;
+    background: var(--bg-soft); border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+  }
+  .slash-shortcuts h6 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-mute); margin-bottom: 10px;
+  }
+  .slash-kbd-row { display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: 12.5px; color: var(--ink-soft);}
+  .slash-kbd { display: inline-flex; align-items: center; gap: 4px; }
+  .slash-kbd kbd {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    padding: 2px 7px; background: var(--bg-card); border: 1px solid var(--line-strong);
+    border-bottom-width: 2px; border-radius: 4px; color: var(--ink); font-weight: 600;
+  }
+  .slash-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 20px -10px rgba(0,0,0,.15); }
+  .slash-cmd {
+    font-family: "JetBrains Mono", monospace; font-weight: 700;
+    color: var(--accent-deep); font-size: 14px;
+  }
+  .slash-purpose { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .slash-when {
+    font-size: 11.5px; color: var(--ink-mute); margin-top: 4px;
+    padding-top: 8px; border-top: 1px dashed var(--line);
+  }
+  .slash-when b { color: var(--ink-soft); }
+
+  /* ============================================ */
+  /* DEMO 3: PERMISSION MODES                     */
+  /* ============================================ */
+  .pm-tabs { display: flex; gap: 4px; padding: 4px; background: var(--bg-soft); border-radius: 10px; margin-bottom: 18px; flex-wrap: wrap;}
+  .pm-tab {
+    flex: 1; min-width: 100px; padding: 10px 14px; border: none; background: transparent;
+    cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 13px;
+    color: var(--ink-soft); transition: all .15s; font-family: inherit;
+  }
+  .pm-tab.active { background: var(--bg-card); color: var(--ink); box-shadow: 0 2px 8px -3px rgba(0,0,0,.1); }
+  .pm-stage { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .pm-stage { grid-template-columns: 1fr; }}
+  .pm-explain {
+    padding: 18px; border-radius: 10px;
+    border-left: 4px solid var(--accent); background: var(--bg-soft);
+  }
+  .pm-explain h4 { margin-top: 0; font-size: 16px; }
+  .pm-explain .pm-cli {
+    font-family: "JetBrains Mono", monospace; background: #1f1a16; color: #f0c884;
+    padding: 8px 12px; border-radius: 6px; font-size: 12px; margin: 10px 0; display: inline-block;
+  }
+  .pm-explain .pm-meta { font-size: 12px; color: var(--ink-mute); margin-top: 8px; }
+  .pm-flow {
+    background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 14px 16px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; min-height: 240px;
+  }
+  .pm-flow .pm-step { padding: 6px 0; opacity: 0; animation: pmFadeIn .4s forwards; }
+  .pm-flow .pm-step:nth-child(1) { animation-delay: .05s; }
+  .pm-flow .pm-step:nth-child(2) { animation-delay: .25s; }
+  .pm-flow .pm-step:nth-child(3) { animation-delay: .45s; }
+  .pm-flow .pm-step:nth-child(4) { animation-delay: .65s; }
+  .pm-flow .pm-step:nth-child(5) { animation-delay: .85s; }
+  @keyframes pmFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; }}
+
+  /* ============================================ */
+  /* DEMO 4: CONTEXT VIZ                          */
+  /* ============================================ */
+  .ctx-bar-wrap {
+    background: #1f1a16; border-radius: 10px; padding: 18px;
+    color: #f0e6d8; font-family: "JetBrains Mono", monospace;
+  }
+  .ctx-meter { display: flex; height: 28px; border-radius: 6px; overflow: hidden; border: 1px solid #3a342d; margin: 12px 0; }
+  .ctx-seg { transition: flex-grow .5s; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #1f1a16; }
+  .ctx-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 14px; font-size: 12px; }
+  .ctx-legend-row { display: flex; align-items: center; gap: 8px; padding: 4px 0;}
+  .ctx-swatch { width: 14px; height: 14px; border-radius: 3px; flex: 0 0 14px;}
+  .ctx-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .ctx-btn {
+    background: transparent; border: 1px solid #3a342d; color: #f0e6d8;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 12px;
+    transition: all .15s;
+  }
+  .ctx-btn:hover { background: var(--accent); border-color: var(--accent); }
+  .ctx-tip { color: #8a7f70; font-size: 11.5px; margin-top: 10px; }
+  .ctx-total { font-size: 13px; margin-bottom: 4px; }
+  .ctx-total b { color: #f0c884; }
+
+  /* ============================================ */
+  /* DEMO 5: TDD ANIMATION                        */
+  /* ============================================ */
+  .tdd-stage { display: grid; grid-template-columns: 200px 1fr; gap: 18px; }
+  @media (max-width: 700px) { .tdd-stage { grid-template-columns: 1fr; }}
+  .tdd-cycle {
+    position: relative; aspect-ratio: 1; max-width: 200px;
+    display: grid; place-items: center;
+  }
+  .tdd-ring {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(var(--red) 0 33.33%, var(--green) 33.33% 66.66%, var(--blue) 66.66% 100%);
+    -webkit-mask: radial-gradient(circle, transparent 50%, black 52%);
+            mask: radial-gradient(circle, transparent 50%, black 52%);
+    opacity: 0.25;
+    transition: opacity .3s;
+  }
+  .tdd-cycle.active .tdd-ring { opacity: 1; }
+  .tdd-center {
+    position: absolute; inset: 25%;
+    background: var(--bg-card); border: 2px solid var(--ink);
+    border-radius: 50%; display: grid; place-items: center;
+    text-align: center; padding: 8px;
+    font-weight: 700; font-size: 13px;
+  }
+  .tdd-marker {
+    position: absolute; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--ink); border: 3px solid var(--bg-card);
+    transition: all .8s cubic-bezier(.5,.1,.5,1);
+    transform-origin: center;
+  }
+  .tdd-panel {
+    background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 16px 18px;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; min-height: 260px;
+    line-height: 1.7;
+  }
+  .tdd-controls { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .tdd-btn {
+    padding: 8px 16px; border: 1px solid var(--line-strong); background: var(--bg-card);
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;
+    transition: all .15s; font-family: inherit;
+  }
+  .tdd-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tdd-btn:hover { transform: translateY(-1px); }
+  .tdd-step-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 700; margin-right: 8px;
+  }
+  .tdd-step-tag.red { background: var(--red); color: #fff; }
+  .tdd-step-tag.green { background: var(--green); color: #fff; }
+  .tdd-step-tag.blue { background: var(--blue); color: #fff; }
+
+  /* ============================================ */
+  /* DEMO 6: HARNESS 7 categories                 */
+  /* ============================================ */
+  .harness-wheel {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .harness-card {
+    padding: 16px; border: 1.5px solid var(--line); border-radius: 12px;
+    background: var(--bg-card); cursor: pointer; transition: all .2s;
+    text-align: left; font: inherit; color: inherit;
+  }
+  .harness-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .harness-card.active { border-color: var(--accent); background: var(--accent-soft); }
+  .harness-emoji {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: var(--bg-soft); display: grid; place-items: center;
+    font-size: 18px; margin-bottom: 10px;
+  }
+  .harness-card.active .harness-emoji { background: var(--accent); color: #fff; }
+  .harness-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .harness-q { font-size: 12px; color: var(--ink-mute); }
+  .harness-detail {
+    margin-top: 16px; padding: 18px; background: #1f1a16; color: #f0e6d8;
+    border-radius: 10px; font-size: 13px; line-height: 1.7;
+    display: none;
+  }
+  .harness-detail.show { display: block; }
+  .harness-detail h5 { color: #f0c884; margin-bottom: 8px; font-size: 14px; }
+  .harness-detail .hd-impl {
+    margin-top: 10px; padding: 10px 12px; background: rgba(217,119,87,.12);
+    border-left: 3px solid var(--accent); border-radius: 4px; font-size: 12px;
+  }
+
+  /* ============================================ */
+  /* DEMO: CONTEXT CHEATSHEET                     */
+  /* ============================================ */
+  .ctx-cheat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px;
+  }
+  .ctx-cc-btn {
+    padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 8px;
+    background: var(--bg-card); cursor: pointer; font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px; font-weight: 600; color: var(--ink); transition: all .15s;
+    display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+  }
+  .ctx-cc-btn:hover { transform: translateY(-2px); }
+  .ctx-cc-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .ctx-cc-btn .cc-imp { font-family: "Noto Sans TC"; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 700;}
+  .cc-imp.xl { background: #c94f3c; color: #fff; }
+  .cc-imp.l  { background: #d97757; color: #fff; }
+  .cc-imp.m  { background: #c79134; color: #fff; }
+  .cc-imp.s  { background: #6f8c5a; color: #fff; }
+  .ctx-cheat-detail {
+    background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 20px 22px;
+    font-size: 13.5px; line-height: 1.7; min-height: 200px;
+  }
+  .ctx-cheat-detail h5 { color: #f0c884; font-size: 16px; margin-bottom: 4px; font-family: "JetBrains Mono", monospace;}
+  .ctx-cheat-detail .cc-sub { color: #8a7f70; font-size: 12px; margin-bottom: 14px; }
+  .ctx-cheat-detail .cc-scope { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .ctx-cheat-detail .cc-scope-item {
+    flex: 1; min-width: 120px; padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 6px;
+    border-left: 3px solid #d97757;
+  }
+  .ctx-cheat-detail .cc-scope-label { font-size: 10.5px; color: #8a7f70; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;}
+  .ctx-cheat-detail .cc-scope-val { font-size: 12.5px; }
+  .ctx-cheat-detail .cc-when { background: rgba(217,119,87,0.12); padding: 10px 14px; border-radius: 6px; margin-top: 10px; font-size: 12.5px;}
+
+  /* ============================================ */
+  /* DEMO: GIT VISUALIZER                         */
+  /* ============================================ */
+  .git-stage {
+    background: #1f1a16; border-radius: 10px; padding: 12px;
+    margin-bottom: 14px;
+  }
+  #gitSvg { width: 100%; height: auto; display: block; }
+  .git-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .git-btn {
+    padding: 7px 13px; border: 1px solid var(--line-strong); background: var(--bg-card);
+    border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 500;
+    transition: all .15s; font-family: inherit;
+  }
+  .git-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .git-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .git-log {
+    background: #1f1a16; color: #f0e6d8; border-radius: 10px; padding: 14px 18px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.7;
+    min-height: 100px; max-height: 200px; overflow-y: auto;
+  }
+  .git-log .gl { color: #8a7f70; }
+  .git-log .gl-cmd { color: #d97757; }
+  .git-log .gl-ok { color: #88b59a; }
+
+  /* ============================================ */
+  /* DEMO 7: REWIND TIMELINE                      */
+  /* ============================================ */
+  .rw-track {
+    position: relative; padding: 16px 0 28px;
+  }
+  .rw-line {
+    position: absolute; left: 6%; right: 6%; top: 32px; height: 3px;
+    background: var(--line-strong); border-radius: 2px;
+  }
+  .rw-fill {
+    position: absolute; left: 6%; top: 32px; height: 3px;
+    background: var(--accent); transition: width .5s; border-radius: 2px;
+    max-width: 88%;
+  }
+  .rw-events {
+    display: flex; justify-content: space-between; position: relative; gap: 8px;
+    align-items: flex-start;
+  }
+  .rw-event {
+    flex: 1; text-align: center; position: relative; cursor: pointer;
+    padding: 56px 4px 8px;
+    background: transparent; border: none; font-family: inherit;
+    display: flex; flex-direction: column; gap: 4px; align-items: center;
+  }
+  .rw-event::before {
+    content: ""; position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-card); border: 3px solid var(--line-strong);
+    transition: all .25s;
+    z-index: 2;
+  }
+  .rw-event.passed::before { background: var(--accent); border-color: var(--accent); }
+  .rw-event.current::before { background: var(--ink); border-color: var(--ink); transform: translateX(-50%) scale(1.25); box-shadow: 0 0 0 5px rgba(26,22,20,0.12); }
+  .rw-event:hover::before { transform: translateX(-50%) scale(1.15); }
+  .rw-event.current:hover::before { transform: translateX(-50%) scale(1.3); }
+  .rw-event-label { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
+  .rw-event-time { font-size: 10px; color: var(--ink-mute); font-family: "JetBrains Mono", monospace; }
+  .rw-state { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  @media (max-width: 700px) { .rw-state { grid-template-columns: 1fr; }}
+  .rw-pane {
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    background: var(--bg-card);
+  }
+  .rw-pane-h {
+    padding: 8px 12px; background: var(--bg-soft); font-size: 11.5px; font-weight: 700;
+    color: var(--ink-soft); display: flex; justify-content: space-between; align-items: center;
+  }
+  .rw-pane-b {
+    padding: 12px; font-family: "JetBrains Mono", monospace; font-size: 12px;
+    line-height: 1.6; min-height: 120px; white-space: pre-wrap;
+  }
+  .rw-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .rw-banner {
+    margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+    font-size: 13px; line-height: 1.6; display: none;
+    animation: rwBannerIn .25s ease-out;
+  }
+  @keyframes rwBannerIn { from { opacity: 0; transform: translateY(-4px);} to { opacity: 1; transform: none;} }
+  .rw-banner.all  { background: #fef5f3; border: 1px solid #f5cdc4; color: var(--accent-deep); }
+  .rw-banner.conv { background: #fdf6e6; border: 1px solid #ead9a8; color: #7a5520; }
+  .rw-banner.code { background: #f0f5eb; border: 1px solid #c8d9b4; color: #4f6b3e; }
+  .rw-action {
+    padding: 7px 14px; border: 1px solid var(--line-strong); border-radius: 8px;
+    background: var(--bg-card); cursor: pointer; font-size: 12.5px; font-weight: 500;
+    transition: all .15s; font-family: inherit;
+  }
+  .rw-action:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* ============================================ */
+  /* DEMO 8: BUG DEBUG                            */
+  /* ============================================ */
+  .bug-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .bug-tab {
+    padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: 10px;
+    background: var(--bg-card); cursor: pointer; font-weight: 600; font-size: 13px;
+    transition: all .15s; font-family: inherit; text-align: left;
+    display: flex; flex-direction: column; gap: 2px; flex: 1;
+  }
+  .bug-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .bug-tab small { font-size: 11px; opacity: 0.7; font-weight: 400;}
+
+  .bug-board {
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+    background: var(--bg-card);
+  }
+  .bug-headline {
+    padding: 14px 18px; background: linear-gradient(180deg, #fef5f3 0%, #fbe8e2 100%);
+    border-bottom: 1px solid #f0c9bc;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .bug-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex: 0 0 36px;
+    background: var(--accent); color: #fff; display: grid; place-items: center;
+    font-size: 18px; font-weight: 900;
+  }
+  .bug-headline-text { flex: 1; }
+  .bug-headline-text b { display: block; font-size: 14px; color: var(--accent-deep); margin-bottom: 2px; }
+  .bug-headline-text span { font-size: 13px; color: var(--ink-soft); }
+  .bug-console {
+    padding: 12px 18px; background: #1f1a16; color: #e07a6a;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.55;
+    border-bottom: 1px solid #2a2520;
+  }
+  .bug-console b { color: #f0c884; }
+
+  .bug-steps {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .bug-step {
+    padding: 10px 12px; text-align: center; font-size: 11.5px; font-weight: 600;
+    color: var(--ink-mute); position: relative; border-right: 1px solid var(--line);
+    background: var(--bg-soft); transition: all .25s;
+  }
+  .bug-step:last-child { border-right: none; }
+  .bug-step.active { background: var(--accent); color: #fff; }
+  .bug-step.done   { background: #f0f5eb; color: #4f6b3e; }
+  .bug-step.done::after { content: "✓"; margin-left: 4px; }
+  .bug-step-num {
+    display: inline-grid; place-items: center; width: 18px; height: 18px;
+    border-radius: 50%; background: rgba(0,0,0,0.08); margin-right: 4px;
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+  }
+  .bug-step.active .bug-step-num,
+  .bug-step.done   .bug-step-num { background: rgba(255,255,255,0.3); }
+  .bug-step.done   .bug-step-num { background: rgba(79,107,62,0.2); }
+
+  .bug-stage-body {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 0;
+    min-height: 220px;
+  }
+  @media (max-width: 800px) { .bug-stage-body { grid-template-columns: 1fr; }}
+  .bug-narrative {
+    padding: 18px 20px; border-right: 1px solid var(--line);
+    font-size: 13.5px; line-height: 1.7;
+  }
+  @media (max-width: 800px) { .bug-narrative { border-right: none; border-bottom: 1px solid var(--line); }}
+  .bug-narrative h6 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-mute); margin-bottom: 6px;
+  }
+  .bug-narrative p { font-size: 13.5px; color: var(--ink); margin-bottom: 8px;}
+  .bug-narrative .bug-quote {
+    border-left: 3px solid var(--accent); padding: 6px 12px;
+    background: var(--bg-soft); border-radius: 0 6px 6px 0;
+    font-size: 12.5px; color: var(--ink-soft); margin: 8px 0;
+  }
+  .bug-action {
+    padding: 18px 20px; background: #1a1614; color: #e8dfd0;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.7;
+  }
+  .bug-action h6 { color: #f0c884; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: "Noto Sans TC", sans-serif;}
+  .bug-action .ba-cmd {
+    display: block; padding: 6px 10px; background: rgba(217,119,87,0.16);
+    border-left: 3px solid var(--accent); margin: 6px 0;
+    color: #f0c884; border-radius: 0 4px 4px 0;
+  }
+  .bug-action .ba-out { color: #88b59a; padding-left: 4px; }
+  .bug-action .ba-dim { color: #8a7f70; padding-left: 4px; }
+
+  .bug-controls {
+    display: flex; gap: 8px; padding: 12px 18px; background: var(--bg-soft);
+    border-top: 1px solid var(--line); align-items: center;
+  }
+  .bug-ctrl-btn {
+    padding: 7px 14px; border: 1px solid var(--line-strong); border-radius: 8px;
+    background: var(--bg-card); cursor: pointer; font-size: 12.5px; font-weight: 600;
+    font-family: inherit; transition: all .15s;
+  }
+  .bug-ctrl-btn.primary { background: var(--ink); color: #fff; border-color: var(--ink);}
+  .bug-ctrl-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .bug-ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .bug-progress {
+    margin-left: auto; font-size: 11.5px; color: var(--ink-mute);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .bug-resolved {
+    background: #f0f5eb; border-top: 2px solid #6f8c5a; padding: 12px 18px;
+    color: #4f6b3e; font-size: 13px; font-weight: 600; display: none;
+  }
+  .bug-resolved.show { display: block; }
+  .bug-resolved code { background: rgba(111,140,90,0.18); padding: 1px 6px; border-radius: 3px; }
+  .bug-pane-b { padding: 14px; font-size: 13px; }
+  .bug-symptom {
+    background: #fef5f3; border: 1px solid #f5cdc4; padding: 12px 14px; border-radius: 8px;
+    color: var(--accent-deep); font-size: 13px; margin-bottom: 12px;
+  }
+  .bug-fix {
+    background: #f0f5eb; border: 1px solid #c8d9b4; padding: 12px 14px; border-radius: 8px;
+    color: #4f6b3e; font-size: 13px;
+  }
+  .bug-cmd {
+    font-family: "JetBrains Mono", monospace; background: #1f1a16; color: #f0c884;
+    padding: 8px 12px; border-radius: 6px; font-size: 12.5px; display: inline-block; margin: 4px 4px 4px 0;
+  }
+  .bug-pane code { background: var(--bg-soft); padding: 1px 5px; border-radius: 3px; font-size: 12px;}
+
+  /* ============================================ */
+  /* DEMO 9: IRON LAWS FLIP CARDS                 */
+  /* ============================================ */
+  .iron-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 800px) { .iron-grid { grid-template-columns: 1fr; }}
+  .iron-card {
+    perspective: 1000px;
+    aspect-ratio: 4/5;
+    cursor: pointer;
+  }
+  .iron-card-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform .7s cubic-bezier(.4,.0,.2,1);
+    transform-style: preserve-3d;
+  }
+  .iron-card.flipped .iron-card-inner { transform: rotateY(180deg); }
+  .iron-front, .iron-back {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: 14px; padding: 22px; display: flex; flex-direction: column;
+  }
+  .iron-front {
+    background: var(--ink); color: #f0e6d8; border: 2px solid var(--accent);
+    justify-content: space-between;
+  }
+  .iron-front .iron-num {
+    font-family: "JetBrains Mono", monospace; font-size: 14px; color: var(--accent);
+    font-weight: 700;
+  }
+  .iron-front h5 { font-size: 18px; margin-top: 12px; line-height: 1.3; }
+  .iron-front .iron-law {
+    font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+    color: #f0c884; line-height: 1.55;
+    padding: 10px; background: rgba(217,119,87,.12); border-radius: 6px;
+    border-left: 3px solid var(--accent);
+  }
+  .iron-front .iron-flip-hint {
+    font-size: 11px; color: #8a7f70; text-align: right; margin-top: 8px;
+  }
+  .iron-back {
+    background: var(--accent-soft); transform: rotateY(180deg); color: var(--ink);
+    border: 2px solid var(--accent);
+    justify-content: flex-start;
+  }
+  .iron-back h6 { font-size: 13px; margin-bottom: 6px; color: var(--accent-deep); }
+  .iron-back ul { margin-left: 18px; font-size: 12.5px; }
+  .iron-back li { margin-bottom: 8px; line-height: 1.5; }
+  .iron-back .iron-skill {
+    margin-top: auto; font-family: "JetBrains Mono", monospace; font-size: 11px;
+    background: var(--ink); color: #f0c884; padding: 6px 10px; border-radius: 5px;
+  }
+
+  /* ==== TWEAKS LAUNCHER ==== */
+  .tweak-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 50;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--ink); color: #fff; border: none;
+    display: grid; place-items: center; cursor: pointer;
+    font-size: 20px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.35);
+    transition: transform .15s;
+  }
+  .tweak-fab:hover { transform: scale(1.06); }
+  .tweak-panel {
+    position: fixed; bottom: 84px; right: 24px; z-index: 51;
+    width: 280px; background: var(--bg-card); border: 1px solid var(--line-strong);
+    border-radius: 14px; padding: 18px; box-shadow: 0 18px 50px -16px rgba(0,0,0,.3);
+    display: none;
+  }
+  .tweak-panel.open { display: block; }
+  .tweak-panel h6 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); margin-bottom: 10px;}
+  .tweak-row { margin-bottom: 14px; }
+  .tweak-row label { font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 6px; }
+  .tweak-row input[type=range] { width: 100%; accent-color: var(--accent); }
+  .tweak-swatches { display: flex; gap: 8px; }
+  .tweak-swatch {
+    flex: 1; padding: 6px 8px; border: 2px solid var(--line); border-radius: 8px;
+    cursor: pointer; font-size: 11.5px; font-weight: 600; text-align: center;
+    background: var(--bg-card);
+  }
+  .tweak-swatch.active { border-color: var(--ink); }
+  .tweak-swatch::before { content: ""; display: block; width: 100%; height: 14px; border-radius: 4px; margin-bottom: 4px; }
+  .tweak-swatch[data-v=orange]::before { background: #d97757; }
+  .tweak-swatch[data-v=green]::before { background: #6f8c5a; }
+  .tweak-swatch[data-v=blue]::before { background: #4a6585; }
+
+  /* ==== FOOTER ==== */
+  footer.foot {
+    padding: 60px 0 80px; background: var(--bg-soft); border-top: 1px solid var(--line);
+    margin-top: 40px;
+  }
+  .foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
+  @media (max-width: 700px) { .foot-grid { grid-template-columns: 1fr; }}
+  .foot h6 { font-size: 12px; text-transform: uppercase; color: var(--ink-mute); letter-spacing: 0.1em; margin-bottom: 12px;}
+  .foot ul { list-style: none; margin: 0; }
+  .foot li { margin-bottom: 6px; font-size: 13px; color: var(--ink-soft);}
+  .foot a { color: var(--ink); text-decoration: none; }
+  .foot a:hover { color: var(--accent); }
+
+  /* ==== MISC ==== */
+  .key-callout {
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px; border-radius: 0 10px 10px 0;
+    margin: 18px 0; font-size: 14.5px;
+  }
+  .key-callout strong { color: var(--accent-deep); }
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0;}
+  .pill-row .pill { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; background: var(--bg-soft); color: var(--ink-soft); border: 1px solid var(--line);}
+
+  details.toggle {
+    margin: 14px 0; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg-card);
+  }
+  details.toggle summary {
+    padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px;
+    list-style: none; display: flex; align-items: center; gap: 10px;
+  }
+  details.toggle summary::-webkit-details-marker { display: none; }
+  details.toggle summary::before { content: "▸"; color: var(--accent); transition: transform .2s; }
+  details.toggle[open] summary::before { transform: rotate(90deg); }
+  details.toggle .details-body { padding: 0 16px 14px; }
+</style>
+</head>
+<body data-screen-label="Course Site">
+
+<div class="layout">
+  <!-- ============================================ -->
+  <!-- SIDEBAR NAV                                  -->
+  <!-- ============================================ -->
+  <aside class="nav" id="nav">
+    <div class="brand">
+      <div class="brand-mark">C</div>
+      <div class="brand-name">
+        Claude Code 互動教學
+        <small>4 小時 · 全端工作流實戰</small>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">課程地圖</div>
+      <a href="#hero" data-target="hero"><span class="num">↑</span>課程入口</a>
+      <a href="claude_code_teaching_website.html" style="background: var(--accent-soft); color: var(--accent-deep); font-weight: 600; margin-top: 4px;"><span class="num">📖</span>返回完整講義</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Section 1 · 起手式</div>
+      <a href="#s1" data-target="s1"><span class="num">1</span>Git、GitHub 與 Claude Code</a>
+      <a href="#s1-1" data-target="s1-1"><span class="num">1·1</span>環境安裝與五種模式</a>
+      <a href="#s1-2" data-target="s1-2"><span class="num">1·2</span>CLAUDE.md 共識契約</a>
+      <a href="#s1-3" data-target="s1-3"><span class="num">1·3</span>Docker 與資料庫</a>
+      <a href="#s1-4" data-target="s1-4"><span class="num">1·4</span>Git × gh CLI</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Section 2 · 全端主線</div>
+      <a href="#s2" data-target="s2"><span class="num">2</span>SDD / TDD / Context</a>
+      <a href="#s2-1" data-target="s2-1"><span class="num">2·1</span>SDD 規格先行</a>
+      <a href="#s2-2" data-target="s2-2"><span class="num">2·2</span>TDD 自主迴圈</a>
+      <a href="#s2-3" data-target="s2-3"><span class="num">2·3</span>前端鷹架串接</a>
+      <a href="#s2-4" data-target="s2-4"><span class="num">2·4</span>Context 管理</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Section 3 · 自動化</div>
+      <a href="#s3" data-target="s3"><span class="num">3</span>Skill / Agent / 自動化</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Section 4 · 收尾</div>
+      <a href="#s4" data-target="s4"><span class="num">4</span>Review × superpowers</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Section 5 · Harness</div>
+      <a href="#s5" data-target="s5"><span class="num">5</span>Harness Engineering</a>
+    </div>
+
+    <div class="progress-mini">
+      <div class="progress-mini-label"><span>學習進度</span><span id="progressPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progressBar"></div></div>
+    </div>
+  </aside>
+
+  <!-- ============================================ -->
+  <!-- MAIN                                         -->
+  <!-- ============================================ -->
+  <main>
+    <!-- HERO -->
+    <section id="hero" class="hero" data-screen-label="Hero">
+      <div class="container">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          4 小時線上錄影課 · 講師：Kevin Tsai
+        </div>
+        <h1 class="hero-title">
+          把 Claude Code 變成<br>
+          <em>可治理的工程夥伴</em>
+        </h1>
+        <p class="hero-sub">
+          以一個真實的全端購物車專案為主線，完整示範 SDD 規格先行、TDD 自主迴圈、Skill 設計、背景 Agent、權限模式、Context 管理與 Harness Engineering——讓 Claude 變成可預測、可治理、可長期維護的工程夥伴，而不是看心情產出的副駕駛。
+        </p>
+        <div class="hero-meta">
+          <span><b>5</b> 段教學 / <b>21</b> 個小節</span>
+          <span><b>10</b> 個互動 demo</span>
+          <span>主專案 · <b>Shopping Cart</b>（Node.js + React）</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- COURSE MAP -->
+    <div class="course-map">
+      <div class="container">
+        <div class="map-grid" id="courseMap">
+          <a href="#s1" class="seg-card">
+            <div class="seg-num">1</div>
+            <div class="seg-title">起手式</div>
+            <div class="seg-time">60 min</div>
+            <div class="seg-tags">
+              <span class="seg-tag">CLI</span><span class="seg-tag">VS Code</span><span class="seg-tag">Docker</span><span class="seg-tag">Git</span>
+            </div>
+          </a>
+          <a href="#s2" class="seg-card">
+            <div class="seg-num">2</div>
+            <div class="seg-title">全端主線</div>
+            <div class="seg-time">105 min</div>
+            <div class="seg-tags">
+              <span class="seg-tag">SDD</span><span class="seg-tag">TDD</span><span class="seg-tag">Context</span><span class="seg-tag">E2E</span>
+            </div>
+          </a>
+          <a href="#s3" class="seg-card">
+            <div class="seg-num">3</div>
+            <div class="seg-title">自動化 × Agent</div>
+            <div class="seg-time">75 min</div>
+            <div class="seg-tags">
+              <span class="seg-tag">Skill</span><span class="seg-tag">Hooks</span><span class="seg-tag">/agent</span>
+            </div>
+          </a>
+          <a href="#s4" class="seg-card">
+            <div class="seg-num">4</div>
+            <div class="seg-title">Review × superpowers</div>
+            <div class="seg-time">39 min</div>
+            <div class="seg-tags">
+              <span class="seg-tag">/review</span><span class="seg-tag">Iron Laws</span>
+            </div>
+          </a>
+          <a href="#s5" class="seg-card">
+            <div class="seg-num">5</div>
+            <div class="seg-title">Harness Engineering</div>
+            <div class="seg-time">23 min</div>
+            <div class="seg-tags">
+              <span class="seg-tag">7 大類</span><span class="seg-tag">三大支柱</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- ============================================ -->
+      <!-- SECTION 1                                    -->
+      <!-- ============================================ -->
+      <section id="s1" class="chapter" data-screen-label="01 Git × Claude Code 起手式">
+        <div class="ch-head">
+          <span class="ch-num">SECTION 01</span>
+          <span class="ch-time">⏱ 60 mins</span>
+        </div>
+        <h2 class="ch-title">Git、GitHub 與 Claude Code 起手式</h2>
+        <p class="ch-goal">先建立正確的開發起手式，讓學員理解 Claude Code 不是取代版本控制，而是強化版本控制與專案治理。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/1-overview-kickoff.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/1-overview-kickoff.png" alt="第 1 段總覽" />
+        </div>
+
+        <h3 class="sub" id="s1-1"><span class="sub-num">1·1</span>環境安裝、登入與五種操作模式</h3>
+        <p>Claude Code 安裝後共用的入門路徑：<code>claude doctor</code> 健檢 → <code>claude</code> 啟動 → <code>/login</code> OAuth。本節最關鍵的概念是「五種權限模式」——它們決定了 Claude 在你機器上能做什麼、要不要每次徵求同意。</p>
+
+        <!-- DEMO 1: PERMISSION MODES -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">權限模式切換 · Ask / Edit / Plan / Auto / Bypass</span>
+          </div>
+          <div class="demo-body">
+            <div class="pm-tabs" id="pmTabs">
+              <button class="pm-tab active" data-mode="ask">逐步確認</button>
+              <button class="pm-tab" data-mode="edit">自動編輯</button>
+              <button class="pm-tab" data-mode="plan">規劃模式</button>
+              <button class="pm-tab" data-mode="auto">自動模式</button>
+              <button class="pm-tab" data-mode="bypass">全開模式</button>
+            </div>
+            <div class="pm-stage">
+              <div class="pm-explain" id="pmExplain"></div>
+              <div class="pm-flow" id="pmFlow"></div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="sub" id="s1-2"><span class="sub-num">1·2</span>介面導覽 × CLAUDE.md 共識契約</h3>
+        <p><strong>CLAUDE.md</strong> 是 Claude 每次啟動都會自動讀取的「共識契約」——把規則寫在這裡，就不用每次對話重複說明。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/1-2-cli-vscode-claude-md.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/1-2-cli-vscode-claude-md.png" alt="CLI vs VS Code 與 CLAUDE.md" />
+        </div>
+
+        <!-- DEMO 2: CLI SIMULATOR -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">假 Claude Code CLI · 試試看輸入指令</span>
+          </div>
+          <div class="demo-body" style="padding: 0;">
+            <div class="cli-sim" id="cliSim"></div>
+            <div class="cli-input-row">
+              <span class="cli-prompt">›</span>
+              <input class="cli-input" id="cliInput" placeholder="輸入 /help 看可用指令，或試試 /init、/model opus、/context" autocomplete="off" />
+            </div>
+            <div class="cli-suggest">
+              <span>快速試：</span>
+              <button class="cli-chip" data-cmd="/help">/help</button>
+              <button class="cli-chip" data-cmd="/init">/init</button>
+              <button class="cli-chip" data-cmd="/model opus">/model opus</button>
+              <button class="cli-chip" data-cmd="/context">/context</button>
+              <button class="cli-chip" data-cmd="/agent seed 30 products">/agent seed 30 products</button>
+              <button class="cli-chip" data-cmd="@spec.md">@spec.md</button>
+              <button class="cli-chip" data-cmd="claude doctor">claude doctor</button>
+              <button class="cli-chip" data-cmd="clear">clear</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="sub" id="s1-3"><span class="sub-num">1·3</span>Docker 與 AI 操作資料庫</h3>
+        <p>不需背 Docker 指令，直接用自然語言叫 Claude 產出 <code>docker-compose.yml</code>、啟動 PostgreSQL、檢查容器狀態，並同步回填 Node.js 連線設定。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/1-3-docker-database.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/1-3-docker-database.png" alt="Docker 與資料庫" />
+        </div>
+
+        <h3 class="sub" id="s1-4"><span class="sub-num">1·4</span>Git × gh CLI 協作模式</h3>
+        <p>不用死背指令——直接用自然語言告訴 Claude 你要做什麼，Claude 會產出並執行對應的 git / gh 指令，並寫好 commit message。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/1-4-git-gh-cli.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/1-4-git-gh-cli.png" alt="Git × gh CLI" />
+        </div>
+
+        <!-- DEMO: GIT VISUALIZER -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">Git 版本控管視覺化 · 看 commit / branch / merge / PR 對 main 的影響</span>
+          </div>
+          <div class="demo-body">
+            <div class="git-stage">
+              <svg id="gitSvg" viewBox="0 0 720 320" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+            <div class="git-controls">
+              <button class="git-btn" data-git="commit">＋ commit on current</button>
+              <button class="git-btn" data-git="branch">⎇ checkout -b feature/cart</button>
+              <button class="git-btn" data-git="commit-feat">＋ commit on feature</button>
+              <button class="git-btn" data-git="merge">↩ merge → main</button>
+              <button class="git-btn" data-git="push">⇡ push origin</button>
+              <button class="git-btn" data-git="pr">⇆ open PR</button>
+              <button class="git-btn" data-git="reset">重置</button>
+            </div>
+            <div class="git-log" id="gitLog"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 2                                    -->
+      <!-- ============================================ -->
+      <section id="s2" class="chapter" data-screen-label="02 全端主線">
+        <div class="ch-head">
+          <span class="ch-num">SECTION 02</span>
+          <span class="ch-time">⏱ 105 mins</span>
+        </div>
+        <h2 class="ch-title">全端主線實作 · SDD → TDD → E2E</h2>
+        <p class="ch-goal">從規格先行（SDD）出發，用全端購物車專案實作完整展示 Claude Code 如何參與設計、撰寫、測試、修正與整合，而不是只做片段生成。</p>
+
+        <h3 class="sub" id="s2-1"><span class="sub-num">2·1</span>SDD 規格先行 · 與 Claude 共同撰寫 spec.md</h3>
+        <p>SDD（Specification-Driven Development）的精神是：<strong>規格不是給人看的文件，而是「你與 Claude 的共識契約」</strong>。每次任務前 <code>@spec.md</code> 讓 Claude 取得完整上下文，不需重複解釋。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/2-1-sdd-spec-md.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/2-1-sdd-spec-md.png" alt="SDD 規格先行" />
+        </div>
+
+        <h3 class="sub" id="s2-2"><span class="sub-num">2·2</span>後端生成 × TDD 先行 × 自主修正循環</h3>
+        <p><strong>Red → Green → Refactor</strong>。為什麼 AI 開發特別適合 TDD：Claude 不「猜測」需求，<strong>測試就是最精確的規格說明</strong>。</p>
+
+        <!-- DEMO 5: TDD ANIMATION -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">TDD 自主迴圈 · CartService 五個場景</span>
+          </div>
+          <div class="demo-body">
+            <div class="tdd-stage">
+              <div class="tdd-cycle" id="tddCycle">
+                <div class="tdd-ring"></div>
+                <div class="tdd-center" id="tddCenter">準備開始</div>
+                <div class="tdd-marker" id="tddMarker" style="left: 50%; top: 0; transform: translate(-50%, -50%);"></div>
+              </div>
+              <div class="tdd-panel" id="tddPanel">
+<span style="color:#8a7f70;">// 點擊「開始」啟動 TDD 自主迴圈</span>
+<span style="color:#8a7f70;">// 觀察 Claude 如何在 Red → Green → Refactor 之間循環</span>
+              </div>
+            </div>
+            <div class="tdd-controls">
+              <button class="tdd-btn primary" id="tddStart">▶ 開始 TDD 迴圈</button>
+              <button class="tdd-btn" id="tddNext" disabled>下一步</button>
+              <button class="tdd-btn" id="tddReset">重置</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/2-2-backend-tdd-loop.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/2-2-backend-tdd-loop.png" alt="TDD 後端迴圈" />
+        </div>
+
+        <h3 class="sub" id="s2-3"><span class="sub-num">2·3</span>前端鷹架與 API 串接</h3>
+        <p>以 React + Vite 建立商品列表頁、購物車抽屜（CartDrawer）與結帳頁。先以 <code>mockProducts.ts</code> 跑起 UI，確認視覺後再切換串接 API。</p>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/2-3-frontend-api-integration.png" alt="前端鷹架與 API 串接" />
+        </div>
+
+        <h3 class="sub" id="s2-4"><span class="sub-num">2·4</span>Context 管理 × 真實除錯</h3>
+        <p>除錯之所以困難，常常不是「找不到 bug」，更常是「Claude 在錯誤的上下文中打轉」。本節同步教兩件事：(1) 主動管理 Context；(2) 透過購物車三個真實 bug 把 Context 指令套用到實戰。</p>
+
+        <!-- DEMO 4: CONTEXT VIZ -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">/context 視覺化 · 看 token 怎麼被吃掉</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctx-bar-wrap">
+              <div class="ctx-total">Context · <b id="ctxUsed">98</b>k / 200k tokens (<span id="ctxPct">49</span>%)</div>
+              <div class="ctx-meter" id="ctxMeter"></div>
+              <div class="ctx-legend" id="ctxLegend"></div>
+              <div class="ctx-actions">
+                <button class="ctx-btn" data-action="add-mcp">＋ 連 3 個 MCP server</button>
+                <button class="ctx-btn" data-action="add-files">＋ 讀 5 個檔案</button>
+                <button class="ctx-btn" data-action="long-chat">＋ 半小時對話</button>
+                <button class="ctx-btn" data-action="compact">/compact 壓縮</button>
+                <button class="ctx-btn" data-action="clear">/clear 清空</button>
+                <button class="ctx-btn" data-action="reset">重置</button>
+              </div>
+              <div class="ctx-tip" id="ctxTip">提示：點上方按鈕觀察各種操作對 context 的影響。MCP 工具定義是隱藏成本——常常佔了 4-8k token 卻沒在用。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMO 7: REWIND TIMELINE -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">/rewind 時光機 · 試試各種回退選項</span>
+          </div>
+          <div class="demo-body">
+            <div class="rw-track">
+              <div class="rw-line"></div>
+              <div class="rw-fill" id="rwFill" style="width: 100%;"></div>
+              <div class="rw-events" id="rwEvents">
+                <button class="rw-event passed" data-step="0">
+                  <div class="rw-event-label">需求討論</div>
+                  <div class="rw-event-time">10:02</div>
+                </button>
+                <button class="rw-event passed" data-step="1">
+                  <div class="rw-event-label">寫測試</div>
+                  <div class="rw-event-time">10:18</div>
+                </button>
+                <button class="rw-event passed" data-step="2">
+                  <div class="rw-event-label">產 Service</div>
+                  <div class="rw-event-time">10:34</div>
+                </button>
+                <button class="rw-event passed" data-step="3">
+                  <div class="rw-event-label">綠燈</div>
+                  <div class="rw-event-time">10:51</div>
+                </button>
+                <button class="rw-event current" data-step="4">
+                  <div class="rw-event-label">走錯方向</div>
+                  <div class="rw-event-time">11:07</div>
+                </button>
+              </div>
+            </div>
+            <div class="rw-state">
+              <div class="rw-pane">
+                <div class="rw-pane-h"><span>對話</span><span id="rwConvLen">5 條</span></div>
+                <div class="rw-pane-b" id="rwConv"></div>
+              </div>
+              <div class="rw-pane">
+                <div class="rw-pane-h"><span>cartService.ts</span><span id="rwFileVer">v5</span></div>
+                <div class="rw-pane-b" id="rwFile"></div>
+              </div>
+            </div>
+            <div class="rw-actions">
+              <button class="rw-action" data-rw="all">↺ Restore code & conversation</button>
+              <button class="rw-action" data-rw="conv">↺ Restore conversation only</button>
+              <button class="rw-action" data-rw="code">↺ Restore code only</button>
+              <button class="rw-action" data-rw="reset">重置場景</button>
+            </div>
+            <div class="rw-banner" id="rwBanner"></div>
+          </div>
+        </div>
+
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/2-4-context-debugging.png" alt="Context 與除錯" />
+        </div>
+
+        <h4 style="margin-top:32px;">真實除錯三件組 · Context 操作策略</h4>
+        <p>把上圖的 Context 操作策略套用到購物車三個真實 bug——從最簡單的 <code>/bug</code> + <code>/compact</code>，到中階的兩檔同時引入，再到最高階的 <code>Esc Esc → Restore code only</code>。</p>
+
+        <!-- DEMO 8: BUG DEBUG -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">購物車 Bug 三件組 · 互動式除錯</span>
+          </div>
+          <div class="demo-body">
+            <div class="bug-tabs" id="bugTabs">
+              <button class="bug-tab active" data-bug="cors">
+                <strong>① CORS 錯誤</strong>
+                <small>跨來源請求被擋</small>
+              </button>
+              <button class="bug-tab" data-bug="badge">
+                <strong>② Badge 不即時更新</strong>
+                <small>數字延遲跳</small>
+              </button>
+              <button class="bug-tab" data-bug="total">
+                <strong>③ 數量改後合計沒變</strong>
+                <small>+/- 後小計失效</small>
+              </button>
+            </div>
+            <div class="bug-stage">
+              <div class="bug-pane">
+                <div class="bug-pane-h">症狀 / Console</div>
+                <div class="bug-pane-b" id="bugSymptom"></div>
+              </div>
+              <div class="bug-pane">
+                <div class="bug-pane-h">Context 操作 + 修法</div>
+                <div class="bug-pane-b" id="bugFix"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMO: CONTEXT COMMAND CHEATSHEET -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">回顧</span>
+            <span class="demo-title">Context 指令總整理 · 點指令看影響範圍</span>
+          </div>
+          <div class="demo-body">
+            <div style="display:grid; grid-template-columns:1fr; gap:14px;">
+              <div class="ctx-cheat-grid" id="ctxCheatGrid"></div>
+              <div class="ctx-cheat-detail" id="ctxCheatDetail">
+                <div style="color:var(--ink-mute); text-align:center; padding:30px 0;">點上方任一指令 → 看它操作的範圍與影響程度</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 3                                    -->
+      <!-- ============================================ -->
+      <section id="s3" class="chapter" data-screen-label="03 自動化與 Skill">
+        <div class="ch-head">
+          <span class="ch-num">SECTION 03</span>
+          <span class="ch-time">⏱ 75 mins</span>
+        </div>
+        <h2 class="ch-title">自動化、Skill 與背景 Agent</h2>
+        <p class="ch-goal">讓學員看到 Claude Code 不只會寫程式，還能自動操作畫面、把規則無程式化為 Skill、以及把耗時長任務交給背景 Agent。</p>
+
+        <h3 class="sub"><span class="sub-num">3·1</span>agent-browser · 自動操作瀏覽器產生 SOP</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/3-1-agent-browser-sop.png" alt="agent-browser SOP" />
+        </div>
+
+        <h3 class="sub"><span class="sub-num">3·2</span>skill-creator · 企業資安規範 Skill 與 Hooks</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/3-2-skill-creator-security.png" alt="skill-creator 資安" />
+        </div>
+
+        <h3 class="sub"><span class="sub-num">3·3</span>開發輔助 Skill 速查 · 滑鼠移上去看用法</h3>
+
+        <!-- DEMO 3: SLASH COMMANDS / SKILLS CHEATSHEET -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">Slash Commands × Skills 速查表 · 可篩選</span>
+          </div>
+          <div class="demo-body">
+            <div class="slash-filter" id="slashFilter">
+              <button class="slash-pill active" data-cat="all">全部</button>
+              <button class="slash-pill" data-cat="context">Context 管理</button>
+              <button class="slash-pill" data-cat="memory">長期記憶</button>
+              <button class="slash-pill" data-cat="flow">會話控制</button>
+              <button class="slash-pill" data-cat="perf">效能優化</button>
+              <button class="slash-pill" data-cat="observe">監控診斷</button>
+            </div>
+            <div class="slash-grid" id="slashGrid"></div>
+            <div class="slash-shortcuts">
+              <h6>鍵盤快捷鍵</h6>
+              <div class="slash-kbd-row">
+                <span class="slash-kbd"><kbd>Esc</kbd> 中斷回應（輸入 go 繼續）</span>
+                <span class="slash-kbd"><kbd>Esc</kbd> <kbd>Esc</kbd> 進入 rewind 模式</span>
+                <span class="slash-kbd"><kbd>Ctrl</kbd>+<kbd>S</kbd> 暫存目前對話</span>
+                <span class="slash-kbd"><kbd>Alt</kbd>+<kbd>P</kbd> 切換規劃 / 編輯模式</span>
+                <span class="slash-kbd"><kbd>Shift</kbd>+<kbd>Tab</kbd> 切權限模式</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="sub"><span class="sub-num">3·4</span>/agent · 背景長任務與 Git Worktrees</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/3-4-agent-background-tasks.png" alt="背景 Agent" />
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 4                                    -->
+      <!-- ============================================ -->
+      <section id="s4" class="chapter" data-screen-label="04 Review × superpowers">
+        <div class="ch-head">
+          <span class="ch-num">SECTION 04</span>
+          <span class="ch-time">⏱ 39 mins</span>
+        </div>
+        <h2 class="ch-title">Review、程式優化與 superpowers 收尾</h2>
+        <p class="ch-goal">建立一套寫完程式後的自我審查與優化流程，讓 Claude Code 變成可長期維護的工程夥伴。</p>
+
+        <h3 class="sub"><span class="sub-num">4·1</span>/review × /simplify · 內建品質指令</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/4-1-review-simplify.png" alt="/review /simplify" />
+        </div>
+
+        <h3 class="sub"><span class="sub-num">4·2</span>Slash Commands 完整工作流</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/4-2-slash-commands-workflow.png" alt="slash commands 工作流" />
+        </div>
+
+        <h3 class="sub"><span class="sub-num">4·3</span>superpowers · spec → TDD → e2e 完整管線</h3>
+        <p>AI 寫程式最大的風險不是「寫錯」，而是「<strong>自信地寫錯然後說已經完成</strong>」。<code>superpowers</code> 用 <strong>Iron Laws</strong>（鐵律）把開發紀律寫成<strong>強制執行的 Skill</strong>——不是建議、不是參考。</p>
+
+        <!-- DEMO 9: IRON LAWS FLIP CARDS -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">三條 Iron Laws · 點卡片翻面看細節</span>
+          </div>
+          <div class="demo-body">
+            <div class="iron-grid" id="ironGrid"></div>
+          </div>
+        </div>
+
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/4-3-superpowers-pipeline.png" alt="superpowers pipeline" />
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- SECTION 5                                    -->
+      <!-- ============================================ -->
+      <section id="s5" class="chapter" data-screen-label="05 Harness Engineering">
+        <div class="ch-head">
+          <span class="ch-num">SECTION 05</span>
+          <span class="ch-time">⏱ 23 mins</span>
+        </div>
+        <h2 class="ch-title">Harness Engineering · 你一直在做的事，現在有了名字</h2>
+        <p class="ch-goal">學員在前四段已接觸 CLAUDE.md、Hooks、/agent、Git Worktrees、TDD 迴圈、/review 與 /simplify——本節幫助他們理解這些實踐共同構成一套 Harness。</p>
+
+        <div class="key-callout">
+          <strong>關鍵數據：</strong>LangChain 在不換模型的情況下只優化 Harness，Agent 在 Terminal Bench 2.0 的得分從 <b>52.8% → 66.5%</b>；OpenAI 三人團隊靠 Harness Engineering 在五個月內交付 <b>100 萬行</b>生產程式碼。
+        </div>
+
+        <h3 class="sub">點選 Harness 七大類 · 看實作對應</h3>
+
+        <!-- DEMO 6: HARNESS 7 CATEGORIES -->
+        <div class="demo">
+          <div class="demo-bar">
+            <span class="demo-tag">Demo</span>
+            <span class="demo-title">Harness 七大類 · 點卡片看課程實踐對應</span>
+          </div>
+          <div class="demo-body">
+            <div class="harness-wheel" id="harnessWheel"></div>
+            <div class="harness-detail" id="harnessDetail"></div>
+          </div>
+        </div>
+
+        <h3 class="sub">三大支柱與升級路徑</h3>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/5-3-three-pillars.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/5-3-three-pillars.png" alt="三大支柱" />
+        </div>
+        <div class="figure" data-zoom="image/claude_code_syllabus/teaching-diagrams/5-4-harness-upgrade-path.png">
+          <img src="image/claude_code_syllabus/teaching-diagrams/5-4-harness-upgrade-path.png" alt="Harness 升級路徑" />
+        </div>
+
+        <div class="key-callout">
+          <strong>明天上班就能做的三件事：</strong>
+          <ol style="margin-top: 8px; margin-bottom: 0;">
+            <li><b>30 分鐘</b>：在你手上的專案根目錄建立 <code>CLAUDE.md</code>，寫清架構規範、禁止行為、技術棧版本——Claude 從此不會忘。</li>
+            <li><b>下次卡住時</b>：先按 <code>/context</code> 看 context 被誰吃了，再決定要 <code>/compact</code> 還是 <code>/clear</code>。</li>
+            <li><b>下次 Claude 走錯方向</b>：按 <code>Esc Esc</code> → 選 <b>Restore code only</b>，比手動 git checkout 快十倍。</li>
+          </ol>
+        </div>
+      </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="foot">
+      <div class="container foot-grid">
+        <div>
+          <h6>關於課程</h6>
+          <p style="font-size: 13px; color: var(--ink-soft); max-width: 380px;">
+            Claude Code：全端專案實作與 AI 開發工作流。本互動教學網站基於 GitHub
+            <a href="https://github.com/kevintsai1202/claude-code-tutorial" target="_blank">kevintsai1202/claude-code-tutorial</a>
+            的課程教材建置。
+          </p>
+        </div>
+        <div>
+          <h6>主要資源</h6>
+          <ul>
+            <li><a href="https://code.claude.com/docs" target="_blank">官方文件</a></li>
+            <li><a href="https://github.com/anthropics/claude-plugins" target="_blank">Anthropic plugins</a></li>
+            <li><a href="https://modelcontextprotocol.io" target="_blank">MCP 協議</a></li>
+          </ul>
+        </div>
+        <div>
+          <h6>主專案</h6>
+          <ul>
+            <li>Shopping Cart · Node.js + React</li>
+            <li>SDD / TDD / Playwright E2E</li>
+            <li>superpowers Iron Laws</li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt="" /></div>
+
+<!-- TWEAKS -->
+<button class="tweak-fab" id="tweakFab" title="調整外觀">⚙</button>
+<div class="tweak-panel" id="tweakPanel">
+  <h6>外觀調整</h6>
+  <div class="tweak-row">
+    <label>字體大小 · <span id="fsLabel">16px</span></label>
+    <input type="range" id="fsRange" min="14" max="20" step="1" value="16" />
+  </div>
+  <div class="tweak-row">
+    <label>強調色</label>
+    <div class="tweak-swatches">
+      <button class="tweak-swatch active" data-v="orange">Anthropic 橘</button>
+      <button class="tweak-swatch" data-v="green">IDE 綠</button>
+      <button class="tweak-swatch" data-v="blue">學術藍</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutorial.v4.js"></script>
+</body>
+</html>
