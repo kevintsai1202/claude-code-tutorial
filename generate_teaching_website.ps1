@@ -105,6 +105,13 @@ $template = @'
       gap: 24px;
       align-items: start;
       padding: 24px 0 48px;
+      transition: grid-template-columns var(--duration), gap var(--duration);
+    }
+
+    /* 側邊欄收折後，第一欄縮成 collapser 按鈕寬，主內容自動填滿 */
+    .page-layout.is-sidebar-collapsed {
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 12px;
     }
 
     /* wrapper 負責 sticky，sidebar 負責 overflow:hidden，按鈕在 wrapper 內與 sidebar 同層 */
@@ -1323,8 +1330,12 @@ __CONTENT__
 
       /* 桌面版收折按鈕 */
       if (collapser) {
+        const pageLayout = document.querySelector(".page-layout");
         const applyCollapsed = (collapsed) => {
           sidebar.classList.toggle("is-collapsed", collapsed);
+          if (pageLayout) {
+            pageLayout.classList.toggle("is-sidebar-collapsed", collapsed);
+          }
           collapser.setAttribute("aria-label", collapsed ? "展開側邊欄" : "收折側邊欄");
           collapser.title = collapsed ? "展開側邊欄" : "收折側邊欄";
           try { localStorage.setItem("sidebar-collapsed", String(collapsed)); } catch (_) {}
