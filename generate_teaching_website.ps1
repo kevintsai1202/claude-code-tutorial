@@ -107,20 +107,73 @@ $template = @'
       padding: 24px 0 48px;
     }
 
-    .sidebar {
+    /* wrapper 負責 sticky，sidebar 負責 overflow:hidden，按鈕在 wrapper 內與 sidebar 同層 */
+    .sidebar-wrapper {
+      display: flex;
+      align-items: flex-start;
       position: sticky;
       top: 18px;
-      display: grid;
-      gap: 14px;
       align-self: start;
     }
 
+    .sidebar {
+      display: grid;
+      gap: 14px;
+      width: 290px;
+      min-width: 0;
+      overflow: hidden;
+      transition: width var(--duration);
+      flex-shrink: 0;
+    }
+
+    .sidebar.is-collapsed {
+      width: 0;
+    }
+
     .sidebar-card {
+      min-width: 290px; /* 防止收折時內容自行縮排 */
       background: rgba(255, 252, 247, 0.98);
       border: 1px solid var(--line);
       border-radius: 28px;
       box-shadow: 0 14px 36px rgba(34, 50, 74, 0.08);
       padding: 18px;
+    }
+
+    .sidebar-collapser {
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 14px;
+      width: 18px;
+      height: 56px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-left: none;
+      border-radius: 0 10px 10px 0;
+      background: var(--surface-strong);
+      box-shadow: 3px 2px 8px rgba(0,0,0,0.07);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--duration);
+    }
+
+    .sidebar-collapser:hover {
+      background: rgba(20,56,111,0.09);
+    }
+
+    .sidebar-collapser-icon {
+      display: block;
+      font-style: normal;
+      font-size: 0.85rem;
+      color: var(--navy);
+      line-height: 1;
+      transition: transform var(--duration);
+      margin-left: -1px;
+    }
+
+    .sidebar.is-collapsed + .sidebar-collapser .sidebar-collapser-icon {
+      transform: rotate(180deg);
     }
 
     .sidebar-card h2,
@@ -732,8 +785,22 @@ $template = @'
         grid-template-columns: 1fr;
       }
 
-      .sidebar {
+      .sidebar-wrapper {
         position: static;
+        display: block;
+      }
+
+      .sidebar {
+        width: auto !important;
+        overflow: visible;
+      }
+
+      .sidebar-card {
+        min-width: 0;
+      }
+
+      .sidebar-collapser {
+        display: none;
       }
 
       .sidebar-toggle {
@@ -793,25 +860,30 @@ $template = @'
 <body>
   <div class="shell">
     <div class="page-layout">
-      <aside class="sidebar" id="chapter-sidebar">
-        <div class="sidebar-card">
-          <h2>章節導覽</h2>
-          <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
-        </div>
-        <div class="sidebar-card">
-          <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
-          <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
-        </div>
-        <div class="sidebar-card">
-          <h3>互動體驗版</h3>
-          <p>另開分頁，跑 CLI 模擬器、TDD 動畫、Context 管理 demo 等可互動內容。</p>
-          <a class="hero-cta" style="margin-top:10px;width:100%;justify-content:center;font-size:0.95rem;padding:11px 18px;" href="interactive.html" target="_blank" rel="noopener">
-            <span aria-hidden="true">🎮</span>
-            <span>開啟互動體驗</span>
-            <span class="hero-cta-arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </aside>
+      <div class="sidebar-wrapper">
+        <aside class="sidebar" id="chapter-sidebar">
+          <div class="sidebar-card">
+            <h2>章節導覽</h2>
+            <p>固定顯示章節與小節，方便授課時快速跳轉。</p>
+          </div>
+          <div class="sidebar-card">
+            <button class="sidebar-toggle" type="button" id="sidebar-toggle" aria-expanded="false">展開章節目錄</button>
+            <nav class="sidebar-nav" aria-label="側邊欄章節目錄" id="sidebar-nav"></nav>
+          </div>
+          <div class="sidebar-card">
+            <h3>互動體驗版</h3>
+            <p>另開分頁，跑 CLI 模擬器、TDD 動畫、Context 管理 demo 等可互動內容。</p>
+            <a class="hero-cta" style="margin-top:10px;width:100%;justify-content:center;font-size:0.95rem;padding:11px 18px;" href="interactive.html" target="_blank" rel="noopener">
+              <span aria-hidden="true">🎮</span>
+              <span>開啟互動體驗</span>
+              <span class="hero-cta-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </aside>
+        <button class="sidebar-collapser" id="sidebar-collapser" aria-label="收折側邊欄" title="收折側邊欄">
+          <i class="sidebar-collapser-icon">‹</i>
+        </button>
+      </div>
 
       <div class="main-column">
         <header class="hero">
@@ -1194,8 +1266,30 @@ __CONTENT__
     function setupSidebarState() {
       const sidebar = document.getElementById("chapter-sidebar");
       const toggle = document.getElementById("sidebar-toggle");
+      const collapser = document.getElementById("sidebar-collapser");
       const sidebarLinks = Array.from(document.querySelectorAll(".sidebar-link, .sidebar-sublink"));
       const observedTargets = Array.from(document.querySelectorAll(".chapter-shell, .section-shell"));
+
+      /* 桌面版收折按鈕 */
+      if (collapser) {
+        const applyCollapsed = (collapsed) => {
+          sidebar.classList.toggle("is-collapsed", collapsed);
+          collapser.setAttribute("aria-label", collapsed ? "展開側邊欄" : "收折側邊欄");
+          collapser.title = collapsed ? "展開側邊欄" : "收折側邊欄";
+          try { localStorage.setItem("sidebar-collapsed", String(collapsed)); } catch (_) {}
+        };
+
+        collapser.addEventListener("click", () => {
+          applyCollapsed(!sidebar.classList.contains("is-collapsed"));
+        });
+
+        /* 還原上次狀態 */
+        try {
+          if (localStorage.getItem("sidebar-collapsed") === "true") {
+            applyCollapsed(true);
+          }
+        } catch (_) {}
+      }
 
       toggle.addEventListener("click", () => {
         const expanded = toggle.getAttribute("aria-expanded") === "true";
